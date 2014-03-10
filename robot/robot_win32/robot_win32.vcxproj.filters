@@ -1,0 +1,228 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="cocoos">
+      <UniqueIdentifier>{2d2f6404-5d22-4ac8-b344-9bbcb4fefce6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cocoos\headers">
+      <UniqueIdentifier>{ccb728fc-c53f-4319-a43e-3c196184b0d3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cocoos\source">
+      <UniqueIdentifier>{2e914b4c-c307-49a5-b12c-7212bb3b2695}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="port">
+      <UniqueIdentifier>{d808aec8-f818-4943-844e-6526228884c4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="port\avr">
+      <UniqueIdentifier>{fbc78c25-d480-4398-a914-7a73fdd2c7c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="port\pololu">
+      <UniqueIdentifier>{f4834968-cbed-48f9-b65c-19f08e4da349}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+    <Text Include="port\inttypes.h">
+      <Filter>port</Filter>
+    </Text>
+    <Text Include="port\avr\pgmspace.h">
+      <Filter>port\avr</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\cocoos.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\os_applAPI.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\os_assert.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\os_defines.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\os_event.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\os_msgqueue.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\os_port.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\os_sem.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\os_task.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos\os_typedef.h">
+      <Filter>cocoos\headers</Filter>
+    </ClInclude>
+    <ClInclude Include="port\avr\interrupt.h">
+      <Filter>port\avr</Filter>
+    </ClInclude>
+    <ClInclude Include="..\cocoos.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\compass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\debug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\flame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\hardware.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\i2c.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\lookup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\motor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\parameters.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\pid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\serial.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sharpir.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sonar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\standard_includes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\typedefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\wall_follow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="port\avr\io.h">
+      <Filter>port\avr</Filter>
+    </ClInclude>
+    <ClInclude Include="port\pololu\orangutan.h">
+      <Filter>port\pololu</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="win32_main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cocoos\os_assert.c">
+      <Filter>cocoos\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cocoos\os_cbk.c">
+      <Filter>cocoos\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cocoos\os_event.c">
+      <Filter>cocoos\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cocoos\os_kernel.c">
+      <Filter>cocoos\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cocoos\os_msgqueue.c">
+      <Filter>cocoos\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cocoos\os_sem.c">
+      <Filter>cocoos\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\cocoos\os_task.c">
+      <Filter>cocoos\source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\compass.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\config.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\debug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\flame.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\globals.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\i2c.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\lookup.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\motor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\pid.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\robot.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\serial.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\servo_test.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sharpir.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sonar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\svp_demo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\vector.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\wall_follow.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="port\pololu\orangutan.c">
+      <Filter>port\pololu</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
