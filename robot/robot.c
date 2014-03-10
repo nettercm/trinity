@@ -1174,7 +1174,7 @@ void behaviors_fsm(void)
 			if(at_limit_flag == 0) //don't wind up the integral if we are already saturating the correction
 			{
 				integral += error;
-				LIMIT(integral,-25,25);
+				LIMIT(integral,-integral_limit,integral_limit);
 			}
 
 			if(which_wall == 1) correction *= -1; //reverse the motor command if we are tracking the right wall
