@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Express 2012 for Windows Desktop
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "robot", "robot.vcxproj", "{0379A29B-CF58-418D-86AD-D97EB978F928}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "robot_ui", "robot_ui.vcxproj", "{2189673A-BF4F-4DF5-BCBC-9AB1062C50EB}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "robot_win32", "..\robot\robot_win32\robot_win32.vcxproj", "{78E360D0-E5D8-42AA-802C-4838382D7DA7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0379A29B-CF58-418D-86AD-D97EB978F928}.Debug|Win32.ActiveCfg = Debug|Win32
+		{0379A29B-CF58-418D-86AD-D97EB978F928}.Debug|Win32.Build.0 = Debug|Win32
+		{0379A29B-CF58-418D-86AD-D97EB978F928}.Release|Win32.ActiveCfg = Release|Win32
+		{0379A29B-CF58-418D-86AD-D97EB978F928}.Release|Win32.Build.0 = Release|Win32
+		{2189673A-BF4F-4DF5-BCBC-9AB1062C50EB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{2189673A-BF4F-4DF5-BCBC-9AB1062C50EB}.Debug|Win32.Build.0 = Debug|Win32
+		{2189673A-BF4F-4DF5-BCBC-9AB1062C50EB}.Release|Win32.ActiveCfg = Release|Win32
+		{2189673A-BF4F-4DF5-BCBC-9AB1062C50EB}.Release|Win32.Build.0 = Release|Win32
+		{78E360D0-E5D8-42AA-802C-4838382D7DA7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{78E360D0-E5D8-42AA-802C-4838382D7DA7}.Debug|Win32.Build.0 = Debug|Win32
+		{78E360D0-E5D8-42AA-802C-4838382D7DA7}.Release|Win32.ActiveCfg = Release|Win32
+		{78E360D0-E5D8-42AA-802C-4838382D7DA7}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
