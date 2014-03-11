@@ -1007,6 +1007,36 @@ void debug_fsm(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+/*
+
+
+state 1 - waiting for start signal
+
+state 2 - aligning to face south
+
+state 3 - navigating to room 3
+	enter:	activate ( follow right wall )
+	during:	look for white line (non-blocking)
+	exit:	stop; deactivate (follow right wall )
+
+state 4 - searching room 3
+	enter:	move forward a few inches	
+	during:	scan for flame
+	exit:	turn around to face room exit
+
+face south
+follow wall (left / right)
+enter room
+search room
+exit room
+
+
+activate ( face south )
+
+activate ( follow right wall )
+
+*/
+
 
 #define is_nth_iteration(counter, n) (counter++ >= (n) ?  counter=0, 1 : 0)
 #define invalid_error_value 9999
