@@ -25,6 +25,7 @@ uint32 t_last_output_update = 0;
 //execution times for various functions
 volatile uint32 t_inputs_fsm = 0,  t_lcd_fsm = 0,  t_loop = 0;
 
+volatile unsigned long elapsed_milliseconds=0;
 
 
 t_LOOKUP_table line_sensor_table[] = // R,L  I.E. Left senser reads a smaller value
@@ -306,7 +307,7 @@ void lcd_update_fsm(void) //(uint32 event)
 		if(s.lcd_screen==0)
 		{
 			lcd_goto_xy(0,0);
-			printf("L=%3d,%3d", s.line[0], s.line[1]); 	
+			printf("L=%3d,%3d", s.inputs.analog[AI_LINE_RIGHT],s.inputs.analog[AI_LINE_LEFT]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 	
 			printf("Fl=%03d %03d", s.inputs.analog[AI_FLAME_NE],s.inputs.analog[AI_FLAME_N]); 
@@ -1207,8 +1208,8 @@ void behaviors_fsm(void)
 		{
 			enter_(s_lost_wall) { s.inputs.x = s.inputs.y = s.inputs.theta = 0;  play_note(E(3), 50, 10); }
 			
-			if(target_speed > corner_speed) target_speed -= 2;
-			if(target_speed < corner_speed) target_speed += 1;
+			if(target_speed > corner_speed) target_speed -= down_ramp;
+			if(target_speed < corner_speed) target_speed += up_ramp;
 			motor_command(8,0,0,target_speed,target_speed);
 			if( s.inputs.x >=  corner_distance) state = s_turning_corner;
 			if( side <= found_wall_distance ) state = s_tracking_wall;
@@ -1234,8 +1235,8 @@ void behaviors_fsm(void)
 				s.inputs.x = s.inputs.y = s.inputs.theta = 0; 
 			}
 			
-			if(target_speed > corner_speed) target_speed -= 2;
-			if(target_speed < corner_speed) target_speed += 1;
+			if(target_speed > corner_speed) target_speed -= down_ramp;
+			if(target_speed < corner_speed) target_speed += up_ramp;
 			if(which_wall==0) motor_command(8,0,0,(target_speed*10)/corner_radius,target_speed);
 			else motor_command(8,0,0,target_speed,(target_speed*10)/corner_radius);
 	
@@ -1258,8 +1259,8 @@ void behaviors_fsm(void)
 				play_note(C(4), 50, 10);
 				s.inputs.x = s.inputs.y = s.inputs.theta = 0;
 			}
-			if(target_speed > corner_speed) target_speed -= 1;
-			if(target_speed < corner_speed) target_speed += 1;
+			if(target_speed > corner_speed) target_speed -= down_ramp;
+			if(target_speed < corner_speed) target_speed += up_ramp;
 			if(which_wall==0) motor_command(8,0,0,(target_speed*10)/sharp_corner_radius,target_speed);
 			else motor_command(8,0,0,target_speed,(target_speed*10)/sharp_corner_radius);
 			

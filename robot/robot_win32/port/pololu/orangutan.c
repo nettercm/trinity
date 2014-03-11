@@ -36,7 +36,7 @@ unsigned char svp_get_firmware_version(void) { NOT_IMPLEMENTED(); }
 //OrangutanTime.h
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-volatile unsigned long elapsed_milliseconds=0;
+extern volatile unsigned long elapsed_milliseconds;
 
 unsigned long get_ticks(void){ return elapsed_milliseconds * 25000; }
 unsigned long ticks_to_microseconds(unsigned long ticks) {	NOT_IMPLEMENTED(); return 0; }
