@@ -15,5 +15,8 @@ extern void motors_reapply_target_speed();
 extern void motors_hardware_init(void);
 
 extern void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, float odo_b);
+extern void odometry_set_checkpoint(void);
+extern float odometry_get_rotation_since_checkpoint(void);
+extern float odometry_get_distance_since_checkpoint(void);
 
 #endif

@@ -5,6 +5,7 @@
 #define is_nth_iteration(counter, n) (counter++ >= (n) ?  counter=0, 1 : 0)
 #define invalid_error_value 9999
 
+
 void wall_follow_fsm(void)
 {
 	enum states { s_none=0, s_disabled=1, s_tracking_wall=2, s_lost_wall=3, s_turning_corner=4, s_turning_sharp_corner=5 };
@@ -173,12 +174,18 @@ void wall_follow_fsm(void)
 		*/		
 		next_(s_lost_wall)
 		{
-			enter_(s_lost_wall) { s.inputs.x = s.inputs.y = s.inputs.theta = 0;  play_note(E(3), 50, 10); }
+			enter_(s_lost_wall) 
+			{ 
+				//s.inputs.x = s.inputs.y = s.inputs.theta = 0;  
+				odometry_set_checkpoint();
+				play_note(E(3), 50, 10); 
+			}
 			
 			if(target_speed > corner_speed) target_speed -= down_ramp;
 			if(target_speed < corner_speed) target_speed += up_ramp;
 			motor_command(8,0,0,target_speed,target_speed);
-			if( s.inputs.x >=  corner_distance) state = s_turning_corner;
+			//if( s.inputs.x >=  corner_distance) state = s_turning_corner;
+			if( odometry_get_distance_since_checkpoint() >= corner_distance ) state = s_turning_corner;
 			if( side <= found_wall_distance ) state = s_tracking_wall;
 			//if( s.ir[AI_IR_N] <= 50 ) state = 2;
 
@@ -199,7 +206,8 @@ void wall_follow_fsm(void)
 			enter_(s_turning_corner) 
 			{ 
 				play_note(G(3), 50, 10);
-				s.inputs.x = s.inputs.y = s.inputs.theta = 0; 
+				//s.inputs.x = s.inputs.y = s.inputs.theta = 0; 
+				odometry_set_checkpoint();
 			}
 			
 			if(target_speed > corner_speed) target_speed -= down_ramp;
@@ -208,9 +216,9 @@ void wall_follow_fsm(void)
 			else motor_command(8,0,0,target_speed,(target_speed*10)/corner_radius);
 	
 			if( side <= target_distance ) state = s_tracking_wall;
-			if ( abs((s.inputs.theta/(2*3.1415926535))*360.0) >= 90 ) 
+			if ( abs(odometry_get_rotation_since_checkpoint()) >= 90 ) 
 			{
-				state = s_tracking_wall; //by default, go back to racking the wall, unless....
+				state = s_tracking_wall; //by default, go back to tracking the wall, unless....
 				if( side > lost_wall_distance) state = s_turning_sharp_corner;
 			}			
 			//if( s.ir[AI_IR_N] <= 50 ) state = 2;
@@ -224,7 +232,8 @@ void wall_follow_fsm(void)
 			enter_(s_turning_sharp_corner)
 			{
 				play_note(C(4), 50, 10);
-				s.inputs.x = s.inputs.y = s.inputs.theta = 0;
+				//s.inputs.x = s.inputs.y = s.inputs.theta = 0; 
+				odometry_set_checkpoint();
 			}
 			if(target_speed > corner_speed) target_speed -= down_ramp;
 			if(target_speed < corner_speed) target_speed += up_ramp;
@@ -232,7 +241,7 @@ void wall_follow_fsm(void)
 			else motor_command(8,0,0,target_speed,(target_speed*10)/sharp_corner_radius);
 			
 			if( side <= target_distance ) state = s_tracking_wall;
-			if ( abs((s.inputs.theta/(2*3.1415926535))*360.0) >= 90.0 )
+			if ( abs(odometry_get_rotation_since_checkpoint()) >= 90 ) 
 			{
 				state = s_tracking_wall; //by default, go back to racking the wall, unless....
 				if( side > found_wall_distance) state = s_turning_corner;

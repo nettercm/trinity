@@ -10,7 +10,7 @@ float PI = 3.1415926535897932384626433832795;
 //float odo_b = 165.0; //87.0; //(89.69375) * 1.0;
 
 
-//290us
+//290us (for absolute pos only)
 void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, float odo_b)
 {
 	float d_theta, d_x, d_y, l, r;
@@ -22,16 +22,25 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	d_Ul = odo_cml * l;
 	d_Ur = odo_cmr * r;
 	d_U  = (d_Ul + d_Ur) / 2.0;
+	d_theta = (d_Ur - d_Ul) / odo_b;
 
+	//update our absolute position
 	d_x = d_U * cos(s.inputs.theta);
 	d_y = d_U * sin(s.inputs.theta);
 	s.inputs.x  = s.inputs.x + d_x;
 	s.inputs.y  = s.inputs.y + d_y;
-
-	d_theta = (d_Ur - d_Ul) / odo_b;
 	s.inputs.theta = s.inputs.theta + d_theta;
 	if(s.inputs.theta > 2.0*PI) s.inputs.theta -= 2.0*PI;
 	if(s.inputs.theta < -2.0*PI) s.inputs.theta += 2.0*PI;
+
+	//update relative position
+	d_x = d_U * cos(s.dtheta);
+	d_y = d_U * sin(s.dtheta);
+	s.dx  = s.dx + d_x;
+	s.dy  = s.dy + d_y;
+	s.dtheta = s.dtheta + d_theta;
+	if(s.dtheta > 2.0*PI) s.dtheta -= 2.0*PI;
+	if(s.dtheta < -2.0*PI) s.dtheta += 2.0*PI;
 }
 
 
@@ -51,8 +60,23 @@ void encoders_reset(void)
 	s.inputs.encoders[0] = svp_get_counts_ab();
 	s.inputs.encoders[1] = svp_get_counts_cd();
 	s.inputs.x = s.inputs.y = s.inputs.theta = 0.0;
+	s.dx = s.dy = s.dtheta = 0.0;
 }
 
+void odometry_set_checkpoint(void)
+{
+	s.dx = s.dy = s.dtheta = 0.0;
+}
+
+float odometry_get_rotation_since_checkpoint(void)
+{
+	return (s.dtheta/(2*PI))*360.0;
+}
+
+float odometry_get_distance_since_checkpoint(void)
+{
+	return s.dx;
+}
 
 void encoders_set_checkpoint()
 {

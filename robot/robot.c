@@ -171,8 +171,8 @@ void analog_update_fsm(void)
 		if(value > long_filter_threashold) value = ((s.ir[AI_IR_N_long]*long_filter_amount) + value)/(long_filter_amount+1);
 		s.inputs.ir[3] = s.ir[AI_IR_N_long]		= value;
 
-		s.line[0] = 0; //s.inputs.analog[AI_LINE_LEFT];
-		s.line[1] = 0; //(u08) LOOKUP_do(s.inputs.analog[AI_LINE_RIGHT],line_sensor_table);
+		s.line[0] = s.inputs.analog[AI_LINE_RIGHT];
+		s.line[1] = s.inputs.analog[AI_LINE_LEFT];
 
 		//sample the following only once every 5 * 20 == 100ms
 		if( count >= 20)
@@ -572,7 +572,7 @@ void determine_orientation(void)
 
 //#define STATE_HAS_CHANGED ( (last_state != state) ? (last_state=state) : 0)
 
-uint8 master_logic_fsm(uint8 cmd)
+uint8 old_master_logic_fsm(uint8 cmd)
 {
 	static uint8 state=0, last_state=255;
 	uint8 result1,result2;
@@ -757,6 +757,60 @@ void idle(void)
 #endif
 
 
+u08 lines_crossed=0;
+
+void line_detection_fsm(void)
+{
+	enum states { s_none=0, s_disabled=1, s_not_sure, s_on_black, s_on_line, s_crossed_line };
+	static enum states state=s_disabled;
+	static enum states last_state=s_none;
+	
+	task_open();
+
+	while(1)
+	{
+		first_(s_disabled)
+		{
+			enter_(s_disabled) 	{}
+			state = s_not_sure;	leave_(s_disabled);
+			exit_(s_disabled)  {}
+		}
+
+
+		next_(s_not_sure)
+		{
+			enter_(s_not_sure) 	{}
+			if(s.line[0]>100) state = s_on_black;
+			exit_(s_not_sure)  {}
+		}
+
+
+		next_(s_on_black)
+		{
+			enter_(s_on_black) 	{}
+			if(s.line[0]<20) state = s_on_line;
+			exit_(s_on_black)  {}
+		}
+
+
+		next_(s_on_line)
+		{
+			enter_(s_on_line) 	{}
+			if(s.line[0]>100) state = s_crossed_line;
+			exit_(s_on_line)  {}
+		}
+
+
+		next_(s_crossed_line)
+		{
+			enter_(s_crossed_line) 	{ lines_crossed++; }
+			state = s_on_black;
+			exit_(s_crossed_line)  {}
+		}
+		OS_SCHEDULE;
+	}
+	task_close();
+}
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -790,6 +844,117 @@ activate ( face south )
 activate ( follow right wall )
 
 */
+
+
+/* issues:
+
+*/
+
+void master_logic_fsm(void)
+{
+	enum states { s_none=0, s_disabled=1, s_waiting_for_start, s_aligning_south, s_finding_room_3 };
+	static enum states state=s_disabled;
+	static enum states last_state=s_none;
+	
+	task_open();
+
+	while(1)
+	{
+		//the following state transition applies to all states
+		if(s.behavior_state[3]==0) state = s_disabled;
+
+		first_(s_disabled)
+		{
+			enter_(s_disabled) 
+			{  
+				motor_command(2,0,0,0,0);
+				s.behavior_state[1] = 0;
+				s.behavior_state[2] = 0;
+				s.behavior_state[3] = 0;
+			}
+
+			if(s.behavior_state[3]==1) state = s_waiting_for_start;
+
+			exit_(s_disabled)  
+			{ 
+			}
+		}
+
+
+		next_(s_waiting_for_start)
+		{
+			enter_(s_waiting_for_start) 
+			{  
+				play_note(G(4), 50, 10);
+			}
+
+			//just fall through for now
+			state = s_aligning_south;
+			leave_(s_waiting_for_start);
+
+			exit_(s_waiting_for_start)  
+			{ 
+			}
+		}
+		
+
+		next_(s_aligning_south)
+		{
+			enter_(s_aligning_south) 
+			{  
+				odometry_set_checkpoint();		motor_command(7,0,0,20,-20);
+			}
+
+			while ( abs(odometry_get_rotation_since_checkpoint()) < 90 ) { task_wait(10); }
+			motor_command(2,0,0,0,0);
+			task_wait(500);
+
+			if(s.ir[AI_IR_N] < 120)
+			{
+				//we were facing south initiall, now we are facing west; turn back...
+				odometry_set_checkpoint();  motor_command(7,0,0,-20,20);
+				while ( abs(odometry_get_rotation_since_checkpoint()) < 90 ) { task_wait(10); }
+				motor_command(2,0,0,0,0);
+				task_wait(500);
+			}
+			state = s_finding_room_3;
+			leave_(s_aligning_south);
+
+			exit_(s_aligning_south)  
+			{ 
+			}
+		}
+
+		next_(s_finding_room_3)
+		{
+			enter_(s_finding_room_3)
+			{
+				//activate "follow right wall"
+				s.behavior_state[2]=1; //right wall
+				s.behavior_state[1]=1; //start wall following
+				lines_crossed = 0;
+			}
+
+			if(lines_crossed>0)
+			{
+				motor_command(2,0,0,0,0);
+				s.behavior_state[1] = 0;
+				s.behavior_state[2] = 0;
+				s.behavior_state[3] = 0;
+				state = s_disabled;
+			}
+
+
+			exit_(s_finding_room_3)
+			{
+			}
+		}
+
+		task_wait(25);
+	}
+
+	task_close();
+}
 
 
 int main(void)
@@ -838,10 +1003,13 @@ int main(void)
 	//task_create( debug_fsm, 8, NULL, 0, 0); //not used right now
 //#endif
 	task_create( wall_follow_fsm, 9, NULL, 0, 0);
-	//task_create( idle, 10, NULL, 0, 0);
+	task_create( master_logic_fsm, 10, NULL, 0, 0);
+	task_create( line_detection_fsm, 10, NULL, 0, 0);
 
 #ifdef SVP_ON_WIN32
 	task_create( sim, 255, NULL, 0, 0);
+
+	s.behavior_state[3]=1;
 #endif
 
 	#else

@@ -29,8 +29,8 @@ typedef struct
 	volatile sint16 m_ramp;
 	volatile uint8 motor_command_state;
 	
-	//odometry:
-	//float x,y,theta;
+	//odometry (since checkpoint; global odometry state is part of inputs struct)
+	float dx,dy,dtheta;
 	
 	//behavior control
 	volatile uint8 behavior_state[16];
