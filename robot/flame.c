@@ -1,9 +1,35 @@
 
 #include "standard_includes.h"
 
-
 extern uint8 align_to_line(uint8 cmd);
 
+void uvtron_update(void)
+{
+	uint8 p;
+	static uint32 t=0;
+	static uint8 count=0, last_count=0;
+	static uint32 pulse;
+	p=new_pulse(UV_PULSE_CHANNEL);
+	if(p & HIGH_PULSE)
+	{
+		pulse = get_last_high_pulse(UV_PULSE_CHANNEL);
+		//pulse=pulse_to_microseconds(pulse);
+		count++;
+		//DBG_printf(1,(_b,"%d\r\n\n",count));
+		//pulse=pulse/100;
+		//s.inputs.p1 = pulse;
+	}
+	if(get_ms() - t >= 1000)
+	{
+		t=get_ms();
+		//usb_printf("%d counts per second\r\n\n",count-last_count);
+		//s.inputs.p1 = count-last_count;
+		last_count = count;
+	}
+}
+
+//TODO: the following needs to be rewritting to match the 2014 platform
+#if 0
 uint8 find_peak(uint8 *history, uint8 size)
 {
 	uint8 min,max;
@@ -147,31 +173,6 @@ uint8 hone_in_on_candle(uint8 cmd, uint8 range)
 	return state;
 }
 
-void uvtron_update(void)
-{
-	uint8 p;
-	static uint32 t=0;
-	static uint8 count=0, last_count=0;
-	static uint32 pulse;
-	p=new_pulse(UV_PULSE_CHANNEL);
-	if(p & HIGH_PULSE)
-	{
-		pulse = get_last_high_pulse(UV_PULSE_CHANNEL);
-		//pulse=pulse_to_microseconds(pulse);
-		count++;
-		//DBG_printf(1,(_b,"%d\r\n\n",count));
-		//pulse=pulse/100;
-		//s.inputs.p1 = pulse;
-	}
-	if(get_ms() - t >= 1000)
-	{
-		t=get_ms();
-		//usb_printf("%d counts per second\r\n\n",count-last_count);
-		//s.inputs.p1 = count-last_count;
-		last_count = count;
-	}
-}
-
 
 //#define STATE_HAS_CHANGED ( last_state != state ? 1 : 0)
 #define TIMEOUT(t) (delta_t > t ? t_last=t_now : 0)
@@ -286,4 +287,5 @@ uint8 find_flame_fsm(uint8 cmd)
 	}
 	return state;			
 }
+#endif
 

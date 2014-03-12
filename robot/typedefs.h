@@ -30,8 +30,20 @@ typedef float f32;
 typedef float flt;
 
 
+#define LIMIT(var,min,max)					if((var)>(max)) (var)=(max);  if((var)<(min)) (var)=(min)
 
-#define FSM_INIT_EVENT 0xffffffffUL
-#define FSM_NULL_EVENT 0x00000000UL
+#define LIMIT2(var,min,max,flag)	\
+if( (var)>(max) ) \
+{ \
+	(var)=(max); \
+	flag=2; \
+} \
+else if( (var)<(min) ) \
+{ \
+	(var)=(min); \
+	flag=1; \
+} \
+else flag=0;
+
 
 #endif //TYPEDEFS_H_

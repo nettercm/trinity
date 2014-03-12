@@ -98,7 +98,14 @@ char serial_receive_blocking(unsigned char port, char *buffer, unsigned char siz
 void serial_receive_ring(unsigned char port, char *buffer, unsigned char size) { NOT_IMPLEMENTED(); }
 unsigned char serial_get_received_bytes(unsigned char port) { NOT_IMPLEMENTED();  return 0; }
 char serial_receive_buffer_full(unsigned char port) { NOT_IMPLEMENTED(); return 0; }
-void serial_send(unsigned char port, char *buffer, unsigned char size) { NOT_IMPLEMENTED(); }
+void serial_send(unsigned char port, char *buffer, unsigned char size) 
+{ 
+	int i;
+	//NOT_IMPLEMENTED(); 
+	printf("Port %1d: ",port);
+	for(i=0;i<size;i++)	printf("%02X,",(unsigned char)(buffer[i]));
+	printf("\n");
+}
 void serial_send_blocking(unsigned char port, char *buffer, unsigned char size) { NOT_IMPLEMENTED(); }
 unsigned char serial_get_sent_bytes(unsigned char port) { NOT_IMPLEMENTED(); }
 char serial_send_buffer_empty(unsigned char port) { NOT_IMPLEMENTED(); return 1; }

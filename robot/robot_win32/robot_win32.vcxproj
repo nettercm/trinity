@@ -92,6 +92,7 @@
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\behaviors.h" />
     <ClInclude Include="..\cocoos.h" />
     <ClInclude Include="..\cocoos\cocoos.h" />
     <ClInclude Include="..\cocoos\os_applAPI.h" />
@@ -116,6 +117,7 @@
     <ClInclude Include="..\pid.h" />
     <ClInclude Include="..\serial.h" />
     <ClInclude Include="..\sharpir.h" />
+    <ClInclude Include="..\sim.h" />
     <ClInclude Include="..\sonar.h" />
     <ClInclude Include="..\standard_includes.h" />
     <ClInclude Include="..\typedefs.h" />
@@ -123,6 +125,9 @@
     <ClInclude Include="..\wall_follow.h" />
     <ClInclude Include="port\avr\interrupt.h" />
     <ClInclude Include="port\avr\io.h" />
+    <ClCompile Include="..\commands.c" />
+    <ClCompile Include="..\fsm.c" />
+    <ClCompile Include="..\sim.c" />
     <ClCompile Include="port\pololu\orangutan.c">
       <FileType>CppHeader</FileType>
     </ClCompile>

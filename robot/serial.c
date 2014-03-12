@@ -39,6 +39,14 @@ Evt_t serial_cmd_evt;
 #endif
 
 
+
+void serial_test(void)
+{
+	//serial_test_1();
+	//serial_test_2();
+}
+
+
 void serial_hardware_init(void)
 {
 	_serial_set_baud_rate(UART_PC, 115200);
@@ -58,69 +66,41 @@ void serial_hardware_init(void)
 
 
 
-#if 0
-
-
-void serial_test_2(void)
+void serial_send_fsm(void)
 {
-	serial_receive_fsm(FSM_INIT_EVENT);
-	while(1)
-	{
-		serial_receive_fsm(FSM_NULL_EVENT);
-	}
-}
+	//static uint8 state=0;
+	//static uint32 t_last=0, t_now=0;
+	static uint8 seq=0;
+	static uint8 interval_cfg_idx;
+	uint8 serial_send_interval;
+	u08 i;
 
-void serial_test_1(void)
-{
-	uint8 i;
-	uint32 received=0,r2=0,r1=0,r=0,sent=0,s=0;
-	uint32 t1,t2;
-
-	clear();
-	lcd_goto_xy(0,0); 
-	printf("Serial Test");
-	_serial_send_blocking(UART_PC, "test1\r\n", 6);
+	task_open();
 	
-	for(i=0;i<=127;i++) tx_buffer[i]=i;
-	_serial_send_blocking(UART_PC, "test2\r\n", 6);
+	interval_cfg_idx	= cfg_get_index_by_grp_and_id(1,1);
 
-	t1=t2=get_ms();
-	s=0;
-	
-	_serial_receive_ring(UART_PC,rx_buffer,128);
 	
 	while(1)
 	{
-		r1=_serial_get_received_bytes(UART_PC);
-		if( r1 != r2)
-		{
-			if(r1>r2) received+=(r1-r2);
-			if(r1<r2) received+=r1+(128-r2);
-			r2=r1;
-		}
-		
-		if( (get_ms()-t2 >= 20) && _serial_send_buffer_empty(UART_PC) )
-		{
-			t2=get_ms();
-			_serial_send(UART_PC,tx_buffer,128);
-			sent+=128;
-		}
-		if(get_ms()-t1>=1000)
-		{
-			t1=get_ms();
-			lcd_goto_xy(0,1); printf("%4ld %4ld",sent-s,received-r);
-			s=sent;
-			r=received;
-		}
+		serial_send_interval = cfg_get_u08_by_index(interval_cfg_idx);
+		task_wait(serial_send_interval);
+		tx_buffer.seq = seq; seq++; //=get_ms();
+		//tx_buffer.ack = 0;
+		tx_buffer.magic1[0] = 0xab;
+		tx_buffer.magic1[1] = 0xcd;
+		tx_buffer.magic2[0] = 0xdc;
+		tx_buffer.magic2[1] = 0xba;
+		tx_buffer.payload[0] = sizeof(t_inputs);
+		tx_buffer.payload[1] = 1;
+		memcpy(&(tx_buffer.payload[2]),&s.inputs,sizeof(t_inputs));
+		//for(i=0;i<sizeof(tx_buffer.payload);i++)tx_buffer.payload[i]=i;
+		_serial_send(UART_PC,(char*)&tx_buffer,sizeof(t_frame_to_pc)); //seems to work
 	}
+	
+	task_close();
 }
-#endif
 
-void serial_test(void)
-{
-	//serial_test_1();
-	//serial_test_2();
-}
+
 
 
 
@@ -205,9 +185,7 @@ uint8 serial_process_byte(uint8 byte)
 
 
 
-
-
-void commands_receive_fsm(void)
+void serial_receive_fsm(void)
 {
 	static uint8 state=0;
 	static uint32 count=0;
@@ -252,6 +230,69 @@ void commands_receive_fsm(void)
 }
 
 
+
+#if 0
+
+void serial_test_2(void)
+{
+	serial_receive_fsm(FSM_INIT_EVENT);
+	while(1)
+	{
+		serial_receive_fsm(FSM_NULL_EVENT);
+	}
+}
+
+void serial_test_1(void)
+{
+	uint8 i;
+	uint32 received=0,r2=0,r1=0,r=0,sent=0,s=0;
+	uint32 t1,t2;
+
+	clear();
+	lcd_goto_xy(0,0); 
+	printf("Serial Test");
+	_serial_send_blocking(UART_PC, "test1\r\n", 6);
+	
+	for(i=0;i<=127;i++) tx_buffer[i]=i;
+	_serial_send_blocking(UART_PC, "test2\r\n", 6);
+
+	t1=t2=get_ms();
+	s=0;
+	
+	_serial_receive_ring(UART_PC,rx_buffer,128);
+	
+	while(1)
+	{
+		r1=_serial_get_received_bytes(UART_PC);
+		if( r1 != r2)
+		{
+			if(r1>r2) received+=(r1-r2);
+			if(r1<r2) received+=r1+(128-r2);
+			r2=r1;
+		}
+		
+		if( (get_ms()-t2 >= 20) && _serial_send_buffer_empty(UART_PC) )
+		{
+			t2=get_ms();
+			_serial_send(UART_PC,tx_buffer,128);
+			sent+=128;
+		}
+		if(get_ms()-t1>=1000)
+		{
+			t1=get_ms();
+			lcd_goto_xy(0,1); printf("%4ld %4ld",sent-s,received-r);
+			s=sent;
+			r=received;
+		}
+	}
+}
+#endif
+
+
+
+
+
+#if 0
 
 void commands_receive_fsm_(void)
 {
@@ -317,6 +358,8 @@ void commands_receive_fsm_(void)
 	
 	task_close();
 }
+#endif
+
 
 //0 means use the new version
 #if 0
@@ -466,37 +509,3 @@ uint8 serial_receive_fsm(uint32 event)
 #endif
 
 #endif
-
-void serial_send_fsm(void)
-{
-	//static uint8 state=0;
-	//static uint32 t_last=0, t_now=0;
-	static uint8 seq=0;
-	static uint8 interval_cfg_idx;
-	uint8 serial_send_interval;
-	u08 i;
-
-	task_open();
-	
-	interval_cfg_idx	= cfg_get_index_by_grp_and_id(1,1);
-
-	
-	while(1)
-	{
-		serial_send_interval = cfg_get_u08_by_index(interval_cfg_idx);
-		task_wait(serial_send_interval);
-		tx_buffer.seq = seq; seq++; //=get_ms();
-		//tx_buffer.ack = 0;
-		tx_buffer.magic1[0] = 0xab;
-		tx_buffer.magic1[1] = 0xcd;
-		tx_buffer.magic2[0] = 0xdc;
-		tx_buffer.magic2[1] = 0xba;
-		tx_buffer.payload[0] = sizeof(t_inputs);
-		tx_buffer.payload[1] = 1;
-		memcpy(&(tx_buffer.payload[2]),&s.inputs,sizeof(t_inputs));
-		//for(i=0;i<sizeof(tx_buffer.payload);i++)tx_buffer.payload[i]=i;
-		_serial_send(UART_PC,(char*)&tx_buffer,sizeof(t_frame_to_pc)); //seems to work
-	}
-	
-	task_close();
-}

@@ -21,6 +21,7 @@
 
 
 t_frame_to_pc *rx_buffer;
+t_frame_to_pc dummy_frame;
 t_inputs inputs;
 t_outputs outputs;
 char *serial_port=NULL;
@@ -57,6 +58,7 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 			result = -1;
 		}
 	}
+	else rx_buffer = &dummy_frame;
 	return result;
 }
 
@@ -91,35 +93,19 @@ void display_inputs_and_state(t_inputs *inputs)
 	t_last=t_now;
 	t_delta_avg = (t_delta_avg*19.0f + t_delta)/20.0f;
 
-	sprintf(s.msg, "%03u, %03u, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,    FSM,%1d,%1d,%1d,%1d,%1d,%1d,%1d,%1d  E,%4d,%4d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",				
+	//sprintf(s.msg, "%03u, %03u, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,    FSM,%1d,%1d,%1d,%1d,%1d,%1d,%1d,%1d  E,%4d,%4d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",				
+	sprintf(s.msg, "%03u, %03u, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,     E,%4d,%4d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",				
 				rx_buffer->seq,
 				rx_buffer->ack,
 				t_delta, t_delta_avg,
 				inputs->vbatt/1000.0f,
 				inputs->flags,
-				//size,
-				//inputs->analog[3], inputs->analog[1], inputs->analog[0], inputs->analog[2], inputs->analog[4], 
+
 				inputs->analog[0], inputs->analog[1], inputs->analog[2], inputs->analog[3], inputs->analog[4], inputs->analog[5], inputs->analog[6], inputs->analog[7], 
-				//s.ir_SW_state.raw_history_avg,
-				//s.ir_NW_state.raw_history_avg,
-				//s.ir_NN_state.real_value,
-				//s.ir_NE_state.raw_history_avg,
-				//s.ir_SE_state.raw_history_avg,
 
-				//inputs->analog[5],
+				//inputs->fsm_states[0],inputs->fsm_states[1],inputs->fsm_states[2],inputs->fsm_states[3],
+				//inputs->fsm_states[4],inputs->fsm_states[5],inputs->fsm_states[6],inputs->fsm_states[7],
 
-				//s.ir_SW_state.real_history_avg,
-				//s.ir_NN_state.real_history_avg,
-				//s.ir_NW_state.real_history_avg,
-				//s.ir_NE_state.real_history_avg,
-				//s.ir_SE_state.real_history_avg,
-				//inputs->compass_calibrated,
-				//lookup(lookup_table_compass,inputs->compass_calibrated),
-				//inputs->p1,
-				//inputs->p2,
-				inputs->fsm_states[0],inputs->fsm_states[1],inputs->fsm_states[2],inputs->fsm_states[3],
-				inputs->fsm_states[4],inputs->fsm_states[5],inputs->fsm_states[6],inputs->fsm_states[7],
-				//
 				inputs->encoders[0], inputs->encoders[1], 
 				odo_x, odo_y, (odo_theta/(2*PI))*360.0f,
 				inputs->x, inputs->y, (inputs->theta/(2*PI))*360.0f,
@@ -148,7 +134,8 @@ int loop(void) //return 0 if we did not actually go throught the loop
 	//wait for an incoming t_inputs message; data in buffer; inputs points to t_inputs payload 
 	result = serial_receive(s.p,buffer);
 
-	if(result == 1)
+	//if(result == 1)
+	if(1)
 	{
 		//ir_sensor_update(&s.ir_NN_state,inputs->analog[3]);
 
@@ -167,9 +154,10 @@ int loop(void) //return 0 if we did not actually go throught the loop
 		odo_last_l = inputs.encoders[0];
 		odo_last_r = inputs.encoders[1];
 
-		display_inputs_and_state(s.inputs);
-
-		detect_packet_loss();
+		//display_inputs_and_state(s.inputs);
+		
+		//display_inputs_and_state(&inputs);
+		//detect_packet_loss();
 
 		inputs_history[history_index] = inputs;
 		history_index++;

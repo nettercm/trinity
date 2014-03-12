@@ -1,0 +1,87 @@
+
+#include "standard_includes.h"
+
+
+void commands_process(void)
+{
+	uint8 *c; //index into the data/payload 
+	uint8 cmd;
+	t_config_value *v;
+	t_motor_command *motor_cmd;
+	t_set_motors_cmd *set_motors_cmd;
+		
+	c = &(s.commands.d[0]);
+	
+	while( (cmd = *c) != 0 )  //0 means no more commands
+	{
+		c++;
+		switch(cmd)
+		{
+			case CMD_SET_MOTORS:
+				s.lm_target = s.lm_actual = ((t_set_motors_cmd*)c)->lm;
+				s.rm_target = s.rm_actual = ((t_set_motors_cmd*)c)->rm;
+				//don't actually update the motors just yet - let the motor command fsm do that
+				//set_motors( s.lm_target , s.rm_target );
+				c+=sizeof(t_set_motors_cmd);
+			break;
+
+
+			case CMD_MOTOR_COMMAND:
+				motor_cmd = (t_motor_command*)c;
+				motor_command(motor_cmd->cmd, motor_cmd->p1, motor_cmd->p2, motor_cmd->lm, motor_cmd->rm);
+				c+=sizeof(t_motor_command);
+			break;
+
+
+			case CMD_RESET_ENCODERS:
+				encoders_reset();
+			break;
+			
+
+			case CMD_SET_BEHAVIOR_STATE:
+				play_note(A(4), 50, 10);			
+				s.behavior_state[ c[0] ] = c[1];
+				usb_printf("CMD_SET_BEHAVIOR_STATE %02x %02x\r\n",c[0],c[1]);
+				if((c[0]==1) && (c[1]==1)) ultrasonic_set_sequence(us_sequence_W_priority); else ultrasonic_set_sequence(us_sequence_uniform);
+				c+=2;
+			break;
+			
+
+			case CMD_SET_SONAR_SEQUENCE:
+			break;
+			
+
+			case CMD_SET_SONAR_TIMEOUT:
+				ultrasonic_set_timeout(c[0]);
+			break;
+
+
+			case CMD_SET_CONFIG_VALUE:
+				v = (t_config_value *)&(c[2]);
+				usb_printf("config %d,%d = %d\r\n",c[0],c[1],v->s16);
+				cfg_set_value_by_grp_id(c[0], c[1], *v);
+				c+=6;
+			break;
+			
+
+			default:
+			break;
+		}
+		
+	}
+	
+}
+
+
+void commands_process_fsm(void)
+{
+	task_open();
+	
+	while(1)
+	{
+		event_wait(serial_cmd_evt);
+		commands_process();
+	}
+	
+	task_close();
+}

@@ -7,9 +7,9 @@
 #include <stdlib.h>
 
 #include "typedefs.h"
+
 #include "cocoos/cocoos.h"
 #include "globals.h"
-
 #include "hardware.h"
 #include "i2c.h"
 #include "pid.h"
@@ -18,29 +18,12 @@
 #include "serial.h"
 #include "compass.h"
 #include "sonar.h"
-
 #include "wall_follow.h"
 #include "motor.h"
 #include "flame.h"
-
 #include "../pc/commands.h"
-
 #include "config.h"
+#include "fsm.h"
 
-#define LIMIT(var,min,max)					if((var)>(max)) (var)=(max);  if((var)<(min)) (var)=(min)
-
-#define LIMIT2(var,min,max,flag)	\
-if( (var)>(max) ) \
-{ \
-	(var)=(max); \
-	flag=2; \
-} \
-else if( (var)<(min) ) \
-{ \
-	(var)=(min); \
-	flag=1; \
-} \
-else flag=0;
-	
 #include "debug.h" //should always be the last one
-
+#include "sim.h"  //well, actually this should be the last one in case we need to override some functions when running in simulation mode

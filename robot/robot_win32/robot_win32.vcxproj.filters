@@ -144,6 +144,12 @@
     <ClInclude Include="port\pololu\orangutan.h">
       <Filter>port\pololu</Filter>
     </ClInclude>
+    <ClInclude Include="..\behaviors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\sim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="win32_main.c">
@@ -223,6 +229,15 @@
     </ClCompile>
     <ClCompile Include="port\pololu\orangutan.c">
       <Filter>port\pololu</Filter>
+    </ClCompile>
+    <ClCompile Include="..\commands.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\fsm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\sim.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

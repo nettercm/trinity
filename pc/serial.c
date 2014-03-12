@@ -28,6 +28,16 @@ int serial_write(HANDLE p,char *message,DWORD size)
 	BOOL result;
 	DWORD written=0;
 
+	if(1)
+	{
+		int i;
+		for(i=0;i<size;i++)
+		{
+			printf("%02X,",(unsigned char)message[i]);
+		}
+		printf("00\n");
+	}
+
 	result = WriteFile(p,message,size,&written,NULL);
 	FlushFileBuffers(p);
 

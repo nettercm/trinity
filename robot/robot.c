@@ -5,6 +5,7 @@
 const unsigned char pulseInPins[] = { IO_US_ECHO_AND_PING_1 , IO_US_ECHO_AND_PING_2 };
 
 extern int svp_demo(void);
+extern void commands_process_fsm(void);
 
 
 /*
@@ -110,74 +111,6 @@ int hardware_init(void)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-#define STATE_HAS_CHANGED ( last_state != state ? (last_state=state) : 0)
-#define ENTER(s) if(STATE_HAS_CHANGED)
-#define enter_(s) ENTER(s)
-#define EXIT(s) _label ## s: if(state!=last_state)
-#define exit_(s) EXIT(s)
-#define FIRST_STATE(s) if(state==s)
-#define first_(s) FIRST_STATE(s)
-#define NEXT_STATE(s) else if(state==s)
-#define next_(s) NEXT_STATE(s)
-#define SWITCH_STATE(cs,ns) state=ns;goto _label ## cs;
-#define switch_(cs,ns) SWITCH_STATE(cs,ns)
-#define LEAVE_STATE(cs) goto _label ## cs;
-#define leave_(cs) LEAVE_STATE(cs)
-
-volatile char _dummy_;
-#define NOP() _dummy_++;
-
-
-
-static void fsm_test_task(void)
-{
-	static char state=1, last_state=-1;
-	
-	task_open();
-	while(1)
-	{
-		first_(1)
-		{
-			ENTER(1)
-			{
-				//dbg("Entering state %d\n",state);
-				NOP();
-			}
-			
-			state = 2;
-			leave_(1);
-			//SWITCH_STATE(1,2);
-			NOP();
-			
-			EXIT(1)
-			{
-				NOP();
-			}
-		}
-		NEXT_STATE(2)
-		{
-			enter_(2)
-			{
-				//dbg("Entering state %d\n",state);
-				NOP();
-			}
-			
-			state = 1;
-			
-			EXIT(2)
-			{
-				NOP();
-			}
-		}
-		NOP();
-		OS_SCHEDULE; //task_wait(1);
-	}
-	task_close();
-}
 
 
 
@@ -366,83 +299,6 @@ typedef struct
 	sint16 rm;
 } t_set_motors_cmd;
 */
-
-void commands_process(void)
-{
-	uint8 *c; //index into the data/payload 
-	uint8 cmd;
-	t_config_value *v;
-	t_motor_command *motor_cmd;
-	t_set_motors_cmd *set_motors_cmd;
-		
-	c = &(s.commands.d[0]);
-	
-	while( (cmd = *c) != 0 )  //0 means no more commands
-	{
-		c++;
-		switch(cmd)
-		{
-			case CMD_SET_MOTORS:
-				s.lm_target = s.lm_actual = ((t_set_motors_cmd*)c)->lm;
-				s.rm_target = s.rm_actual = ((t_set_motors_cmd*)c)->rm;
-				//don't actually update the motors just yet - let the motor command fsm do that
-				//set_motors( s.lm_target , s.rm_target );
-				c+=sizeof(t_set_motors_cmd);
-			break;
-
-			case CMD_MOTOR_COMMAND:
-				motor_cmd = (t_motor_command*)c;
-				motor_command(motor_cmd->cmd, motor_cmd->p1, motor_cmd->p2, motor_cmd->lm, motor_cmd->rm);
-				c+=sizeof(t_motor_command);
-			break;
-
-			case CMD_RESET_ENCODERS:
-				encoders_reset();
-			break;
-			
-			case CMD_SET_BEHAVIOR_STATE:
-				play_note(A(4), 50, 10);			
-				s.behavior_state[ c[0] ] = c[1];
-				usb_printf("CMD_SET_BEHAVIOR_STATE %02x %02x\r\n",c[0],c[1]);
-				if((c[0]==1) && (c[1]==1)) ultrasonic_set_sequence(us_sequence_W_priority); else ultrasonic_set_sequence(us_sequence_uniform);
-				c+=2;
-			break;
-			
-			case CMD_SET_SONAR_SEQUENCE:
-			break;
-			
-			case CMD_SET_SONAR_TIMEOUT:
-				ultrasonic_set_timeout(c[0]);
-			break;
-
-			case CMD_SET_CONFIG_VALUE:
-				v = (t_config_value *)&(c[2]);
-				usb_printf("config %d,%d = %d\r\n",c[0],c[1],v->s16);
-				cfg_set_value_by_grp_id(c[0], c[1], *v);
-				c+=6;
-			break;
-			
-			default:
-			break;
-		}
-		
-	}
-	
-}
-
-
-void commands_process_fsm(void)
-{
-	task_open();
-	
-	while(1)
-	{
-		event_wait(serial_cmd_evt);
-		commands_process();
-	}
-	
-	task_close();
-}
 
 
 
@@ -838,52 +694,8 @@ void unit_test(void)
 #endif	
 }
 
-#if 0
-void encoder_test(void)
-{
-	while(1)
-	{
-		uint32 t1,t2;
-		int i;
-		volatile int l=0,r=0;
-		
-		t1 = get_ticks();
-		for(i=0;i<1000;i++) //takes about 18ms;  library updates encoder data only once per every ms
-		{
-			l = l + svp_get_counts_and_reset_ab();
-			r = r + svp_get_counts_and_reset_cd();
-		}
-		t2 = get_ticks();
-		clear();
-		lcd_goto_xy(0,0); printf("t = %lu",t2-t1);
-		lcd_goto_xy(0,1); printf("l = %d,  r = %d",l,r);
-	}
-}
-#endif
 
-uint8 console_buffer[128];
-void console(void)
-{
-	static uint8 state=0;
-	uint8 b=0;
-	
-	switch(state)
-	{
-		case 0:
-		serial_receive(USB_COMM,console_buffer,127);
-		state++;
-		break;
-		
-		case 1:
-		if( (b=serial_get_received_bytes(USB_COMM)) != 0 ) 
-		{
-			console_buffer[b]=0;
-			usb_printf("%s",console_buffer);
-		}
-		state = 0;
-		break;
-	}
-}
+
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -910,8 +722,7 @@ void _os_tick(void)
 		//Sleep(1);
 		t_last = 0;
 		t_delta = 1;
-		//elapsed_milliseconds += t_delta;
-		delay_ms(1); //this will update elapsed_milliseconds
+		delay_ms(1); //this will update elapsed_milliseconds and issue a Sleep(1) to make sure PC does not get bogged down
 		os_task_tick(0,(unsigned short)t_delta);
 	}
 #endif
@@ -924,6 +735,8 @@ void _os_idle(void)
 }
 
 
+
+#if 0
 void idle(void)
 {
 	u08 i;
@@ -941,69 +754,10 @@ void idle(void)
 	}
 	task_close();
 }
-
-/*
-	uint32 timestamp;
-	uint8 analog[8];		//8
-
-	uint16 sonar[4];		//8
-	uint16 ir[4];			//8
-
-	sint16 encoders[2];		//4
-	sint16 actual_speed[2];	//4
-	sint16 target_speed[2]; //4
-	sint16 motors[2];		//4
-	float x,y,theta;		//12
-	//uint8 din;
-	//uint8 buttons[3];
-	uint16 vbatt;			//2
-	uint16 flags;			//2
-	//uint8  fsm_states[8];	//8
-	sint16 watch[4];		//8
-*/
-
-t_inputs sim_data[] =
-{
-//		t		a0	a1	a2	a3	a4	a5	a6	a7		s0	s1	s2	s3		i0	i1	i2	i3		enc			act. spd.	tgt. spd.	motors		x,y,thta	vb	f	watch
-	{	0,		0,	0,	0,	0,	0,	0,	0,	0,		0,	0,	0,	0,		0,	0,	0,	0,		0,	0,		0,	0,		0,	0,		0,	0,		0,0,0,		0,	0,	0,0,0,0		},
-	{	5,		0,	0,	0,	0,	0,	0,	0,	0,		0,	0,	0,	0,		0,	0,	0,	0,		0,	0,		0,	0,		0,	0,		0,	0,		0,0,0,		0,	0,	0,0,0,0		}
-};
+#endif
 
 
-void sim(void)
-{
-	task_open();
-	
-	while(1)
-	{
-		task_wait(1);
-	}
-	task_close();
-}
 
-
-void debug_fsm(void)
-{
-	uint8 b=0;
-	task_open();
-	
-	usb_printf("debug_fsm()\n");
-	serial_receive(USB_COMM,(char*)console_buffer,127);
-
-	while(1)
-	{
-		serial_check();
-		if( (b=serial_get_received_bytes(USB_COMM)) != 0 )
-		{
-			console_buffer[b]=0;
-			usb_printf("%s",console_buffer);
-			serial_receive(USB_COMM,(char*)console_buffer,127);
-		}
-		OS_SCHEDULE;
-	}
-	
-	task_close();
-}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1038,351 +792,52 @@ activate ( follow right wall )
 */
 
 
-#define is_nth_iteration(counter, n) (counter++ >= (n) ?  counter=0, 1 : 0)
-#define invalid_error_value 9999
-
-void behaviors_fsm(void)
-{
-	enum states { s_none=0, s_disabled=1, s_tracking_wall=2, s_lost_wall=3, s_turning_corner=4, s_turning_sharp_corner=5 };
-	static enum states state=s_disabled;
-	static enum states last_state=s_none;
-	//static u08 state=1, last_state=0;
-	
-	s16 error=0, e1=0, e2=0, correction=0;
-	u08 at_limit_flag=0;
-	static s16 target_speed=0;
-	static u08 which_wall = 0; //left
-	static s16 side=0, front=0;
-	
-	DEFINE_CFG2(u08,interval,			10,1);
-	DEFINE_CFG2(s16,nominal_speed,		10,2);
-	DEFINE_CFG2(s16,target_distance,	10,3);
-	DEFINE_CFG2(s16,max_error,			10,4);
-	DEFINE_CFG2(s16,max_correction,		10,5);
-	DEFINE_CFG2(s16,Kp,					10,6);
-	DEFINE_CFG2(s16,Ki,					10,7);
-	DEFINE_CFG2(s16,Kd,					10,8);
-	DEFINE_CFG2(s16,min_speed,			10,9);
-	DEFINE_CFG2(s16,up_ramp,			10,10);
-	DEFINE_CFG2(s16,down_ramp,			10,11);
-	DEFINE_CFG2(u08,use_corner_logic,	10,12);
-	DEFINE_CFG2(flt,corner_distance,	10,13);
-	DEFINE_CFG2(s16,corner_speed,		10,14);
-	DEFINE_CFG2(s16,integral_limit,		10,15);
-	DEFINE_CFG2(s16,lost_wall_distance,	10,16);
-	DEFINE_CFG2(s16,found_wall_distance,10,17);
-	DEFINE_CFG2(s16,corner_radius,		10,18);
-	DEFINE_CFG2(s16,sharp_corner_radius,10,19);
-	
-	static s16 integral=0;
-	static s16 last_error=invalid_error_value;
-	
-
-	
-	//coder here gets executing every time this "task" runs
-
-
-	//code that comes after this resumes where it left off
-	task_open();
-	
-	PREPARE_CFG2(interval);
-	PREPARE_CFG2(nominal_speed);
-	PREPARE_CFG2(target_distance);
-	PREPARE_CFG2(max_error);
-	PREPARE_CFG2(max_correction);
-	PREPARE_CFG2(Kp);
-	PREPARE_CFG2(Ki);
-	PREPARE_CFG2(Kd);
-	PREPARE_CFG2(min_speed);
-	PREPARE_CFG2(up_ramp);
-	PREPARE_CFG2(down_ramp);
-	PREPARE_CFG2(use_corner_logic);
-	PREPARE_CFG2(corner_distance);
-	PREPARE_CFG2(corner_speed);
-	PREPARE_CFG2(integral_limit);
-	PREPARE_CFG2(lost_wall_distance);
-	PREPARE_CFG2(found_wall_distance);
-	PREPARE_CFG2(corner_radius);
-	PREPARE_CFG2(sharp_corner_radius);
-	
-	while(1)
-	{
-		UPDATE_CFG2(interval);
-		UPDATE_CFG2(nominal_speed);
-		UPDATE_CFG2(target_distance);
-		UPDATE_CFG2(max_error);
-		UPDATE_CFG2(max_correction);
-		UPDATE_CFG2(Kp);
-		UPDATE_CFG2(Ki);
-		UPDATE_CFG2(Kd);
-		UPDATE_CFG2(min_speed);
-		UPDATE_CFG2(up_ramp);
-		UPDATE_CFG2(down_ramp);
-		UPDATE_CFG2(use_corner_logic);
-		UPDATE_CFG2(corner_distance);
-		UPDATE_CFG2(corner_speed);
-		UPDATE_CFG2(integral_limit);
-		UPDATE_CFG2(lost_wall_distance);
-		UPDATE_CFG2(found_wall_distance);
-		UPDATE_CFG2(corner_radius);
-		UPDATE_CFG2(sharp_corner_radius);
-
-		
-		//the following state transition applies to all states
-		if(s.behavior_state[1]==0) state = s_disabled;
-		
-		if(button_is_pressed(TOP_BUTTON))
-		{
-			play_note(A(3), 50, 10);
-			s.behavior_state[1] = 1; 
-			state = s_disabled;
-		}
-		
-		side =  (which_wall == 0 ? s.ir[AI_IR_NW] : s.ir[AI_IR_NE]);
-		front = s.ir[AI_IR_N];
-		
-		/*
-		state 1: behavior disabled - waiting for enable flag to be set
-			entry: stop motor
-			exit:  start moving at minimal speed (1)
-			during:  n/a
-		*/
-		first_(s_disabled)
-		{
-			enter_(s_disabled) { motor_command(2,0,0,0,0); }
-			which_wall = s.behavior_state[2];
-			if(s.behavior_state[1]==1) state = s_tracking_wall;
-			exit_(s_disabled)  { motor_command(8,1000,0,10,10); target_speed = 10; }
-		}
-		
-		
-		/*	
-		state 2: tracking wall - looking for door/intersection 
-			entry: n/a
-			exit: n/a
-			during:  
-				regulate speed & heading to maintain distance (includes turning on inside corners)
-				if distance from wall is > X, then goto state 3
-		*/
-		next_(s_tracking_wall)
-		{
-			enter_(s_tracking_wall) 
-			{ 
-				play_note(C(3), 50, 10);
-				integral = 0;
-				last_error = invalid_error_value;
-			}
-							
-			if( (use_corner_logic) && (side > lost_wall_distance) ) { state = s_lost_wall;  leave_(s_tracking_wall); }
-
-			e1 = side-target_distance;
-			e2 = front -(target_distance+30);
-			
-			//if there is something right in front, slow down; otherwise speed up
-			if( (front < 140)  ||  (abs(e1)>30) ) 
-			{
-				if(target_speed > min_speed) target_speed -= down_ramp;
-			}				
-			else 
-			{
-				//ramp
-				if(target_speed < nominal_speed) target_speed += up_ramp;
-				//if( (abs(error) > 20) && (target_speed > 30) ) target_speed -= 1;
-			}				
-
-			if( (e2<0) && (e2<e1) ) error = e2;
-			else error = e1;
-						
-			LIMIT(error,-max_error,+max_error);
-			
-			if(last_error == invalid_error_value) last_error = error; //initialize the derivative if necessary
-			
-			correction = (Kp*error)/100 + (Ki*integral)/100 + (Kd*(error-last_error))/100;
-			LIMIT2( correction , -((target_speed*max_correction)/100) , +((target_speed*max_correction)/100) , at_limit_flag );
-
-			last_error = error;
-			
-			if(at_limit_flag == 0) //don't wind up the integral if we are already saturating the correction
-			{
-				integral += error;
-				LIMIT(integral,-integral_limit,integral_limit);
-			}
-
-			if(which_wall == 1) correction *= -1; //reverse the motor command if we are tracking the right wall
-			
-			if(correction > 0)
-			{
-				motor_command(8,1000,0,target_speed-correction,target_speed+(correction*0));
-			}
-			else
-			{
-				motor_command(8,1000,0,target_speed-(correction*0),target_speed+correction);
-			}
-
-			exit_(s_tracking_wall) { }
-		}
-		
-		
-		/*
-		state 3: potentially reached door/intersection - need to confirm
-			entry: reset odometry
-			exit: n/a
-			during:
-				slow down
-				go straight
-				if we have traveled more than Y inches, then goto state 4
-				if something is right in front then go to sate 2 ?????
-				if distance from wall is < X, then assume "false alarm" and go back to state 2
-		*/		
-		next_(s_lost_wall)
-		{
-			enter_(s_lost_wall) { s.inputs.x = s.inputs.y = s.inputs.theta = 0;  play_note(E(3), 50, 10); }
-			
-			if(target_speed > corner_speed) target_speed -= down_ramp;
-			if(target_speed < corner_speed) target_speed += up_ramp;
-			motor_command(8,0,0,target_speed,target_speed);
-			if( s.inputs.x >=  corner_distance) state = s_turning_corner;
-			if( side <= found_wall_distance ) state = s_tracking_wall;
-			//if( s.ir[AI_IR_N] <= 50 ) state = 2;
-
-			exit_(s_lost_wall) { }	
-		}
-		
-		
-		/*
-		state 4: turn the corner
-			entry: reset odometry
-			during:
-				if we have turned 90 degrees, then go to state 2
-				if something is right in front then go to sate 2 ?????
-				if distance from wall is < X, then assume it wasn't a corner or not a 90deg corner and goto state 2
-		*/		
-		next_(s_turning_corner)
-		{
-			enter_(s_turning_corner) 
-			{ 
-				play_note(G(3), 50, 10);
-				s.inputs.x = s.inputs.y = s.inputs.theta = 0; 
-			}
-			
-			if(target_speed > corner_speed) target_speed -= down_ramp;
-			if(target_speed < corner_speed) target_speed += up_ramp;
-			if(which_wall==0) motor_command(8,0,0,(target_speed*10)/corner_radius,target_speed);
-			else motor_command(8,0,0,target_speed,(target_speed*10)/corner_radius);
-	
-			if( side <= target_distance ) state = s_tracking_wall;
-			if ( abs((s.inputs.theta/(2*3.1415926535))*360.0) >= 90 ) 
-			{
-				state = s_tracking_wall; //by default, go back to racking the wall, unless....
-				if( side > lost_wall_distance) state = s_turning_sharp_corner;
-			}			
-			//if( s.ir[AI_IR_N] <= 50 ) state = 2;
-			
-			exit_(s_turning_corner) { }
-		}
-
-
-		next_(s_turning_sharp_corner)
-		{
-			enter_(s_turning_sharp_corner)
-			{
-				play_note(C(4), 50, 10);
-				s.inputs.x = s.inputs.y = s.inputs.theta = 0;
-			}
-			if(target_speed > corner_speed) target_speed -= down_ramp;
-			if(target_speed < corner_speed) target_speed += up_ramp;
-			if(which_wall==0) motor_command(8,0,0,(target_speed*10)/sharp_corner_radius,target_speed);
-			else motor_command(8,0,0,target_speed,(target_speed*10)/sharp_corner_radius);
-			
-			if( side <= target_distance ) state = s_tracking_wall;
-			if ( abs((s.inputs.theta/(2*3.1415926535))*360.0) >= 90.0 )
-			{
-				state = s_tracking_wall; //by default, go back to racking the wall, unless....
-				if( side > found_wall_distance) state = s_turning_corner;
-			}
-			//if( s.ir[AI_IR_N] <= 50 ) state = 2;
-			
-		exit_(s_turning_sharp_corner) { }
-	}
-		
-		s.inputs.watch[0]=error;
-		s.inputs.watch[1]=integral;
-		s.inputs.watch[2]=correction;
-		s.inputs.watch[3]=state;
-			
-		task_wait(interval);
-	}
-	
-	task_close();
-}
-
-
 int main(void)
 {
-	uint32 t1,t2,t3;
-	int loops=0;
-	
-	memset(&s,0,sizeof(t_state));
-	s.inputs.vbatt=10000;
-	
-	//odometry_update(5,5);
-	//odometry_update(-100,-100);
-	//unit_test();
-
-	//if(button_is_pressed(TOP_BUTTON)) svp_demo();
-	//if(button_is_pressed(MIDDLE_BUTTON)) servo_test();
-	//if(button_is_pressed(BOTTOM_BUTTON)) compass_main();
-	
-
 	//initialize hardware & pololu libraries
-	//i2c_init();
 	hardware_init();
+	//i2c_init();
 	//clear(); lcd_goto_xy(0,0); printf("V=%d",	read_battery_millivolts_svp());
-	
-	/*
-	t1=get_ticks(); 	usb_printf("0"); 			t2=get_ticks();  	usb_printf("\ntime for usb_printf(1) : %ld us\n", ticks_to_microseconds(t2-t1));
-	t1=get_ticks(); 	usb_printf("01"); 			t2=get_ticks();  	usb_printf("\ntime for usb_printf(2) : %ld us\n", ticks_to_microseconds(t2-t1));
-	t1=get_ticks(); 	usb_printf("0123456789"); 	t2=get_ticks();  	usb_printf("\ntime for usb_printf(10): %ld us\n", ticks_to_microseconds(t2-t1));
-	*/
-	//DBG_printf(1,("DBG_printf()\n"));
-	
 	//delay_ms(100);
+
 
 	//wait_for_start_button();
 	play_note(A(4), 50, 10);
-	
+
+
+	//initialize the configuration parameter module
+	cfg_init();
+
+
+	//initialize misc support libraries
 	LOOKUP_init();
 	SHARPIR_init();
-	PID_init();
-	SHARPIR_init();
-	LOOKUP_initialize_table(line_sensor_table);
-
-	//PID_test();
-
+	//PID_init();  //not actually using the PID module right now
 	//servos_start(demuxPins, sizeof(demuxPins));
 	//set_servo_target(0, 1375);
 
-	cfg_init();
-	cfg_test();
-	
-	//s.inputs.vbatt = 10500;
-	//motor_command(7,0,0,-10,-10);
+
+	//initialize our state
+	memset(&s,0,sizeof(t_state));
+	s.inputs.vbatt=10000;
+	//LOOKUP_initialize_table(line_sensor_table);  //only needed if we need to normalize left & right line sensor for some reason
 
 
+	//initialize the cooperative multitasking subsystem and start all tasks
 	os_init();
 	#if 1
 	serial_cmd_evt = event_create();
-#ifndef SVP_ON_WIN32
+//#ifndef SVP_ON_WIN32
 	task_create( lcd_update_fsm, 1, NULL, 0, 0 );		
 	task_create( analog_update_fsm, 2, NULL, 0, 0 );	
 	task_create( serial_send_fsm, 3, NULL, 0, 0 );		
-	task_create( commands_receive_fsm, 4, NULL, 0, 0);
+	task_create( serial_receive_fsm, 4, NULL, 0, 0);
 	task_create( commands_process_fsm, 5, NULL, 0, 0);
 	task_create( motor_command_fsm, 6, NULL, 0, 0);
 	task_create( ultrasonic_update_fsm, 7, NULL, 0, 0);
-	task_create( debug_fsm, 8, NULL, 0, 0);
-#endif
-	task_create( behaviors_fsm, 9, NULL, 0, 0);
+	//task_create( debug_fsm, 8, NULL, 0, 0); //not used right now
+//#endif
+	task_create( wall_follow_fsm, 9, NULL, 0, 0);
 	//task_create( idle, 10, NULL, 0, 0);
 
 #ifdef SVP_ON_WIN32
@@ -1394,57 +849,8 @@ int main(void)
 	#endif
 	os_start();
 	
-	//won't get here...
+	//won't ever get here...
 		
 	return 0;
 }
 
-
-
-typedef struct 
-{
-	//u08 priority;
-	s16 speed;
-	u08 speed_flag; //1 if the behavior wants to control speed
-	s16 heading;
-	u08 heading_flag; //1 if the behavior wants to control heading
-	u16 persistance;  //>0 means the behavior is executing a ballistic maneuver and needs n cycles or milliseconds
-} t_behavior_output;
-
-/*
-behavior input:
-* enable/disable flag
-* state
-* sensors
-* indication if this behavior won arbitration during the previous update cycle
-
-behavior output:
-* target speed
-* heading
-* duration (for ballistic behaviors / actions)
-* future:  sensor focus (e.g. priority for sonar sensors;  which way to pan the servo-mounted sensors to)
-* future:  sound
-
-behaviors can leave speed or heading "blank"
-the highest priority behavior w/ speed output controls speed
-
-arbitration output:
-* speed
-* heading
-* duration
-* speed winner
-* heading winner
-
-arbitration:
-for priority = 1 (lowest) to #behaviors / highest
-	IF behavior_output[priority].speed_flag == 1  THEN  
-		arbitration_output.speed = behavior_output[priority].speed;
-		arbitration_output.speed_winner = priority;
-	ENDIF
-	IF behavior_output[priority].heading_flag == 1  THEN
-		arbitration_output.heading = behavior_output[priority].heading;
-		arbitration_output.heading_winner = priority;
-	ENDIF
-	
-
-*/

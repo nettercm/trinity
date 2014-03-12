@@ -24,7 +24,7 @@
 #include "globals.h"
 #include "vector.h"
 #include "i2c.h"
-
+#include "fsm.h"
 /* 
  * This program assumes that the LSM303DLM carrier is oriented with X pointing
  * to the right, Y pointing backward, and Z pointing down (toward the ground).

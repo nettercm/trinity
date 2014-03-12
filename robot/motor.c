@@ -73,78 +73,6 @@ void motors_reapply_target_speed()
 }
 
 
-uint8 encoders_update_fsm(uint32 event)
-{
-	static uint8 state=0;
-	static uint32 t_last=0, t_now=0;
-	uint8 result=0;  //return value of 0 means we did not transition state;
-
-	if(event == FSM_INIT_EVENT)
-	{
-		result = 0;
-		t_now  = 0;
-		t_last = get_ms();
-		state  = 1;
-	}
-	else
-	{
-		switch (state)
-		{
-			case 1: //first reading
-			t_now = get_ms();
-			if( (t_now - t_last) < 5) break;
-			t_last = t_now;
-			state = 2;
-			result = state;
-			break;
-
-			case 2: //subsequent reading
-			t_now = get_ms();
-			if( (t_now - t_last) < 5) break;
-			s.inputs.encoders[0] = svp_get_counts_ab();
-			s.inputs.encoders[1] = svp_get_counts_cd();
-			state = 2;
-			result = state;
-			t_last = t_now;
-			break;
-
-			default:
-			break;
-		}
-	}
-	return result;
-}
-
-
-
-#if 0
-void encoders_update(void)
-{
-	uint8 p;
-	static uint32 pulse=0;
-	p=new_pulse(ENC_LEFT_PULSE_CHANNEL);
-	if(p & HIGH_PULSE)
-	{
-		pulse = get_last_high_pulse(ENC_LEFT_PULSE_CHANNEL);
-		pulse=pulse_to_microseconds(pulse);
-		pulse=pulse/100;
-		s.inputs.p1 = (s.inputs.p1 + pulse)/2;
-	}
-	
-	if(p & LOW_PULSE)
-	{
-		pulse = get_last_low_pulse(ENC_LEFT_PULSE_CHANNEL);
-		pulse=pulse_to_microseconds(pulse);
-		pulse=pulse/100;
-		s.inputs.p2 = (s.inputs.p2 + pulse)/2;
-	}
-}
-#endif
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 
 
@@ -158,7 +86,6 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 	
 	t_now = get_ms();
 	
-
 	if(cmd==0) //0 means update
 	{
 		l_enc_delta = svp_get_counts_and_reset_ab();
@@ -171,122 +98,129 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 		switch(s.motor_command_state)
 		{
 			case 0:	//we are not turning or carrying out any specific move/command, so simply re-apply what's consider the current motor speeds i.e. x_actual
-			set_motors(s.rm_actual,s.lm_actual);  //TODO: don't call every time to reduce overhead
-			s.inputs.motors[0] = s.lm_actual;
-			s.inputs.motors[1] = s.rm_actual;
+				set_motors(s.rm_actual,s.lm_actual);  //TODO: don't call every time to reduce overhead
+				s.inputs.motors[0] = s.lm_actual;
+				s.inputs.motors[1] = s.rm_actual;
 			break; //do nothing
 			
+
 			case 1: //currently turning/moving for a specific amount of time; once time is up, re-apply the "target" speed
-			if(t_now >= t_stop) //time to stop?
-			{
-				g_delta_T = t_now-t_stop;
-				s.motor_command_state = 0;
-				//set_motors(0,0);
-				set_motors(s.rm_target,s.lm_target);
-				s.inputs.motors[0] = s.lm_actual = s.lm_target;
-				s.inputs.motors[1] = s.rm_actual = s.rm_target;
-			}
+				if(t_now >= t_stop) //time to stop?
+				{
+					g_delta_T = t_now-t_stop;
+					s.motor_command_state = 0;
+					//set_motors(0,0);
+					set_motors(s.rm_target,s.lm_target);
+					s.inputs.motors[0] = s.lm_actual = s.lm_target;
+					s.inputs.motors[1] = s.rm_actual = s.rm_target;
+				}
 			break;
+
 
 			case 3: //currently turning/moving for a specific amount of time; once time is up, stop immediately
-			if(t_now >= t_stop) //time to stop?
-			{
-				g_delta_T = t_now-t_stop;
-				s.motor_command_state = 0;
-				s.lm_target = s.rm_target = 0;
-				set_motors(s.rm_target,s.lm_target);
-				s.inputs.motors[0] = s.lm_actual = s.lm_target;
-				s.inputs.motors[1] = s.rm_actual = s.rm_target;
-			}
+				if(t_now >= t_stop) //time to stop?
+				{
+					g_delta_T = t_now-t_stop;
+					s.motor_command_state = 0;
+					s.lm_target = s.rm_target = 0;
+					set_motors(s.rm_target,s.lm_target);
+					s.inputs.motors[0] = s.lm_actual = s.lm_target;
+					s.inputs.motors[1] = s.rm_actual = s.rm_target;
+				}
 			break;
+
 
 			case 4:  //turn/move for a specific number of encoder ticks and then stop both motors as soon as one encoder reached the target
-			if( (abs(s.inputs.encoders[0]-l_enc_start) >= l_enc_delta) || (abs(s.inputs.encoders[1]-r_enc_start) >= r_enc_delta) )
-			{
-				s.motor_command_state = 0;
-				s.lm_actual = s.lm_target;
-				s.rm_actual = s.rm_target;
-				set_motors(s.rm_actual,s.lm_actual);
-			}
-			s.inputs.motors[0] = s.lm_actual;
-			s.inputs.motors[1] = s.rm_actual;
+				if( (abs(s.inputs.encoders[0]-l_enc_start) >= l_enc_delta) || (abs(s.inputs.encoders[1]-r_enc_start) >= r_enc_delta) )
+				{
+					s.motor_command_state = 0;
+					s.lm_actual = s.lm_target;
+					s.rm_actual = s.rm_target;
+					set_motors(s.rm_actual,s.lm_actual);
+				}
+				s.inputs.motors[0] = s.lm_actual;
+				s.inputs.motors[1] = s.rm_actual;
 			break;
 
+
 			case 5:  //turn/move for a specific number of encoder ticks and then stop each motor individually
-			if (abs(s.inputs.encoders[0]-l_enc_start) >= l_enc_delta)
-			{
-				s.lm_actual = s.lm_target;
-				set_motors(s.rm_actual,s.lm_actual);
-			}
-			if (abs(s.inputs.encoders[1]-r_enc_start) >= r_enc_delta)
-			{
-				s.rm_actual = s.rm_target;
-				set_motors(s.rm_actual,s.lm_actual);
-			}
-			if( (abs(s.inputs.encoders[0]-l_enc_start) >= l_enc_delta) && (abs(s.inputs.encoders[1]-r_enc_start) >= r_enc_delta) )
-			{
-				s.motor_command_state = 0;
-				s.lm_actual = s.lm_target;
-				s.rm_actual = s.rm_target;
-				set_motors(s.rm_actual,s.lm_actual);
-			}
-			s.inputs.motors[0] = s.lm_actual;
-			s.inputs.motors[1] = s.rm_actual;
+				if (abs(s.inputs.encoders[0]-l_enc_start) >= l_enc_delta)
+				{
+					s.lm_actual = s.lm_target;
+					set_motors(s.rm_actual,s.lm_actual);
+				}
+				if (abs(s.inputs.encoders[1]-r_enc_start) >= r_enc_delta)
+				{
+					s.rm_actual = s.rm_target;
+					set_motors(s.rm_actual,s.lm_actual);
+				}
+				if( (abs(s.inputs.encoders[0]-l_enc_start) >= l_enc_delta) && (abs(s.inputs.encoders[1]-r_enc_start) >= r_enc_delta) )
+				{
+					s.motor_command_state = 0;
+					s.lm_actual = s.lm_target;
+					s.rm_actual = s.rm_target;
+					set_motors(s.rm_actual,s.lm_actual);
+				}
+				s.inputs.motors[0] = s.lm_actual;
+				s.inputs.motors[1] = s.rm_actual;
 			break;
 			
+
 			case 6:  //regulate speed - use l/r motor speed as target
-			#if 1
-			if(l_enc_delta > s.lm_target+0) s.lm_actual--;
-			if(l_enc_delta < s.lm_target-0) s.lm_actual++;
-			if(r_enc_delta > s.rm_target+0) s.rm_actual--;
-			if(r_enc_delta < s.rm_target-0) s.rm_actual++;
-			#else
-			s.lm_actual += s.lm_target - l_enc_delta;
-			s.rm_actual += s.rm_target - r_enc_delta;
-			#endif
-			s.inputs.motors[0] = s.lm_actual;
-			s.inputs.motors[1] = s.rm_actual;
-			set_motors(s.rm_actual,s.lm_actual);
+				#if 1
+				if(l_enc_delta > s.lm_target+0) s.lm_actual--;
+				if(l_enc_delta < s.lm_target-0) s.lm_actual++;
+				if(r_enc_delta > s.rm_target+0) s.rm_actual--;
+				if(r_enc_delta < s.rm_target-0) s.rm_actual++;
+				#else
+				s.lm_actual += s.lm_target - l_enc_delta;
+				s.rm_actual += s.rm_target - r_enc_delta;
+				#endif
+				s.inputs.motors[0] = s.lm_actual;
+				s.inputs.motors[1] = s.rm_actual;
+				set_motors(s.rm_actual,s.lm_actual);
 			break;
 			
+
 			case 7:
-			if(l_enc_delta > s.lm_target+0) s.lm_actual--;
-			if(l_enc_delta < s.lm_target-0) s.lm_actual++;
-			if(r_enc_delta > s.rm_target+0) s.rm_actual--;
-			if(r_enc_delta < s.rm_target-0) s.rm_actual++;
-			LIMIT(s.lm_actual,-255,+255);
-			LIMIT(s.rm_actual,-255,+255);
-			s.inputs.motors[0] = s.lm_actual;
-			s.inputs.motors[1] = s.rm_actual;
-			set_motors(s.rm_actual,s.lm_actual);
+				if(l_enc_delta > s.lm_target+0) s.lm_actual--;
+				if(l_enc_delta < s.lm_target-0) s.lm_actual++;
+				if(r_enc_delta > s.rm_target+0) s.rm_actual--;
+				if(r_enc_delta < s.rm_target-0) s.rm_actual++;
+				LIMIT(s.lm_actual,-255,+255);
+				LIMIT(s.rm_actual,-255,+255);
+				s.inputs.motors[0] = s.lm_actual;
+				s.inputs.motors[1] = s.rm_actual;
+				set_motors(s.rm_actual,s.lm_actual);
 			break;
 			
 
 			case 8: //same as 7, just don't regulate
-			LIMIT(s.lm_actual,-255,+255);
-			LIMIT(s.rm_actual,-255,+255);
-			s.inputs.motors[0] = s.lm_actual;
-			s.inputs.motors[1] = s.rm_actual;
-			set_motors(s.rm_actual,s.lm_actual);
+				LIMIT(s.lm_actual,-255,+255);
+				LIMIT(s.rm_actual,-255,+255);
+				s.inputs.motors[0] = s.lm_actual;
+				s.inputs.motors[1] = s.rm_actual;
+				set_motors(s.rm_actual,s.lm_actual);
 			break;
 
 
 			case 10:  //regulate the difference in l/r speed
-			if( (l_enc_delta - r_enc_delta) > l_enc_start) { s.lm_actual--; s.rm_actual++; }
-			if( (l_enc_delta - r_enc_delta) < l_enc_start) { s.lm_actual++; s.rm_actual--; }
-			s.inputs.motors[0] = s.lm_actual;
-			s.inputs.motors[1] = s.rm_actual;
-			set_motors(s.rm_actual,s.lm_actual);
+				if( (l_enc_delta - r_enc_delta) > l_enc_start) { s.lm_actual--; s.rm_actual++; }
+				if( (l_enc_delta - r_enc_delta) < l_enc_start) { s.lm_actual++; s.rm_actual--; }
+				s.inputs.motors[0] = s.lm_actual;
+				s.inputs.motors[1] = s.rm_actual;
+				set_motors(s.rm_actual,s.lm_actual);
 			break;
 			
+
 			case 11:  //regulate the difference in l/r speed
-			s.lm_actual = s.lm_target;
-			s.rm_actual = s.rm_target;
-			if( s.inputs.encoders[0] - s.inputs.encoders[1] > 1) { s.lm_actual = (9*s.lm_target)/10; }
-			if( s.inputs.encoders[0] - s.inputs.encoders[1] < -1) { s.rm_actual = (9*s.rm_target)/10; }
-			s.inputs.motors[0] = s.lm_actual;
-			s.inputs.motors[1] = s.rm_actual;
-			set_motors(s.rm_actual,s.lm_actual);
+				s.lm_actual = s.lm_target;
+				s.rm_actual = s.rm_target;
+				if( s.inputs.encoders[0] - s.inputs.encoders[1] > 1) { s.lm_actual = (9*s.lm_target)/10; }
+				if( s.inputs.encoders[0] - s.inputs.encoders[1] < -1) { s.rm_actual = (9*s.rm_target)/10; }
+				s.inputs.motors[0] = s.lm_actual;
+				s.inputs.motors[1] = s.rm_actual;
+				set_motors(s.rm_actual,s.lm_actual);
 			break;
 		}
 	}
@@ -302,6 +236,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			t_stop = t_now + (unsigned long)p1;
 		}
 
+
 		if(cmd==2) //stop any currently running motor command and immediately apply the new target speed
 		{
 			s.motor_command_state = 0;
@@ -312,6 +247,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			s.rm_target = s.rm_actual = rm_speed;
 		}
 
+
 		if(cmd==3) //turn/move for a specific amount of time at the a specific speed; when done, stop
 		{
 			//start
@@ -321,6 +257,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			s.inputs.motors[1] = s.rm_actual = rm_speed;
 			t_stop = t_now + (unsigned long)p1;
 		}
+
 
 		if(cmd==4) //turn/move for a specific number of encoder ticks and then stop each motor individual
 		{
@@ -335,6 +272,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			r_enc_start = s.inputs.encoders[1]; // = svp_get_counts_cd();;
 		}
 		
+
 		if(cmd==5) //turn/move for a specific number of encoder ticks and then go back to target speed
 		{
 			//start
@@ -348,6 +286,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			r_enc_start = s.inputs.encoders[1]; // = svp_get_counts_cd();;
 		}
 		
+
 		if(cmd==6) //regulate speed
 		{
 			//start
@@ -366,6 +305,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			t_last=t_now;
 		}
 		
+
 		if(cmd==7) //regulate speed
 		{
 			//limit target speed to +/- 120
@@ -395,6 +335,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			t_last=t_now;
 		}
 		
+
 		if(cmd==8) //don't regulate speed
 		{
 			//limit target speed to +/- 120
@@ -416,6 +357,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			t_last=t_now;
 		}
 
+
 		if(cmd==10) //regulate the difference in l/r speed
 		{
 			//start
@@ -427,6 +369,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			t_last=t_now;
 		}
 		
+
 		if(cmd==11) //regulate the difference in l/r speed
 		{
 			//start
@@ -492,3 +435,113 @@ void motors_set(sint16 lm_speed, sint16 rm_speed)
 {
 	motor_command(2,0,0,lm_speed,rm_speed);
 }
+
+
+
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#if 0
+uint8 encoders_update_fsm(uint32 event)
+{
+	static uint8 state=0;
+	static uint32 t_last=0, t_now=0;
+	uint8 result=0;  //return value of 0 means we did not transition state;
+
+	if(event == FSM_INIT_EVENT)
+	{
+		result = 0;
+		t_now  = 0;
+		t_last = get_ms();
+		state  = 1;
+	}
+	else
+	{
+		switch (state)
+		{
+			case 1: //first reading
+			t_now = get_ms();
+			if( (t_now - t_last) < 5) break;
+			t_last = t_now;
+			state = 2;
+			result = state;
+			break;
+
+			case 2: //subsequent reading
+			t_now = get_ms();
+			if( (t_now - t_last) < 5) break;
+			s.inputs.encoders[0] = svp_get_counts_ab();
+			s.inputs.encoders[1] = svp_get_counts_cd();
+			state = 2;
+			result = state;
+			t_last = t_now;
+			break;
+
+			default:
+			break;
+		}
+	}
+	return result;
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#if 0
+void encoders_update(void)
+{
+	uint8 p;
+	static uint32 pulse=0;
+	p=new_pulse(ENC_LEFT_PULSE_CHANNEL);
+	if(p & HIGH_PULSE)
+	{
+		pulse = get_last_high_pulse(ENC_LEFT_PULSE_CHANNEL);
+		pulse=pulse_to_microseconds(pulse);
+		pulse=pulse/100;
+		s.inputs.p1 = (s.inputs.p1 + pulse)/2;
+	}
+	
+	if(p & LOW_PULSE)
+	{
+		pulse = get_last_low_pulse(ENC_LEFT_PULSE_CHANNEL);
+		pulse=pulse_to_microseconds(pulse);
+		pulse=pulse/100;
+		s.inputs.p2 = (s.inputs.p2 + pulse)/2;
+	}
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#if 0
+void encoder_test(void)
+{
+	while(1)
+	{
+		uint32 t1,t2;
+		int i;
+		volatile int l=0,r=0;
+		
+		t1 = get_ticks();
+		for(i=0;i<1000;i++) //takes about 18ms;  library updates encoder data only once per every ms
+		{
+			l = l + svp_get_counts_and_reset_ab();
+			r = r + svp_get_counts_and_reset_cd();
+		}
+		t2 = get_ticks();
+		clear();
+		lcd_goto_xy(0,0); printf("t = %lu",t2-t1);
+		lcd_goto_xy(0,1); printf("l = %d,  r = %d",l,r);
+	}
+}
+#endif
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
