@@ -26,7 +26,6 @@ uint32 t_last_output_update = 0;
 //execution times for various functions
 volatile uint32 t_inputs_fsm = 0,  t_lcd_fsm = 0,  t_loop = 0;
 
-volatile unsigned long elapsed_milliseconds=0;
 
 
 t_LOOKUP_table line_sensor_table[] = // R,L  I.E. Left senser reads a smaller value
@@ -240,33 +239,33 @@ void lcd_update_fsm(void) //(uint32 event)
 		if(s.lcd_screen==0)
 		{
 			lcd_goto_xy(0,0);
-			printf("L=%3d,%3d", s.inputs.analog[AI_LINE_RIGHT],s.inputs.analog[AI_LINE_LEFT]); 
+			lcd_printf("L=%3d,%3d", s.inputs.analog[AI_LINE_RIGHT],s.inputs.analog[AI_LINE_LEFT]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 	
-			printf("Fl=%03d %03d", s.inputs.analog[AI_FLAME_NE],s.inputs.analog[AI_FLAME_N]); 
+			lcd_printf("Fl=%03d %03d", s.inputs.analog[AI_FLAME_NE],s.inputs.analog[AI_FLAME_N]); 
 		}
 		else if(s.lcd_screen==1)
 		{
 			lcd_goto_xy(0,0); 
-			printf("US:  %4d %4d",  s.inputs.sonar[0],s.inputs.sonar[1]); 
+			lcd_printf("US:  %4d %4d",  s.inputs.sonar[0],s.inputs.sonar[1]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 
-			printf("AVG: %4d %4d",  s.us_avg[0], s.us_avg[1]);
+			lcd_printf("AVG: %4d %4d",  s.us_avg[0], s.us_avg[1]);
 		}
 		else if(s.lcd_screen==2)
 		{
 			lcd_goto_xy(0,0); 
-			printf("i%03d %03d %03d %03d",s.ir[AI_IR_NE], s.ir[AI_IR_N_long], s.ir[AI_IR_N], s.ir[AI_IR_NW]); 
+			lcd_printf("i%03d %03d %03d %03d",s.ir[AI_IR_NE], s.ir[AI_IR_N_long], s.ir[AI_IR_N], s.ir[AI_IR_NW]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 
-			printf("u%03d %03d %03d",  us_nw, us_n, us_ne); 
+			lcd_printf("u%03d %03d %03d",  us_nw, us_n, us_ne); 
 		}
 		else if(s.lcd_screen==3)
 		{
 			lcd_goto_xy(0,0);   task_wait(5);
-			printf("V=%5d",	read_battery_millivolts_svp());     task_wait(5);
+			lcd_printf("V=%5d",	read_battery_millivolts_svp());     task_wait(5);
 			lcd_goto_xy(0,1);   task_wait(5);
-			printf("V=%5d,  %5d",	s.inputs.vbatt, count);     task_wait(5);
+			lcd_printf("V=%5d,  %5d",	s.inputs.vbatt, count);     task_wait(5);
 		}
 	}
 	task_close();
@@ -712,7 +711,7 @@ void _os_tick(void)
 		t_delta=t_now-t_last;
 		t_last=t_now;
 		//os_tick();
-		elapsed_milliseconds+=t_delta;
+		m.elapsed_milliseconds+=t_delta;
 		os_task_tick(0,(unsigned short)t_delta);
 	}
 #else
@@ -850,9 +849,23 @@ activate ( follow right wall )
 
 */
 
+#define move(speed,distance) \
+	odometry_set_checkpoint(); \
+	motor_command(6,0,0,(speed),(speed)); \
+	while ( abs(odometry_get_distance_since_checkpoint()) < (distance) ) { task_wait(10); } \
+	motor_command(6,0,0,0,0)
+
+
+#define turn(speed,angle) \
+	odometry_set_checkpoint(); \
+	motor_command(6,0,0,(speed),-(speed)); \
+	while ( abs(odometry_get_rotation_since_checkpoint()) < angle ) { task_wait(10); } \
+	motor_command(6,0,0,0,0)
+
+
 void master_logic_fsm(void)
 {
-	enum states { s_none=0, s_disabled=1, s_waiting_for_start, s_aligning_south, s_finding_room_3 };
+	enum states { s_none=0, s_disabled=1, s_waiting_for_start, s_aligning_south, s_finding_room_3, s_look_for_flame };
 	static enum states state=s_disabled;
 	static enum states last_state=s_none;
 	
@@ -867,10 +880,10 @@ void master_logic_fsm(void)
 		{
 			enter_(s_disabled) 
 			{  
-				motor_command(2,0,0,0,0);
+				motor_command(6,0,0,0,0);
 				s.behavior_state[1] = 0;
 				s.behavior_state[2] = 0;
-				s.behavior_state[3] = 0;
+				s.behavior_state[3] = 1;
 			}
 
 			if(s.behavior_state[3]==1) state = s_waiting_for_start;
@@ -902,19 +915,15 @@ void master_logic_fsm(void)
 		{
 			enter_(s_aligning_south) 
 			{  
-				odometry_set_checkpoint();		motor_command(7,0,0,20,-20);
+				turn(20,90); //turn 90 degrees right @ speed 20
 			}
 
-			while ( abs(odometry_get_rotation_since_checkpoint()) < 90 ) { task_wait(10); }
-			motor_command(2,0,0,0,0);
 			task_wait(500);
 
-			if(s.ir[AI_IR_N] < 120)
+			if(s.ir[AI_IR_N] < 120)  //something right in front of us?
 			{
-				//we were facing south initiall, now we are facing west; turn back...
-				odometry_set_checkpoint();  motor_command(7,0,0,-20,20);
-				while ( abs(odometry_get_rotation_since_checkpoint()) < 90 ) { task_wait(10); }
-				motor_command(2,0,0,0,0);
+				//if so, then we were facing south initially, now we are facing west; turn back...
+				turn(-20,90); //turn 90 degrees left @ speed 20
 				task_wait(500);
 			}
 			state = s_finding_room_3;
@@ -941,7 +950,7 @@ void master_logic_fsm(void)
 				s.behavior_state[1] = 0;
 				s.behavior_state[2] = 0;
 				s.behavior_state[3] = 0;
-				state = s_disabled;
+				state = s_look_for_flame;
 			}
 
 
@@ -950,6 +959,20 @@ void master_logic_fsm(void)
 			}
 		}
 
+
+		next_(s_look_for_flame)
+		{
+			enter_(s_look_for_flame)
+			{
+				move(20,100); //move 10cm into the room
+			}
+
+
+			exit_(s_look_for_flame)
+			{
+			}
+
+		}
 		task_wait(25);
 	}
 
@@ -992,25 +1015,24 @@ int main(void)
 	os_init();
 	#if 1
 	serial_cmd_evt = event_create();
-//#ifndef SVP_ON_WIN32
-	task_create( lcd_update_fsm, 1, NULL, 0, 0 );		
-	task_create( analog_update_fsm, 2, NULL, 0, 0 );	
-	task_create( serial_send_fsm, 3, NULL, 0, 0 );		
-	task_create( serial_receive_fsm, 4, NULL, 0, 0);
-	task_create( commands_process_fsm, 5, NULL, 0, 0);
-	task_create( motor_command_fsm, 6, NULL, 0, 0);
-	task_create( ultrasonic_update_fsm, 7, NULL, 0, 0);
-	//task_create( debug_fsm, 8, NULL, 0, 0); //not used right now
-//#endif
-	task_create( wall_follow_fsm, 9, NULL, 0, 0);
-	task_create( master_logic_fsm, 10, NULL, 0, 0);
-	task_create( line_detection_fsm, 10, NULL, 0, 0);
 
 #ifdef SVP_ON_WIN32
-	task_create( sim, 255, NULL, 0, 0);
-
-	s.behavior_state[3]=1;
+	task_create( sim,						1,  NULL, 0, 0);
+	//s.behavior_state[3]=1;
 #endif
+
+	task_create( lcd_update_fsm,			2,  NULL, 0, 0 );		
+	task_create( analog_update_fsm,			3,  NULL, 0, 0 );	
+	task_create( serial_send_fsm,			4 , NULL, 0, 0 );		
+	task_create( serial_receive_fsm,		5,  NULL, 0, 0);
+	task_create( commands_process_fsm,		6,  NULL, 0, 0);
+	task_create( motor_command_fsm,			7,  NULL, 0, 0);
+	task_create( ultrasonic_update_fsm,		8,  NULL, 0, 0);
+	//task_create( debug_fsm, 9, NULL, 0, 0); //not used right now
+	task_create( wall_follow_fsm,			10, NULL, 0, 0);
+	task_create( master_logic_fsm,			11, NULL, 0, 0);
+	task_create( line_detection_fsm,		12, NULL, 0, 0);
+
 
 	#else
 	task_create( fsm_test_task, 1, NULL, 0, 0 );

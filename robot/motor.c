@@ -190,23 +190,20 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			break;
 			
 
-			case 6:  //regulate speed - use l/r motor speed as target
-				#if 1
+			case 6:  //regulate speed - use l/r motor speed as target  (same as mode/cmd 7, but different starting conditiosn)
 				if(l_enc_delta > s.lm_target+0) s.lm_actual--;
 				if(l_enc_delta < s.lm_target-0) s.lm_actual++;
 				if(r_enc_delta > s.rm_target+0) s.rm_actual--;
 				if(r_enc_delta < s.rm_target-0) s.rm_actual++;
-				#else
-				s.lm_actual += s.lm_target - l_enc_delta;
-				s.rm_actual += s.rm_target - r_enc_delta;
-				#endif
+				LIMIT(s.lm_actual,-255,+255);
+				LIMIT(s.rm_actual,-255,+255);
 				s.inputs.motors[0] = s.lm_actual;
 				s.inputs.motors[1] = s.rm_actual;
 				set_motors(s.rm_actual,s.lm_actual);
 			break;
 			
 
-			case 7:
+			case 7:  //regulate speed - use l/r motor speed as target
 				if(l_enc_delta > s.lm_target+0) s.lm_actual--;
 				if(l_enc_delta < s.lm_target-0) s.lm_actual++;
 				if(r_enc_delta > s.rm_target+0) s.rm_actual--;
@@ -313,6 +310,9 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 
 		if(cmd==6) //regulate speed
 		{
+			//limit target speed to +/- 120
+			LIMIT(lm_speed,-120,+120);
+			LIMIT(rm_speed,-120,+120);
 			//start
 			if(s.motor_command_state == 6)
 			{
@@ -322,7 +322,8 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			else
 			{
 				s.motor_command_state = 6;
-				set_motors(rm_speed,lm_speed);
+				//don't apply the target speed - let the regulator gradually ramp up/down as required for smooth movements
+				//set_motors(rm_speed,lm_speed);
 				s.inputs.motors[0] = s.lm_actual = s.lm_target = lm_speed;
 				s.inputs.motors[1] = s.rm_actual = s.rm_target = rm_speed;
 			}
@@ -330,7 +331,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 		}
 		
 
-		if(cmd==7) //regulate speed
+		if(cmd==7) //use feed-forward to compensate for battery voltage fluctuations and then regulate speed
 		{
 			//limit target speed to +/- 120
 			LIMIT(lm_speed,-120,+120);
@@ -360,7 +361,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 		}
 		
 
-		if(cmd==8) //don't regulate speed
+		if(cmd==8) //use feed-forward to compensate for battery voltage fluctuations, but don't regulate speed
 		{
 			//limit target speed to +/- 120
 			LIMIT(lm_speed,-120,+120);
@@ -382,7 +383,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 		}
 
 
-		if(cmd==10) //regulate the difference in l/r speed
+		if(cmd==10) //regulate the difference in l/r speed (method 1)
 		{
 			//start
 			s.motor_command_state = 10;
@@ -394,7 +395,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 		}
 		
 
-		if(cmd==11) //regulate the difference in l/r speed
+		if(cmd==11) //regulate the difference in l/r speed (method 2)
 		{
 			//start
 			s.motor_command_state = 11;

@@ -71,7 +71,7 @@ typedef struct
 	uint8 magic1[2]; 			//0xabcd
 	uint8 seq;
 	uint8 ack;					//seq number of the last packet received from the robot
-	uint8 payload[16];
+	uint8 payload[16];			//first 2 bytes of payload reserved for now.
 	uint8 magic2[2]; 			//0xdcba
 }  __attribute__((__packed__)) t_frame_from_pc;
 #ifdef WIN32

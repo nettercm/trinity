@@ -7,7 +7,9 @@
 
 #define inline
 
-extern volatile unsigned long elapsed_milliseconds;
+
+//int on the SVP-1284 / Atmega is 16bits.
+#define int short
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -446,5 +448,7 @@ unsigned char wait_for_button(unsigned char buttons);
 unsigned char button_is_pressed(unsigned char buttons);
 unsigned char get_single_debounced_button_press(unsigned char buttons);
 unsigned char get_single_debounced_button_release(unsigned char buttons);
+
+#undef int
 
 #endif

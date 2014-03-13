@@ -92,6 +92,7 @@ void serial_send_fsm(void)
 		tx_buffer.magic2[1] = 0xba;
 		tx_buffer.payload[0] = sizeof(t_inputs);
 		tx_buffer.payload[1] = 1;
+		s.inputs.timestamp = get_ms();
 		memcpy(&(tx_buffer.payload[2]),&s.inputs,sizeof(t_inputs));
 		//for(i=0;i<sizeof(tx_buffer.payload);i++)tx_buffer.payload[i]=i;
 		_serial_send(UART_PC,(char*)&tx_buffer,sizeof(t_frame_to_pc)); //seems to work

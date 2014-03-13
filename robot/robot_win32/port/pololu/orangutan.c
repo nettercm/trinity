@@ -2,6 +2,14 @@
 #include <stdio.h>
 #include "orangutan.h"
 
+#include "typedefs.h"
+
+#include "sim.h"
+
+
+
+//int on the SVP-1284 / Atmega is 16bits.
+#define int short
 
 void BP(void)
 {
@@ -25,8 +33,7 @@ void set_digital_input(unsigned char pin, unsigned char inputState) { NOT_IMPLEM
 //OrangutanSVP.h
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-SVPStatus svp_status;
-SVPStatus svp_get_status(void) { return svp_status; }
+SVPStatus svp_get_status(void) { return m.svp_status; }
 void svp_set_mode(unsigned char mode) { NOT_IMPLEMENTED(); }
 unsigned char svp_get_firmware_version(void) { NOT_IMPLEMENTED(); }
 
@@ -36,23 +43,22 @@ unsigned char svp_get_firmware_version(void) { NOT_IMPLEMENTED(); }
 //OrangutanTime.h
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extern volatile unsigned long elapsed_milliseconds;
 
-unsigned long get_ticks(void){ return elapsed_milliseconds * 25000; }
+unsigned long get_ticks(void){ return m.elapsed_milliseconds * 25000; }
 unsigned long ticks_to_microseconds(unsigned long ticks) {	NOT_IMPLEMENTED(); return 0; }
-void time_reset(void) { elapsed_milliseconds=0; }
+void time_reset(void) { m.elapsed_milliseconds=0; }
 void delay_us(unsigned int microseconds) { NOT_IMPLEMENTED(); }
 
 unsigned long get_ms(void) 
 {
-	return elapsed_milliseconds;
+	return m.elapsed_milliseconds;
 	//return GetTickCount();
 }
 
 void delay_ms(unsigned int milliseconds)
 {
 	Sleep(milliseconds);
-	elapsed_milliseconds += milliseconds;
+	m.elapsed_milliseconds += milliseconds;
 }
 
 
@@ -79,12 +85,12 @@ void pulse_in_stop(void) { NOT_IMPLEMENTED(); }
 
 
 // Encoder Functions
-int svp_get_counts_ab(void) { NOT_IMPLEMENTED(); }
-int svp_get_counts_and_reset_ab(void) { NOT_IMPLEMENTED(); }
-int svp_get_counts_cd(void) { NOT_IMPLEMENTED(); }
-int svp_get_counts_and_reset_cd(void) { NOT_IMPLEMENTED(); }
-unsigned char svp_check_error_ab(void) { NOT_IMPLEMENTED(); }
-unsigned char svp_check_error_cd(void) { NOT_IMPLEMENTED(); }
+int svp_get_counts_ab(void) { return m.enc_ab; }
+int svp_get_counts_and_reset_ab(void) { s16 ab=m.enc_ab;  m.enc_ab=0; return ab; }
+int svp_get_counts_cd(void) { return m.enc_cd; }
+int svp_get_counts_and_reset_cd(void) { s16 cd=m.enc_cd;  m.enc_cd=0; return cd; }
+unsigned char svp_check_error_ab(void) { return 0; }
+unsigned char svp_check_error_cd(void) { return 0; }
 
 
 
@@ -95,8 +101,17 @@ unsigned char serial_get_mode(unsigned char port) { NOT_IMPLEMENTED(); }
 void serial_receive(unsigned char port, char *buffer, unsigned char size) { NOT_IMPLEMENTED(); }
 void serial_cancel_receive(unsigned char port) { NOT_IMPLEMENTED(); }
 char serial_receive_blocking(unsigned char port, char *buffer, unsigned char size, unsigned int timeout) { NOT_IMPLEMENTED(); }
-void serial_receive_ring(unsigned char port, char *buffer, unsigned char size) { NOT_IMPLEMENTED(); }
-unsigned char serial_get_received_bytes(unsigned char port) { NOT_IMPLEMENTED();  return 0; }
+void serial_receive_ring(unsigned char port, char *buffer, unsigned char size)
+{
+	u08 data[] = {0xAB,0xCD,0x0C,0x00,0x00,0x00,0x0A,0x02,0x07,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0xDC,0xBA};
+	//m.rx_ring_buffer = buffer;
+	//m.rx_ring_buffer_size = size;
+	//memcpy(buffer, data , sizeof(data));
+}
+unsigned char serial_get_received_bytes(unsigned char port) 
+{ 
+	if(m.rx_ring_buffer_size) return 22;
+}
 char serial_receive_buffer_full(unsigned char port) { NOT_IMPLEMENTED(); return 0; }
 void serial_send(unsigned char port, char *buffer, unsigned char size) 
 { 
@@ -124,7 +139,7 @@ void play_mode(unsigned char mode) { NOT_IMPLEMENTED(); }
 
 void lcd_init_printf(void) { NOT_IMPLEMENTED(); }
 void lcd_init_printf_with_dimensions(unsigned char width, unsigned char height) { NOT_IMPLEMENTED(); }
-void clear(void) { printf("\n"); }
+void clear(void) { NOT_IMPLEMENTED(); }
 void print(const char *str) { NOT_IMPLEMENTED(); }
 void print_from_program_space(const char *str) { NOT_IMPLEMENTED(); }
 void print_character(char c) { NOT_IMPLEMENTED(); }
@@ -145,15 +160,15 @@ void lcd_load_custom_character(const char *picture, unsigned char number) { NOT_
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //OrangutanMotors.h
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void motors_init(void) { NOT_IMPLEMENTED(); }
-void set_m1_speed(int speed) { NOT_IMPLEMENTED(); }
-void set_m2_speed(int speed) { NOT_IMPLEMENTED(); }
-void set_motors(int m1, int m2) { NOT_IMPLEMENTED(); }
+void motors_init(void) { m.m1 = 0; m.m2 = 0; }
+void set_m1_speed(int speed) { m.m1 = speed; }
+void set_m2_speed(int speed) { m.m2 = speed; }
+void set_motors(int m1, int m2) { m.m1 = m1; m.m2 = m2; }
 
 
 void set_analog_mode(unsigned char mode) { NOT_IMPLEMENTED(); }
 unsigned char get_analog_mode(void) { NOT_IMPLEMENTED(); }
-unsigned int analog_read(unsigned char channel) { return 100; }
+unsigned int analog_read(unsigned char channel) { return 200; }
 unsigned int analog_read_millivolts(unsigned char channel) { NOT_IMPLEMENTED(); }
 unsigned int analog_read_average(unsigned char channel, unsigned int samples) { NOT_IMPLEMENTED(); }
 unsigned int analog_read_average_millivolts(unsigned char channel, unsigned int samples) { NOT_IMPLEMENTED(); }
@@ -166,8 +181,8 @@ unsigned int read_vcc_millivolts(void) { return 5000; }
 unsigned int to_millivolts(unsigned int analog_result) { NOT_IMPLEMENTED(); }
 unsigned int read_trimpot(void) { NOT_IMPLEMENTED(); }
 unsigned int read_trimpot_millivolts(void) { NOT_IMPLEMENTED(); }
-unsigned int read_battery_millivolts_svp(void) { return 10000; }
-unsigned int read_battery_millivolts(void) { return 10000; }
+unsigned int read_battery_millivolts_svp(void) { return m.vbatt; }
+unsigned int read_battery_millivolts(void) { return m.vbatt; }
 
 
 void buttons_init(void) { NOT_IMPLEMENTED(); }
@@ -177,3 +192,7 @@ unsigned char wait_for_button(unsigned char buttons) { NOT_IMPLEMENTED(); }
 unsigned char button_is_pressed(unsigned char buttons) { NOT_IMPLEMENTED(); return 0; }
 unsigned char get_single_debounced_button_press(unsigned char buttons) { NOT_IMPLEMENTED(); }
 unsigned char get_single_debounced_button_release(unsigned char buttons) { NOT_IMPLEMENTED(); }
+
+
+//int on the SVP-1284 / Atmega is 16bits.
+#undef int

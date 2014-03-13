@@ -55,5 +55,4 @@ extern volatile t_state s;
 extern uint32 main_iterations;
 
 
-
 #endif /* GLOBALS_H_ */

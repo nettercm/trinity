@@ -101,6 +101,29 @@ t_config_flash;
 #endif
 
 
+//workaround for WIN32
+#ifdef WIN32
+#pragma pack(push)
+#pragma pack(1)
+#endif
+typedef struct
+{
+	uint8 grp;
+	uint8 id;
+	uint8  type;
+	char name[31];
+	float    f;
+} 
+#ifndef WIN32 
+__attribute__((__packed__)) 
+#endif
+t_config_flash_float_only;
+#ifdef WIN32
+#pragma pack(pop)
+#endif
+
+
+
 	
 #ifdef WIN32
 #pragma pack(push)

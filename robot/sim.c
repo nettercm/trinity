@@ -29,16 +29,45 @@ t_inputs sim_data[] =
 	{	5,		0,	0,	0,	0,	0,	0,	0,	0,		0,	0,	0,	0,		0,	0,	0,	0,		0,	0,		0,	0,		0,	0,		0,	0,		0,0,0,		0,	0,	0,0,0,0		}
 };
 
-
+#ifdef WIN32
+int	lcd_printf(const char *__fmt, ...)
+{
+	int size;
+	char buffer[255];
+	va_list ap;
+	va_start(ap, __fmt);
+	size = vsprintf(buffer, __fmt, ap);
+	va_end(ap);
+	return 0;
+}
+#endif
 
 
 void sim(void)
 {
+	static u08 initialized=0;
+	static u32 t_last = 0, t_now = 0;
+
+
 	task_open();
+	m.vbatt = 10000;
+	m.rx_ring_buffer_size = 0;
+	m.rx_ring_buffer = NULL;
 	
 	while(1)
 	{
 		task_wait(1);
+
+		m.actual_enc_ab_ticks_per_interval = ((float)m.m2 / 1.83)/2;
+		m.actual_enc_cd_ticks_per_interval = ((float)m.m1 / 1.83)/2;
+
+		t_now = get_ms();
+		if(t_now - t_last >= 10)
+		{
+			m.enc_ab += m.actual_enc_ab_ticks_per_interval;
+			m.enc_cd += m.actual_enc_cd_ticks_per_interval;
+			t_last = t_now;
+		}
 	}
 	task_close();
 }

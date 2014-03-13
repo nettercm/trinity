@@ -46,6 +46,14 @@ t_config_flash config_flash[255] =
 	{255,255,255,"THE END",0}
 };
 
+//workaround to capture the float values
+t_config_flash_float_only config_float_only[255] =
+{
+	//{0,0,0,"THE START",0},
+	#include "parameters.h"
+	{255,255,255,"THE END", 0}
+};
+
 #else
 
 #define GRP(grp, name) { grp, 0 , 0 , name, .v.u32  = 0 },
@@ -104,7 +112,13 @@ void cfg_init(void)
 	
 	for(i=0;i<255;i++)
 	{
-#ifndef WIN32
+#ifdef WIN32
+		if(config_float_only[i].type == FLT_VALUE)
+		{
+			config[i].v.f		= config_float_only[i].f;
+			config_flash[i].v.f = config_float_only[i].f;
+		}
+#else
 		config[i].v.u32 = pgm_read_dword(&(config_flash[i].v));
 #endif
 	}
