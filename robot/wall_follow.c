@@ -90,7 +90,7 @@ void wall_follow_fsm(void)
 			enter_(s_disabled) { motor_command(2,0,0,0,0); }
 			which_wall = s.behavior_state[2];
 			if(s.behavior_state[1]==1) state = s_tracking_wall;
-			exit_(s_disabled)  { motor_command(8,1000,0,10,10); target_speed = 10; }
+			exit_(s_disabled)  { motor_command(8,1000,0,min_speed,min_speed); target_speed = min_speed; }
 		}
 		
 		
@@ -106,7 +106,7 @@ void wall_follow_fsm(void)
 		{
 			enter_(s_tracking_wall) 
 			{ 
-				play_note(C(3), 50, 10);
+				//play_note(C(3), 50, 10);
 				integral = 0;
 				last_error = invalid_error_value;
 			}
@@ -114,10 +114,10 @@ void wall_follow_fsm(void)
 			if( (use_corner_logic) && (side > lost_wall_distance) ) { state = s_lost_wall;  leave_(s_tracking_wall); }
 
 			e1 = side-target_distance;
-			e2 = front -(target_distance+30);
+			e2 = front -(target_distance+40);
 			
 			//if there is something right in front, slow down; otherwise speed up
-			if( (front < 140)  ||  (abs(e1)>30) ) 
+			if( (front < 160)  ||  (abs(e1)>20) ) 
 			{
 				if(target_speed > min_speed) target_speed -= down_ramp;
 			}				
@@ -178,7 +178,7 @@ void wall_follow_fsm(void)
 			{ 
 				//s.inputs.x = s.inputs.y = s.inputs.theta = 0;  
 				odometry_set_checkpoint();
-				play_note(E(3), 50, 10); 
+				//play_note(E(3), 50, 10); 
 			}
 			
 			if(target_speed > corner_speed) target_speed -= down_ramp;
@@ -205,7 +205,7 @@ void wall_follow_fsm(void)
 		{
 			enter_(s_turning_corner) 
 			{ 
-				play_note(G(3), 50, 10);
+				//play_note(G(3), 50, 10);
 				//s.inputs.x = s.inputs.y = s.inputs.theta = 0; 
 				odometry_set_checkpoint();
 			}
@@ -231,7 +231,7 @@ void wall_follow_fsm(void)
 		{
 			enter_(s_turning_sharp_corner)
 			{
-				play_note(C(4), 50, 10);
+				//play_note(C(4), 50, 10);
 				//s.inputs.x = s.inputs.y = s.inputs.theta = 0; 
 				odometry_set_checkpoint();
 			}
@@ -248,14 +248,14 @@ void wall_follow_fsm(void)
 			}
 			//if( s.ir[AI_IR_N] <= 50 ) state = 2;
 			
-		exit_(s_turning_sharp_corner) { }
-	}
-		
+				exit_(s_turning_sharp_corner) { }
+		}
+		/*	
 		s.inputs.watch[0]=error;
 		s.inputs.watch[1]=integral;
 		s.inputs.watch[2]=correction;
 		s.inputs.watch[3]=state;
-			
+		*/			
 		task_wait(interval);
 	}
 	

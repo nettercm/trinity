@@ -47,22 +47,48 @@ FLT(5, 3, "odo_b",							0, 0, 155.5)
 
 
 //----------------------------------------------------------
+GRP(6, "LINE DETECTION")
+
+U08(6, 1, "black",							0, 0, 20)
+U08(6, 2, "white",							0, 0, 10)
+//----------------------------------------------------------
+
+
+//----------------------------------------------------------
+GRP(9, "MASTER LOGIC")
+
+S16(9, 1, "turn speed",						0, 0, 20)
+S16(9, 2, "room 3 entry distance",			0, 0, 100)
+S16(9, 3, "room 3 turn angle #1",			0, 0, 110)
+S16(9, 4, "room 3 turn angle #2",			0, 0, 260)
+S16(9, 5, "room 2 entry distance",			0, 0, 100)
+S16(9, 6, "room 2 turn angle #1",			0, 0, 100)
+S16(9, 7, "room 2 turn angle #2",			0, 0, 270)
+S16(9, 8, "room 1 entry distance",			0, 0, 100)
+S16(9, 9, "room 1 turn angle #1",			0, 0, 110)
+S16(9,10, "room 1 turn angle #2",			0, 0, 250)
+
+//----------------------------------------------------------
+
+
+//----------------------------------------------------------
 GRP(10, "WALL FOLLOWING")
+
 U08(10, 1, "update interval",	0, 0, 25)
 //100,40,100,65,20,55,35,2,4
-S16(10, 2, "nominal speed"	,	0, 0, 80)
-S16(10, 3, "target distance",	0, 0, 95)
+S16(10, 2, "nominal speed"	,	0, 0, 90)
+S16(10, 3, "target distance",	0, 0, 110)
 S16(10, 4, "max error"		,	0, 0, 70)
-S16(10, 5, "max correction %",	0, 0, 160)
-S16(10, 6, "Kp"				,	0, 0, 55)
+S16(10, 5, "max correction %",	0, 0, 100)
+S16(10, 6, "Kp"				,	0, 0, 80)
 S16(10, 7, "Ki"				,	0, 0, 5)
 S16(10, 8, "Kd"				,	0, 0, 60)
-S16(10, 9, "minimum speed"	,	0, 0, 35)
+S16(10, 9, "minimum speed"	,	0, 0, 60)
 S16(10,10, "speed up amount",	0, 0, 2)
 S16(10,11, "slow down amount",	0, 0, 6)
 U08(10,12, "use corner logic",	0, 0, 1)
-FLT(10,13, "corner distance",	0, 0, 80)
-S16(10,14, "corner speed",		0, 0, 65)
+FLT(10,13, "corner distance",	0, 0, 100)
+S16(10,14, "corner speed",		0, 0, 90)
 S16(10,15, "integral limit",	0, 0, 40)
 S16(10,16, "lost wall distance",0, 0, 150)
 S16(10,17, "found wall distance",0,0, 110)
