@@ -853,19 +853,33 @@ activate ( follow right wall )
 	odometry_set_checkpoint(); \
 	motor_command(6,0,0,(speed),(speed)); \
 	while ( abs(odometry_get_distance_since_checkpoint()) < (distance) ) { task_wait(10); } \
-	motor_command(6,0,0,0,0)
+	motor_command(7,0,0,0,0)
 
 
 #define turn(speed,angle) \
 	odometry_set_checkpoint(); \
 	motor_command(6,0,0,(speed),-(speed)); \
 	while ( abs(odometry_get_rotation_since_checkpoint()) < angle ) { task_wait(10); } \
-	motor_command(6,0,0,0,0)
+	motor_command(7,0,0,0,0)
 
 
 void master_logic_fsm(void)
 {
-	enum states { s_none=0, s_disabled=1, s_waiting_for_start, s_aligning_south, s_finding_room_3, s_look_for_flame };
+	enum states 
+	{ 
+		s_none=0, 
+		s_disabled=1, 
+		s_waiting_for_start, 
+		s_aligning_south, 
+		s_finding_room_3, 
+		s_searching_room_3,
+		s_finding_room_2,
+		s_searching_room_2,
+		s_finding_room_1,
+		s_searching_room_1,
+		s_finding_room_4,
+		s_searching_room_4
+	};
 	static enum states state=s_disabled;
 	static enum states last_state=s_none;
 	
@@ -883,7 +897,7 @@ void master_logic_fsm(void)
 				motor_command(6,0,0,0,0);
 				s.behavior_state[1] = 0;
 				s.behavior_state[2] = 0;
-				s.behavior_state[3] = 1;
+				s.behavior_state[3] = 0;
 			}
 
 			if(s.behavior_state[3]==1) state = s_waiting_for_start;
@@ -893,46 +907,39 @@ void master_logic_fsm(void)
 			}
 		}
 
+		//-------------------------------------------------------------------------------------------------------
 
 		next_(s_waiting_for_start)
 		{
-			enter_(s_waiting_for_start) 
-			{  
-				play_note(G(4), 50, 10);
-			}
+			enter_(s_waiting_for_start) { }
 
 			//just fall through for now
 			state = s_aligning_south;
-			leave_(s_waiting_for_start);
 
-			exit_(s_waiting_for_start)  
-			{ 
-			}
+			exit_(s_waiting_for_start) { }
 		}
 		
+		//-------------------------------------------------------------------------------------------------------
 
 		next_(s_aligning_south)
 		{
-			enter_(s_aligning_south) 
-			{  
-				turn(20,90); //turn 90 degrees right @ speed 20
-			}
-
-			task_wait(500);
+			enter_(s_aligning_south) { }
+			
+			turn(20,90); //turn 90 degrees right @ speed 20
+			task_wait(200);
 
 			if(s.ir[AI_IR_N] < 120)  //something right in front of us?
 			{
 				//if so, then we were facing south initially, now we are facing west; turn back...
 				turn(-20,90); //turn 90 degrees left @ speed 20
-				task_wait(500);
+				task_wait(200);
 			}
 			state = s_finding_room_3;
-			leave_(s_aligning_south);
 
-			exit_(s_aligning_south)  
-			{ 
-			}
+			exit_(s_aligning_south) { }
 		}
+
+		//-------------------------------------------------------------------------------------------------------
 
 		next_(s_finding_room_3)
 		{
@@ -947,38 +954,195 @@ void master_logic_fsm(void)
 			if(lines_crossed>0)
 			{
 				motor_command(2,0,0,0,0);
-				s.behavior_state[1] = 0;
-				s.behavior_state[2] = 0;
-				s.behavior_state[3] = 0;
-				state = s_look_for_flame;
+				s.behavior_state[1] = 0;  s.behavior_state[2] = 0;  s.behavior_state[3] = 0;
+				state = s_searching_room_3;
 			}
 
-
-			exit_(s_finding_room_3)
-			{
-			}
+			exit_(s_finding_room_3) { }
 		}
 
+		//-------------------------------------------------------------------------------------------------------
 
-		next_(s_look_for_flame)
+		next_(s_searching_room_3)
 		{
-			enter_(s_look_for_flame)
-			{
-				move(20,100); //move 10cm into the room
-			}
+			enter_(s_searching_room_3) { }
+			//move 10cm into the room
+			move(20,100);
+			task_wait(200);
 
+			//we are facing more or less N right now.  turn right about 120degrees so that we are facing SE
+			turn(20,120);
+			task_wait(200);
 
-			exit_(s_look_for_flame)
-			{
-			}
+			//now start to scan for the flame by turning left about 250 degrees
+			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
+			turn(-20, 250 );
+			task_wait(200);
 
+			//if there was no candle, go on to the next room.
+			//we should be facing the wall more or less SW, so we just need to start following the right wall
+			state = s_finding_room_2;
+
+			exit_(s_searching_room_3) { }
 		}
+
+		//-------------------------------------------------------------------------------------------------------
+
+		next_(s_finding_room_2)
+		{
+			enter_(s_finding_room_2)
+			{
+				//activate "follow right wall"
+				s.behavior_state[2]=1; //right wall
+				s.behavior_state[1]=1; //start wall following
+				lines_crossed = 0;
+			}
+
+			if(lines_crossed>0)
+			{
+				motor_command(2,0,0,0,0);
+				s.behavior_state[1] = 0;  s.behavior_state[2] = 0;  s.behavior_state[3] = 0;
+				state = s_searching_room_2;
+			}
+
+			exit_(s_finding_room_2) { }
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+
+		next_(s_searching_room_2)
+		{
+			enter_(s_searching_room_2) { }
+			//move 10cm into the room
+			move(20,100);
+			task_wait(200);
+
+			//we are facing more or less W right now.  turn right about 120degrees so that we are facing NE
+			turn(20,120);
+			task_wait(200);
+
+			//now start to scan for the flame by turning left about 250 degrees
+			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
+			turn(-20, 250 );
+			task_wait(200);
+
+			//if there was no candle, go on to the next room.
+			//we should be facing the wall more or less SE, we just need to start following the right wall
+			state = s_finding_room_1;
+
+			exit_(s_searching_room_2) { }
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+
+		next_(s_finding_room_1)
+		{
+			enter_(s_finding_room_1)
+			{
+				//activate "follow right wall"
+				s.behavior_state[2]=1; //right wall
+				s.behavior_state[1]=1; //start wall following
+				lines_crossed = 0;
+			}
+
+			if(lines_crossed>0)
+			{
+				motor_command(2,0,0,0,0);
+				s.behavior_state[1] = 0;  s.behavior_state[2] = 0;  s.behavior_state[3] = 0;
+				state = s_searching_room_1;
+			}
+
+			exit_(s_finding_room_1) { }
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+
+		next_(s_searching_room_1)
+		{
+			enter_(s_searching_room_1) { }
+			//move 10cm into the room
+			move(20,100);
+			task_wait(200);
+
+			//we are facing more or less E right now.  turn left about 120degrees so that we are facing NW
+			turn(-20,120);
+			task_wait(200);
+
+			//now start to scan for the flame by turning right about 250 degrees
+			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
+			turn(20, 250 );
+			task_wait(200);
+
+			//if there was no candle, go on to the next room.
+			//we should be facing more or less SW, but too far away from the wall depending on door location
+			
+			//we first need to find the wall before we can follow it; let's turn left to face SE, then go straight towards the wall
+			turn(-20,45);
+			task_wait(200);
+
+			state = s_finding_room_4;
+
+			exit_(s_searching_room_1) { }
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+
+		next_(s_finding_room_4)
+		{
+			enter_(s_finding_room_4) { }
+			exit_(s_finding_room_4) {}
+		}
+
+		//-------------------------------------------------------------------------------------------------------
+
+		next_(s_searching_room_4)
+		{
+			enter_(s_searching_room_4) { }
+			exit_(s_searching_room_4) {}
+		}
+
+
 		task_wait(25);
 	}
 
 	task_close();
 }
 
+
+#define move_(speed,distance) \
+	odometry_set_checkpoint(); \
+	motor_command(6,0,0,(speed),(speed)); \
+	while ( abs(odometry_get_distance_since_checkpoint()) < (distance) ) { task_wait(2); } \
+	motor_command(2,0,0,0,0)
+
+
+#define turn_(speed,angle) \
+	odometry_set_checkpoint(); \
+	motor_command(6,0,0,(speed),-(speed)); \
+	while ( abs(odometry_get_rotation_since_checkpoint()) < angle ) { task_wait(2); } \
+	motor_command(2,0,0,0,0)
+
+
+void test(void)
+{
+	task_open();
+
+	while(1)
+	{
+		task_wait(100);
+		motor_command(7,0,0,(80),(60)); \
+		//move_(20,150);
+		//turn_(-20,90);
+		//move_(20,150);
+		while(1) 
+		{
+			task_wait(10);
+			NOP();
+		}
+	}
+
+	task_close();
+}
 
 int main(void)
 {
@@ -1017,21 +1181,22 @@ int main(void)
 	serial_cmd_evt = event_create();
 
 #ifdef SVP_ON_WIN32
-	task_create( sim,						1,  NULL, 0, 0);
-	//s.behavior_state[3]=1;
+	task_create( sim,						 1,  NULL, 0, 0);
+
+	task_create( test,						 2,  NULL, 0, 0);
 #endif
 
-	task_create( lcd_update_fsm,			2,  NULL, 0, 0 );		
-	task_create( analog_update_fsm,			3,  NULL, 0, 0 );	
-	task_create( serial_send_fsm,			4 , NULL, 0, 0 );		
-	task_create( serial_receive_fsm,		5,  NULL, 0, 0);
-	task_create( commands_process_fsm,		6,  NULL, 0, 0);
-	task_create( motor_command_fsm,			7,  NULL, 0, 0);
-	task_create( ultrasonic_update_fsm,		8,  NULL, 0, 0);
-	//task_create( debug_fsm, 9, NULL, 0, 0); //not used right now
-	task_create( wall_follow_fsm,			10, NULL, 0, 0);
-	task_create( master_logic_fsm,			11, NULL, 0, 0);
-	task_create( line_detection_fsm,		12, NULL, 0, 0);
+	task_create( lcd_update_fsm,			10,  NULL, 0, 0 );		
+	task_create( analog_update_fsm,			11,  NULL, 0, 0 );	
+	task_create( serial_send_fsm,			12 , NULL, 0, 0 );		
+	task_create( serial_receive_fsm,		13,  NULL, 0, 0);
+	task_create( commands_process_fsm,		14,  NULL, 0, 0);
+	task_create( motor_command_fsm,			15,  NULL, 0, 0);
+	task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
+	//task_create( debug_fsm, 17, NULL, 0, 0); //not used right now
+	task_create( wall_follow_fsm,			18,  NULL, 0, 0);
+	task_create( master_logic_fsm,			19,  NULL, 0, 0);
+	task_create( line_detection_fsm,		20,  NULL, 0, 0);
 
 
 	#else

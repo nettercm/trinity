@@ -40,6 +40,7 @@
     <Text Include="port\avr\pgmspace.h">
       <Filter>port\avr</Filter>
     </Text>
+    <Text Include="..\..\todo.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -239,5 +240,10 @@
     <ClCompile Include="..\sim.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\.gitattributes" />
+    <None Include="..\..\.gitignore" />
+    <None Include="..\..\README.md" />
   </ItemGroup>
 </Project>

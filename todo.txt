@@ -1,0 +1,6 @@
+•	Add logic to "follow wall" behavior so that it first finds the wall or create a separate "find wall" behavior
+
+•	Limit the amount by which the integrator is increased/decreased (new parameter!)
+•	Add slew-rate limiting to the motor command (to avoid reset due to over-current; don’t apply to slowing down, just for speeding up and changing direction)  
+	o	(10 per interval @ 50hz/20ms => 0.5s for full 0-255 PWM range)
+•	Add special logic to better handle inside corners

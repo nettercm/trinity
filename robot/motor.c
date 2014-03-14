@@ -33,11 +33,12 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	if(s.inputs.theta > 2.0*PI) s.inputs.theta -= 2.0*PI;
 	if(s.inputs.theta < -2.0*PI) s.inputs.theta += 2.0*PI;
 
-	//update relative position
+	//update relative position change since the last "checkpoint"
 	d_x = d_U * cos(s.dtheta);
 	d_y = d_U * sin(s.dtheta);
 	s.dx  = s.dx + d_x;
 	s.dy  = s.dy + d_y;
+	s.dU  = s.dU + d_U;
 	s.dtheta = s.dtheta + d_theta;
 	if(s.dtheta > 2.0*PI) s.dtheta -= 2.0*PI;
 	if(s.dtheta < -2.0*PI) s.dtheta += 2.0*PI;

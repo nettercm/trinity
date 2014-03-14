@@ -30,7 +30,7 @@ typedef struct
 	volatile uint8 motor_command_state;
 	
 	//odometry (since checkpoint; global odometry state is part of inputs struct)
-	float dx,dy,dtheta;
+	float dx,dy,dtheta,dU;
 	
 	//behavior control
 	volatile uint8 behavior_state[16];
