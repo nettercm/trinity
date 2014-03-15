@@ -94,9 +94,10 @@ void display_inputs_and_state(t_inputs *inputs)
 	t_delta_avg = (t_delta_avg*19.0f + t_delta)/20.0f;
 
 	//sprintf(s.msg, "%03u, %03u, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,    FSM,%1d,%1d,%1d,%1d,%1d,%1d,%1d,%1d  E,%4d,%4d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",				
-	sprintf(s.msg, "%03u, %03u, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,     E,%4d,%4d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",				
+	sprintf(s.msg, "D_( %03u, %03u, %06ld, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,     E,%05d,%05d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%04d,%04d,%04d,%04d,  I,%04d,%04d,%04d,%04d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d )\n",				
 				rx_buffer->seq,
 				rx_buffer->ack,
+				inputs->timestamp,
 				t_delta, t_delta_avg,
 				inputs->vbatt/1000.0f,
 				inputs->flags,

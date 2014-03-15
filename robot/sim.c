@@ -43,6 +43,8 @@ int	lcd_printf(const char *__fmt, ...)
 #endif
 
 
+
+
 void sim(void)
 {
 	static u08 initialized=0;
@@ -53,6 +55,8 @@ void sim(void)
 	m.vbatt = 10000;
 	m.rx_ring_buffer_size = 0;
 	m.rx_ring_buffer = NULL;
+
+
 	
 	while(1)
 	{
@@ -72,6 +76,75 @@ void sim(void)
 	task_close();
 }
 
+
+
+
+/*
+char sample[] = "099, 001, 002, 19.0,   V,9.2,  0xA001,  A,047,046,046,045,059,058,027,232,     E,00001,   0,  O, 0.1, 0.0,-0.0,   0.1, 0.0,-0.0,    S,4000,4000,   0,   0,  I, 175, 206,  88, 217  M,100,001, -01,002,  W,001,002,003,004";
+
+	t_frame_to_pc rx_buffer_;
+	t_frame_to_pc *rx_buffer = &rx_buffer_;
+	t_inputs inputs_;
+	t_inputs *inputs = & inputs_;
+	u32 t_delta;
+	float t_delta_avg;
+
+	float odo_x, odo_y, odo_theta;
+
+
+	sscanf(sample, "%03u, %03u, %03u, %f,   V,%f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,     E,%05d,%d,  O,%f,%f,%f,  %f,%f,%f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",
+				&(rx_buffer->seq),
+				&(rx_buffer->ack),
+				&(t_delta), 
+				&(t_delta_avg),
+				&(inputs->vbatt),
+				&(inputs->flags),
+
+				&(inputs->analog[0]),
+				&(inputs->analog[1]), 
+				&(inputs->analog[2]), 
+				&(inputs->analog[3]), 
+				&(inputs->analog[4]), 
+				&(inputs->analog[5]), 
+				&(inputs->analog[6]), 
+				&(inputs->analog[7]), 
+
+				//inputs->fsm_states[0],inputs->fsm_states[1],inputs->fsm_states[2],inputs->fsm_states[3],
+				//inputs->fsm_states[4],inputs->fsm_states[5],inputs->fsm_states[6],inputs->fsm_states[7],
+
+				&(inputs->encoders[0]), 
+				&(inputs->encoders[1]), 
+				&(odo_x), 
+				&(odo_y), 
+				&(odo_theta),
+
+				&(inputs->x), 
+				&(inputs->y), 
+				&(inputs->theta),
+
+				&(inputs->sonar[0]),
+				&(inputs->sonar[1]),
+				&(inputs->sonar[2]),
+				&(inputs->sonar[3]),
+
+				&(inputs->ir[0]),
+				&(inputs->ir[1]), 
+				&(inputs->ir[2]), 
+				&(inputs->ir[3]), //inputs->sonar[6],inputs->sonar[7],
+				
+				&(inputs->target_speed[0]), 
+				&(inputs->target_speed[1]),
+				&(inputs->motors[0]), 
+				&(inputs->motors[1]),
+
+				&(inputs->watch[0]), 
+				&(inputs->watch[1]), 
+				&(inputs->watch[2]), 
+				&(inputs->watch[3])
+	);
+
+
+*/
 
 /*
 space, up, up, up, down, down, down, left, right, right, left, x, f, r, f, 0

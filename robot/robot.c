@@ -1197,6 +1197,34 @@ void master_logic_fsm(void)
 				s.behavior_state[2]=1; //right wall
 				s.behavior_state[1]=1; //start wall following
 			}
+
+			//exit from room 1
+
+			//now we are facing N
+
+			//turn left 90deg and check for dog
+
+			//if there is a dog / obstacle right in front, then 
+				//turn right 90deg and start following the left wall
+				//there won't be a 2nd dog to worry about...
+				//eventuall we'll wind up inside room 4, either via door on North side or on South side
+				//go to state "searching room 4"
+
+			//there was no dog at the exit of room 1
+
+			//check for door on South side of room 4
+			
+			//if there is no door on Rm4-south, then 
+				//turn around (to face E)
+				//start following left wall
+				//if we hit a dead end (i.e. dog) before we reach the door
+					//turn around 180deg
+					//start following right wall
+
+
+
+
+
 			exit_(s_finding_room_4) {}
 		}
 
@@ -1232,19 +1260,37 @@ void master_logic_fsm(void)
 
 void test(void)
 {
+	float time_to_stop=0,distance_to_stop;
 	task_open();
 
 	while(1)
 	{
 		task_wait(100);
-		motor_command(7,0,0,(80),(60)); \
+		//motor_command(7,0,0,(80),(60)); \
 		//move_(20,150);
 		//turn_(-20,90);
 		//move_(20,150);
+		//s.behavior_state[2]=1;
+		//s.behavior_state[1]=1;
+		motor_command(6,0,0,100,100);
 		while(1) 
 		{
-			task_wait(10);
+			time_to_stop = (float)s.inputs.actual_speed[0] / (float)50;
+			distance_to_stop = ((float)s.inputs.actual_speed[0] * time_to_stop)/2.0;
+			distance_to_stop *= 50.0; //adjust for seconds
+			distance_to_stop *= 0.13466716824940938560464;  //adjust for mm
+
+			if(s.inputs.x + distance_to_stop < 200)
+			{
+				motor_command(6,0,0,100,100);
+			}
+			else
+			{
+				motor_command(6,0,0,0,0);
+			}
+
 			NOP();
+			task_wait(20);
 		}
 	}
 
