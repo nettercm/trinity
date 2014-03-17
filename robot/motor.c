@@ -106,6 +106,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 	static uint32 g_delta_T=100;	//static uint8 state = 0; //not turning
 	static unsigned long t_stop;
 	static sint16 l_enc_delta, r_enc_delta, l_enc_start, r_enc_start;
+	static sint16 accelleration, decelleration;
 	static uint32 t_now=0,t_last=0;
 	static uint8 last_state=0;
 	
@@ -192,10 +193,10 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			
 
 			case 6:  //regulate speed - use l/r motor speed as target  (same as mode/cmd 7, but different starting conditiosn)
-				if(l_enc_delta > s.lm_target+0) s.lm_actual--;
-				if(l_enc_delta < s.lm_target-0) s.lm_actual++;
-				if(r_enc_delta > s.rm_target+0) s.rm_actual--;
-				if(r_enc_delta < s.rm_target-0) s.rm_actual++;
+				if(l_enc_delta > s.lm_target+0) s.lm_actual-=decelleration;
+				if(l_enc_delta < s.lm_target-0) s.lm_actual+=accelleration;
+				if(r_enc_delta > s.rm_target+0) s.rm_actual-=decelleration;
+				if(r_enc_delta < s.rm_target-0) s.rm_actual+=accelleration;
 				LIMIT(s.lm_actual,-255,+255);
 				LIMIT(s.rm_actual,-255,+255);
 				s.inputs.motors[0] = s.lm_actual;
@@ -311,6 +312,9 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 
 		if(cmd==6) //regulate speed
 		{
+			accelleration = p1;  if(accelleration==0) accelleration=1;
+			decelleration = p2;  if(decelleration==0) decelleration=1;
+
 			//limit target speed to +/- 120
 			LIMIT(lm_speed,-120,+120);
 			LIMIT(rm_speed,-120,+120);

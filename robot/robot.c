@@ -760,9 +760,10 @@ u08 lines_crossed=0;
 
 void line_detection_fsm(void)
 {
-	enum states { s_none=0, s_disabled=1, s_not_sure, s_on_black, s_on_line, s_crossed_line };
+	enum states { s_none=0, s_disabled=1, s_not_crossed, s_l_crossed, s_r_crossed, s_crossed_line };
 	static enum states state=s_disabled;
 	static enum states last_state=s_none;
+	static u32 t_crossed=0;
 	static u08 loop_counter=0;
 	DEFINE_CFG2(u08,black,6,1);					
 	DEFINE_CFG2(u08,white,6,2);					
@@ -771,6 +772,9 @@ void line_detection_fsm(void)
 
 	PREPARE_CFG2(black);					
 	PREPARE_CFG2(white);					
+
+	UPDATE_CFG2(black);					
+	UPDATE_CFG2(white);
 
 	while(1)
 	{
@@ -783,39 +787,42 @@ void line_detection_fsm(void)
 		first_(s_disabled)
 		{
 			enter_(s_disabled) 	{}
-			state = s_not_sure;	leave_(s_disabled);
+			state = s_not_crossed;	leave_(s_disabled);
 			exit_(s_disabled)  {}
 		}
 
 
-		next_(s_not_sure)
+		next_(s_not_crossed)
 		{
-			enter_(s_not_sure) 	{}
-			if(s.line[0]>=black) state = s_on_black;
-			exit_(s_not_sure)  {}
+			enter_(s_not_crossed) 	{}
+			if(s.line[0]<=white) state = s_l_crossed;
+			if(s.line[1]<=white) state = s_r_crossed;
+			exit_(s_not_crossed)  { t_crossed = get_ms(); }
 		}
 
 
-		next_(s_on_black)
+		next_(s_l_crossed)
 		{
-			enter_(s_on_black) 	{}
-			if(s.line[0]<=white) state = s_on_line;
-			exit_(s_on_black)  {}
+			enter_(s_l_crossed) 	{}
+			if(get_ms() - t_crossed > 700) state = s_not_crossed;
+			if(s.line[1] <= white) state = s_crossed_line;
+			exit_(s_l_crossed)  {}
 		}
 
 
-		next_(s_on_line)
+		next_(s_r_crossed)
 		{
-			enter_(s_on_line) 	{}
-			if(s.line[0]>=black) state = s_crossed_line;
-			exit_(s_on_line)  {}
+			enter_(s_l_crossed) 	{}
+			if(get_ms() - t_crossed > 700) state = s_not_crossed;
+			if(s.line[0] <= white) state = s_crossed_line;
+			exit_(s_r_crossed)  {}
 		}
 
 
 		next_(s_crossed_line)
 		{
 			enter_(s_crossed_line) 	{ lines_crossed++; }
-			state = s_on_black;
+			state = s_not_crossed;
 			exit_(s_crossed_line)  {}
 		}
 		s.inputs.watch[0]=lines_crossed;
@@ -864,16 +871,16 @@ activate ( follow right wall )
 
 #define move(speed,distance) \
 	odometry_set_checkpoint(); \
-	motor_command(6,0,0,(speed),(speed)); \
+	motor_command(6,3,3,(speed),(speed)); \
 	while ( abs(odometry_get_distance_since_checkpoint()) < (distance) ) { task_wait(10); } \
-	motor_command(7,0,0,0,0)
+	motor_command(6,5,5,0,0)
 
 
 #define turn(speed,angle) \
 	odometry_set_checkpoint(); \
-	motor_command(6,0,0,(speed),-(speed)); \
+	motor_command(6,3,3,(speed),-(speed)); \
 	while ( abs(odometry_get_rotation_since_checkpoint()) < angle ) { task_wait(10); } \
-	motor_command(7,0,0,0,0)
+	motor_command(6,5,5,0,0)
 
 
 void master_logic_fsm(void)
@@ -897,6 +904,7 @@ void master_logic_fsm(void)
 	static enum states last_state=s_none;
 	static u32 t_entry=0;
 	static u08 last_lines_crossed=0;
+	static u08 still_inside_room=0;
 	DEFINE_CFG2(s16,turn_speed,			9,1);
 	DEFINE_CFG2(s16,room3_enter,		9,2);
 	DEFINE_CFG2(s16,room3_turn_1,		9,3);
@@ -937,11 +945,18 @@ void master_logic_fsm(void)
 		//the following state transition applies to all states
 		if(s.behavior_state[3]==0) state = s_disabled;
 
+		if(button_is_pressed(BOTTOM_BUTTON))
+		{
+			play_note(A(3), 50, 10);
+			s.behavior_state[3] = 1; 
+			state = s_disabled;
+		}
+
 		first_(s_disabled)
 		{
 			enter_(s_disabled) 
 			{  
-				motor_command(6,0,0,0,0);
+				motor_command(6,5,5,0,0);
 				s.behavior_state[1] = 0;
 				s.behavior_state[2] = 0;
 				//s.behavior_state[3] = 0;
@@ -1017,8 +1032,9 @@ void master_logic_fsm(void)
 				*/
 				//else
 				{
+					last_lines_crossed = lines_crossed;
 					play_note(C(3), 50, 10);
-					motor_command(2,0,0,0,0);
+					motor_command(6,2,2,0,0);
 					s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
 					state = s_searching_room_3;
 				}
@@ -1049,9 +1065,11 @@ void master_logic_fsm(void)
 			//we should be facing the wall more or less SW, so we just need to start following the right wall
 			//move(turn_speed, room3_enter);
 			//task_wait(200);
-			motor_command(6,0,0,turn_speed,turn_speed);
-			while( (s.ir[AI_IR_NE] > 90) && (s.ir[AI_IR_N] > 70) ) task_wait(10);
-			motor_command(7,0,0,0,0);
+			still_inside_room = 1;
+			last_lines_crossed = lines_crossed;
+			motor_command(6,3,3,turn_speed+5,turn_speed);
+			while( (s.ir[AI_IR_NE] > 100) && (s.ir[AI_IR_N] > 80) ) task_wait(10);
+			motor_command(6,5,5,0,0);
 
 			state = s_finding_room_2;
 
@@ -1067,22 +1085,22 @@ void master_logic_fsm(void)
 				//activate "follow right wall"
 				s.behavior_state[2]=1; //right wall
 				s.behavior_state[1]=1; //start wall following
-				last_lines_crossed = lines_crossed;
-				t_entry = get_ms();
 			}
 
 			if(lines_crossed != last_lines_crossed)
 			{
-				if(get_ms() - t_entry < 3000) //we'll be crossing the line while exiting from the prev. room!!!!
+				//we'll be crossing the line while exiting from the prev. room!!!!
+				if(still_inside_room) 
 				{
 					play_note(C(4), 50, 10);
 					s.inputs.watch[2]++;
 					last_lines_crossed = lines_crossed;
+					still_inside_room=0;
 				}
 				else
 				{
 					play_note(C(3), 50, 10);
-					motor_command(2,0,0,0,0);
+					motor_command(6,5,5,0,0);
 					s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
 					state = s_searching_room_2;
 				}
@@ -1113,9 +1131,11 @@ void master_logic_fsm(void)
 			//we should be facing the wall more or less SE, we just need to start following the right wall
 			//move(turn_speed, room1_enter);
 			//task_wait(200);
-			motor_command(6,0,0,turn_speed,turn_speed);
-			while( (s.ir[AI_IR_NE] > 90) && (s.ir[AI_IR_N] > 70) ) task_wait(10);
-			motor_command(7,0,0,0,0);
+			still_inside_room = 1;
+			last_lines_crossed = lines_crossed;
+			motor_command(6,3,3,turn_speed+5,turn_speed);
+			while( (s.ir[AI_IR_NE] > 100) && (s.ir[AI_IR_N] > 80) ) task_wait(10);
+			motor_command(6,5,5,0,0);
 			state = s_finding_room_1;
 
 			exit_(s_searching_room_2) { }
@@ -1130,22 +1150,22 @@ void master_logic_fsm(void)
 				//activate "follow right wall"
 				s.behavior_state[2]=1; //right wall
 				s.behavior_state[1]=1; //start wall following
-				last_lines_crossed = lines_crossed;
-				t_entry = get_ms();
 			}
 
 			if(lines_crossed != last_lines_crossed)
 			{
-				if(get_ms() - t_entry < 2000) //we'll be crossing the line while exiting from the prev. room!!!!
+				//we'll be crossing the line while exiting from the prev. room!!!!
+				if(still_inside_room) 
 				{
-					s.inputs.watch[2]++;
 					play_note(C(4), 50, 10);
+					s.inputs.watch[2]++;
 					last_lines_crossed = lines_crossed;
+					still_inside_room=0;
 				}
 				else
 				{
 					play_note(C(3), 50, 10);
-					motor_command(2,0,0,0,0);
+					motor_command(6,2,2,0,0);
 					s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
 					state = s_searching_room_1;
 				}
@@ -1178,9 +1198,11 @@ void master_logic_fsm(void)
 			//we first need to find the wall before we can follow it; let's turn left to face SE, then go straight towards the wall
 			turn(-turn_speed,45);
 			task_wait(200);
-			motor_command(6,0,0,turn_speed,turn_speed);
-			while( (s.ir[AI_IR_NE] > 80) && (s.ir[AI_IR_N] > 60) ) task_wait(10);
-			motor_command(7,0,0,0,0);
+			still_inside_room = 1;
+			last_lines_crossed = lines_crossed;
+			motor_command(6,3,3,turn_speed,turn_speed);
+			while( (s.ir[AI_IR_NE] > 100) && (s.ir[AI_IR_N] > 80) ) task_wait(10);
+			motor_command(6,5,5,0,0);
 
 			state = s_finding_room_4;
 
@@ -1198,17 +1220,43 @@ void master_logic_fsm(void)
 				s.behavior_state[1]=1; //start wall following
 			}
 
-			//exit from room 1
+			//keep following the right wall until we have passed through the door
+			while(lines_crossed == last_lines_crossed) task_wait(20);
 
 			//now we are facing N
+			play_note(C(3), 50, 10);
+			s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
+			motor_command(6,5,5,0,0);
+			task_wait(400);
+			last_lines_crossed = lines_crossed;
+
+			//completely exit from room 1 until we have reached the center of the intersectoin
+			move(turn_speed,220);
+			task_wait(400);
 
 			//turn left 90deg and check for dog
+			turn(-turn_speed,90);
+			task_wait(400);
 
 			//if there is a dog / obstacle right in front, then 
 				//turn right 90deg and start following the left wall
 				//there won't be a 2nd dog to worry about...
 				//eventuall we'll wind up inside room 4, either via door on North side or on South side
 				//go to state "searching room 4"
+			turn(turn_speed,90);
+			task_wait(400);
+			s.behavior_state[2]=0; //left wall
+			s.behavior_state[1]=1; //start wall following
+
+			//keep following the left wall until we have passed through the door
+			while(lines_crossed == last_lines_crossed) task_wait(20);
+			play_note(C(3), 50, 10);
+			s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
+			motor_command(6,5,5,0,0);
+			task_wait(400);
+			last_lines_crossed = lines_crossed;
+
+			state = s_searching_room_4;
 
 			//there was no dog at the exit of room 1
 
@@ -1220,9 +1268,6 @@ void master_logic_fsm(void)
 				//if we hit a dead end (i.e. dog) before we reach the door
 					//turn around 180deg
 					//start following right wall
-
-
-
 
 
 			exit_(s_finding_room_4) {}
@@ -1261,35 +1306,43 @@ void master_logic_fsm(void)
 void test(void)
 {
 	float time_to_stop=0,distance_to_stop;
+	DEFINE_CFG2(s16,accel,99,1);					
+	DEFINE_CFG2(s16,decel,99,2);					
+	DEFINE_CFG2(s16,speed,99,3);					
+	DEFINE_CFG2(s16,distance,99,4);					
+
 	task_open();
+
+	PREPARE_CFG2(accel);
+	PREPARE_CFG2(decel);
+	PREPARE_CFG2(speed);
+	PREPARE_CFG2(distance);
+
 
 	while(1)
 	{
 		task_wait(100);
-		//motor_command(7,0,0,(80),(60)); \
-		//move_(20,150);
-		//turn_(-20,90);
-		//move_(20,150);
-		//s.behavior_state[2]=1;
-		//s.behavior_state[1]=1;
-		motor_command(6,0,0,100,100);
-		while(1) 
+		UPDATE_CFG2(accel);
+		UPDATE_CFG2(decel);
+		UPDATE_CFG2(speed);
+		UPDATE_CFG2(distance);
+
+		while(s.behavior_state[11]==1) 
 		{
 			time_to_stop = (float)s.inputs.actual_speed[0] / (float)50;
 			distance_to_stop = ((float)s.inputs.actual_speed[0] * time_to_stop)/2.0;
 			distance_to_stop *= 50.0; //adjust for seconds
 			distance_to_stop *= 0.13466716824940938560464;  //adjust for mm
 
-			if(s.inputs.x + distance_to_stop < 200)
+			if(s.inputs.x + distance_to_stop < distance)
 			{
-				motor_command(6,0,0,100,100);
+				motor_command(6,accel,decel,speed,speed);
 			}
 			else
 			{
-				motor_command(6,0,0,0,0);
+				motor_command(6,accel,decel,0,0);
+				s.behavior_state[11]=0;
 			}
-
-			NOP();
 			task_wait(20);
 		}
 	}
@@ -1336,8 +1389,8 @@ int main(void)
 #ifdef SVP_ON_WIN32
 	task_create( sim,						 1,  NULL, 0, 0);
 
-	task_create( test,						 2,  NULL, 0, 0);
 #endif
+	task_create( test,						 2,  NULL, 0, 0);
 
 	task_create( lcd_update_fsm,			10,  NULL, 0, 0 );		
 	task_create( analog_update_fsm,			11,  NULL, 0, 0 );	

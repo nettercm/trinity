@@ -105,6 +105,7 @@ void process_user_input(void)
 	static int wander_state=0;
 	static int shift_left_state=0;
 	static t_config_value v = {0};
+	static sint16 l=0, r=0;
 	int ml_bias=0;
 	unsigned int c=0;
 
@@ -123,9 +124,9 @@ void process_user_input(void)
 	if(_kbhit())
 	{
 		c = _getch();
-		//printf("c = '%c' = 0x%02x\n",c,c);
 		if(c==0x00) c=_getch() + 0xe100;
 		if(c==0xe0) c=_getch() + 0xe000;
+		printf("c = '%c' = 0x%02x\n",c,c);
 	}
 //#endif
 
@@ -157,6 +158,8 @@ void process_user_input(void)
 	case KEY_SHIFT_F7:		CMD_set_behavior_state(7,1); 							break; //stop behavior 1
 	case KEY_F8:			CMD_set_behavior_state(8,0); 							break; //start behavior 1
 	case KEY_SHIFT_F8:		CMD_set_behavior_state(8,1); 							break; //stop behavior 1
+	case KEY_F11:			CMD_set_behavior_state(11,0); 							break; //start behavior 1
+	case KEY_SHIFT_F11:		CMD_set_behavior_state(11,1); 							break; //stop behavior 1
 
 
 	//case 'y':				CMD_motor_command(1,25,2*m_l_min,2*m_r_min);			break;//go forward by the smallest amount possible
@@ -210,7 +213,8 @@ void process_user_input(void)
 		//optionally, reverse speed for a short period of time to stop even harder and to compensate for inertia
 		//outputs->cmd = 1; outputs->params[0]=25; outputs->params[1]=-m_r_speed; outputs->params[2]=-m_l_speed;
 		m_r_speed = m_l_speed = m_r_target = m_l_target = 0;
-		CMD_motor_command(2 , 0 , 0, 0 , 0);
+		l=m_l_speed; r=m_r_speed;
+		CMD_motor_command(6 , 8 , 8, 0 , 0);
 		break;
 
 	case '2': //go backwards
@@ -315,12 +319,11 @@ void process_user_input(void)
 	//ml_bias = (s.inputs->encoders[0] - s.inputs->encoders[1])*2;
 	ml_bias = 0;
 	{
-		static sint16 l=0, r=0;
 		if( (ml_bias!=0) || (l!=m_l_speed) || (r!=m_r_speed) )
 		{
 			//CMD_set_motors(m_l_speed /* *1.015f*/ - ml_bias, m_r_speed * 1.07f); // for going straight:  80,79
 			//CMD_set_motors(m_l_speed , m_r_speed ); // for baby tracks
-			CMD_motor_command(7 , 0, 0 , m_l_speed , m_r_speed);
+			CMD_motor_command(6 , 1,1 , m_l_speed , m_r_speed);
 			l=m_l_speed; r=m_r_speed;
 		}
 	}

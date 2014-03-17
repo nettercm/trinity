@@ -25,6 +25,10 @@ int update(t_inputs *inputs, t_outputs *outputs);
 #define KEY_F6			0xe140
 #define KEY_F7			0xe141
 #define KEY_F8			0xe142
+#define KEY_F9			0xe143
+#define KEY_F10			0xe144
+#define KEY_F11			0xe085
+#define KEY_F12			0xe086
 
 #define KEY_SHIFT_F1	0xe154
 #define KEY_SHIFT_F2	0xe155
@@ -34,6 +38,10 @@ int update(t_inputs *inputs, t_outputs *outputs);
 #define KEY_SHIFT_F6	0xe159
 #define KEY_SHIFT_F7	0xe15a
 #define KEY_SHIFT_F8	0xe15b
+#define KEY_SHIFT_F9	0xe15c
+#define KEY_SHIFT_F10	0xe15d
+#define KEY_SHIFT_F11	0xe087
+#define KEY_SHIFT_F12	0xe088
 
 #define KEY_CTRL_LEFT	0xe073
 #define KEY_CTRL_RIGHT	0xe074

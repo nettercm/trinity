@@ -87,7 +87,7 @@ void wall_follow_fsm(void)
 		*/
 		first_(s_disabled)
 		{
-			enter_(s_disabled) { motor_command(2,0,0,0,0); }
+			enter_(s_disabled) { motor_command(6,2,2,0,0); }
 			which_wall = s.behavior_state[2];
 			if(s.behavior_state[1]==1) state = s_tracking_wall;
 			exit_(s_disabled)  { motor_command(8,1000,0,min_speed,min_speed); target_speed = min_speed; }
