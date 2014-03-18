@@ -58,12 +58,12 @@ void sim(void)
 
 
 	
-	while(1)
+	for(;;)
 	{
 		task_wait(1);
 
-		m.actual_enc_ab_ticks_per_interval = ((float)m.m2 / 1.83)/2;
-		m.actual_enc_cd_ticks_per_interval = ((float)m.m1 / 1.83)/2;
+		m.actual_enc_ab_ticks_per_interval = (s16) ((float)m.m2 / 1.83f)/2;
+		m.actual_enc_cd_ticks_per_interval = (s16) ((float)m.m1 / 1.83f)/2;
 
 		t_now = get_ms();
 		if(t_now - t_last >= 10)

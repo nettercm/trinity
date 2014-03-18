@@ -11,7 +11,7 @@ void fsm_test_task(void)
 	
 	task_open();
 
-	while(1)
+	for(;;)
 	{
 		first_(s_disabled)
 		{

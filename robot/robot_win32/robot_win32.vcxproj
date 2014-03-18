@@ -95,7 +95,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\behaviors.h" />
-    <ClInclude Include="..\cocoos.h" />
     <ClInclude Include="..\cocoos\cocoos.h" />
     <ClInclude Include="..\cocoos\os_applAPI.h" />
     <ClInclude Include="..\cocoos\os_assert.h" />

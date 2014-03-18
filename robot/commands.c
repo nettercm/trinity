@@ -8,7 +8,6 @@ void commands_process(void)
 	uint8 cmd;
 	t_config_value *v;
 	t_motor_command *motor_cmd;
-	t_set_motors_cmd *set_motors_cmd;
 		
 	c = &(s.commands.d[0]);
 	
@@ -77,7 +76,7 @@ void commands_process_fsm(void)
 {
 	task_open();
 	
-	while(1)
+	for(;;)
 	{
 		event_wait(serial_cmd_evt);
 		commands_process();

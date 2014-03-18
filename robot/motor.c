@@ -329,8 +329,10 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 				s.motor_command_state = 6;
 				//don't apply the target speed - let the regulator gradually ramp up/down as required for smooth movements
 				//set_motors(rm_speed,lm_speed);
-				s.inputs.motors[0] = s.lm_actual = s.lm_target = lm_speed;
-				s.inputs.motors[1] = s.rm_actual = s.rm_target = rm_speed;
+				//s.inputs.motors[0] = s.lm_actual = lm_speed;
+				//s.inputs.motors[1] = s.rm_actual = rm_speed;
+				s.lm_target = lm_speed;
+				s.rm_target = rm_speed;
 			}
 			t_last=t_now;
 		}

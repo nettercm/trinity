@@ -73,10 +73,10 @@
 
 
 
-#define NO_TID	        255
-#define NO_EVENT        255
-#define NO_QUEUE        255
-#define NO_SEM          255
+#define NO_TID	        32
+#define NO_EVENT        8
+#define NO_QUEUE        8
+#define NO_SEM          8
 
 /* Total number of semaphores needed */
 #define N_TOTAL_SEMAPHORES    ( N_SEMAPHORES + N_QUEUES )

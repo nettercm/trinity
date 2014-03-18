@@ -147,11 +147,11 @@ void svp_set_mode(unsigned char mode);
 unsigned char svp_get_firmware_version(void);
 
 SVPStatus svp_get_status(void);
-static inline unsigned char usb_power_present(void) { return svp_get_status().usbPowerPresent; }
-static inline unsigned char usb_configured(void) { return svp_get_status().usbConfigured; }
-static inline unsigned char usb_suspend(void) { return svp_get_status().usbSuspend; }
-static inline unsigned char dtr_enabled(void) { return svp_get_status().dtrEnabled; }
-static inline unsigned char rts_enabled(void) { return svp_get_status().rtsEnabled; }
+static inline unsigned char usb_power_present(void) { return (unsigned char) svp_get_status().usbPowerPresent; }
+static inline unsigned char usb_configured(void) { return (unsigned char) svp_get_status().usbConfigured; }
+static inline unsigned char usb_suspend(void) { return (unsigned char) svp_get_status().usbSuspend; }
+static inline unsigned char dtr_enabled(void) { return (unsigned char) svp_get_status().dtrEnabled; }
+static inline unsigned char rts_enabled(void) { return (unsigned char) svp_get_status().rtsEnabled; }
 
 // Encoder Functions
 int svp_get_counts_ab(void);

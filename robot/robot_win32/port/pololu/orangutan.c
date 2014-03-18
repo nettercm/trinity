@@ -24,8 +24,8 @@ void BP(void)
 
 
 
-void set_digital_output(unsigned char pin, unsigned char outputState) { NOT_IMPLEMENTED(); }
-void set_digital_input(unsigned char pin, unsigned char inputState) { NOT_IMPLEMENTED(); }
+void set_digital_output(unsigned char pin, unsigned char outputState) { unsigned char dummy = pin+outputState; NOT_IMPLEMENTED(); }
+void set_digital_input(unsigned char pin, unsigned char inputState) { unsigned char dummy = pin+inputState; NOT_IMPLEMENTED(); }
 
 
 
@@ -34,7 +34,7 @@ void set_digital_input(unsigned char pin, unsigned char inputState) { NOT_IMPLEM
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SVPStatus svp_get_status(void) { return m.svp_status; }
-void svp_set_mode(unsigned char mode) { NOT_IMPLEMENTED(); }
+void svp_set_mode(unsigned char mode) { unsigned char dummy = mode; NOT_IMPLEMENTED(); }
 unsigned char svp_get_firmware_version(void) { NOT_IMPLEMENTED(); }
 
 
@@ -45,9 +45,9 @@ unsigned char svp_get_firmware_version(void) { NOT_IMPLEMENTED(); }
 
 
 unsigned long get_ticks(void){ return m.elapsed_milliseconds * 25000; }
-unsigned long ticks_to_microseconds(unsigned long ticks) {	NOT_IMPLEMENTED(); return 0; }
+unsigned long ticks_to_microseconds(unsigned long ticks) {	NOT_IMPLEMENTED(); return ticks; }
 void time_reset(void) { m.elapsed_milliseconds=0; }
-void delay_us(unsigned int microseconds) { NOT_IMPLEMENTED(); }
+void delay_us(unsigned int microseconds) { unsigned int dummy = microseconds; NOT_IMPLEMENTED(); }
 
 unsigned long get_ms(void) 
 {
@@ -71,7 +71,7 @@ void delay_ms(unsigned int milliseconds)
 
 
 // use of pulse_in_init() is discouraged; use pulse_in_start() instead
-unsigned char pulse_in_start(const unsigned char *pulsePins, unsigned char numPins) { NOT_IMPLEMENTED(); }
+unsigned char pulse_in_start(const unsigned char *pulsePins, unsigned char numPins) { unsigned char dummy = pulsePins[numPins-1]; NOT_IMPLEMENTED(); }
 void get_pulse_info(unsigned char idx, struct PulseInputStruct* pulse_info) { NOT_IMPLEMENTED(); }
 unsigned char new_pulse(unsigned char idx) { NOT_IMPLEMENTED(); }
 unsigned char new_high_pulse(unsigned char idx) { NOT_IMPLEMENTED(); }

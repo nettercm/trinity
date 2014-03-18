@@ -1318,6 +1318,13 @@ void test(void)
 	PREPARE_CFG2(speed);
 	PREPARE_CFG2(distance);
 
+	task_wait(200);
+	motor_command(2,0,0,0,0);
+	task_wait(200);
+	motor_command(7,0,0,100,100);
+	task_wait(500);
+	motor_command(6,2,2,0,0);
+	task_wait(500);
 
 	while(1)
 	{

@@ -213,3 +213,6 @@ pip-log.txt
 
 #Mr Developer
 .mr.developer.cfg
+robot/cocoos.bak.h
+*.atsuo
+robot/robot.atsuo
