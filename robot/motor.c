@@ -199,6 +199,8 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 				if(r_enc_delta < s.rm_target-0) s.rm_actual+=accelleration;
 				LIMIT(s.lm_actual,-255,+255);
 				LIMIT(s.rm_actual,-255,+255);
+				if( (s.lm_target==0) && (s.lm_actual>-10) && (s.lm_actual<10) ) s.lm_actual = 0;
+				if( (s.rm_target==0) && (s.rm_actual>-10) && (s.rm_actual<10) ) s.rm_actual = 0;
 				s.inputs.motors[0] = s.lm_actual;
 				s.inputs.motors[1] = s.rm_actual;
 				set_motors(s.rm_actual,s.lm_actual);
@@ -212,6 +214,8 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 				if(r_enc_delta < s.rm_target-0) s.rm_actual++;
 				LIMIT(s.lm_actual,-255,+255);
 				LIMIT(s.rm_actual,-255,+255);
+				if( (s.lm_target==0) && (s.lm_actual>-10) && (s.lm_actual<10) ) s.lm_actual = 0;
+				if( (s.rm_target==0) && (s.rm_actual>-10) && (s.rm_actual<10) ) s.rm_actual = 0;
 				s.inputs.motors[0] = s.lm_actual;
 				s.inputs.motors[1] = s.rm_actual;
 				set_motors(s.rm_actual,s.lm_actual);
@@ -221,6 +225,8 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			case 8: //same as 7, just don't regulate
 				LIMIT(s.lm_actual,-255,+255);
 				LIMIT(s.rm_actual,-255,+255);
+				if( (s.lm_target==0) && (s.lm_actual>-10) && (s.lm_actual<10) ) s.lm_actual = 0;
+				if( (s.rm_target==0) && (s.rm_actual>-10) && (s.rm_actual<10) ) s.rm_actual = 0;
 				s.inputs.motors[0] = s.lm_actual;
 				s.inputs.motors[1] = s.rm_actual;
 				set_motors(s.rm_actual,s.lm_actual);

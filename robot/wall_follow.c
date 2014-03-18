@@ -90,7 +90,7 @@ void wall_follow_fsm(void)
 			enter_(s_disabled) { motor_command(6,2,2,0,0); }
 			which_wall = s.behavior_state[2];
 			if(s.behavior_state[1]==1) state = s_tracking_wall;
-			exit_(s_disabled)  { motor_command(8,1000,0,min_speed,min_speed); target_speed = min_speed; }
+			exit_(s_disabled)  { motor_command(8,1000,0,min_speed/2,min_speed/2); target_speed = min_speed; }
 		}
 		
 		
@@ -117,7 +117,7 @@ void wall_follow_fsm(void)
 			e2 = front -(target_distance+40);
 			
 			//if there is something right in front, slow down; otherwise speed up
-			if( (front < 160)  ||  (abs(e1)>20) ) 
+			if( (front < 160)  ||  (abs(e1)>40) ) 
 			{
 				if(target_speed > min_speed) target_speed -= down_ramp;
 			}				

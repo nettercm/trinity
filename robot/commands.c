@@ -4,15 +4,27 @@
 
 void commands_process(void)
 {
-	uint8 *c; //index into the data/payload 
+	uint8 *c; //index into the data/payload
+	uint8 *end;
+	uint8 i;
 	uint8 cmd;
 	t_config_value *v;
 	t_motor_command *motor_cmd;
 		
+	c  = &(s.commands);
+	end= c+sizeof(t_commands);
+	usb_printf("commands_process(end=0x%02x, c=0x%02x:  ",end,c);
+	for(i=0;i<sizeof(t_commands);i++)
+	{
+		usb_printf("%02x ",c[i]);
+	}
+	usb_printf(")\n");
+
 	c = &(s.commands.d[0]);
 	
-	while( (cmd = *c) != 0 )  //0 means no more commands
+	while( (cmd=*c)!=0 )  //0 means no more commands
 	{
+		usb_printf("0x%04x: 0x%02x\n",c,cmd);
 		c++;
 		switch(cmd)
 		{
@@ -34,6 +46,7 @@ void commands_process(void)
 
 			case CMD_RESET_ENCODERS:
 				encoders_reset();
+				c+=0; //this command has no parameters
 			break;
 			
 
@@ -52,6 +65,7 @@ void commands_process(void)
 
 			case CMD_SET_SONAR_TIMEOUT:
 				ultrasonic_set_timeout(c[0]);
+				c+=1;
 			break;
 
 
@@ -66,7 +80,7 @@ void commands_process(void)
 			default:
 			break;
 		}
-		
+		if(c>=end) break;
 	}
 	
 }
