@@ -8,9 +8,19 @@ General Motor control / locomotion:
 	o	(10 per interval @ 50hz/20ms => 0.5s for full 0-255 PWM range)
 
 
+motor command for turning:
+1) gradually ramp up (at specified rate) to target speed
+2) when we are <= 30degrees from the target, start ramping down to speed 15
+3) when we are <= 10degrees from the target, apply target speed 5 (w/ feed forward) & regulate to maintain 5
+3) when we are at the target, hit the brakes - full stop w/out ramping down
 
+General:
+* add an API to start/stop a behavior & to wait for it to complete.
+
+
+
+How to fix the issue of USB serial port / bluetooth module being confused as a serial mouse:
 Location: HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\sermouse
 Key: Start
 Value: 3
-
 Change Value to 4, which is Disabled and it will stop this problem occurring

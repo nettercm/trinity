@@ -31,7 +31,7 @@
 #define S32(grp, id, name, min, max, value) { grp, id , S32_VALUE, name, value },
 #define FLT(grp, id, name, min, max, value) { grp, id , FLT_VALUE, name, value },
 
-t_config_flash config[255] =
+t_config_flash config[MAX_CFG_ITEMS] =
 {
 	//{0,0,0,"THE START",0},
 	#include "parameters.h"
@@ -39,7 +39,7 @@ t_config_flash config[255] =
 };
 
 
-t_config_flash config_flash[255] =
+t_config_flash config_flash[MAX_CFG_ITEMS] =
 {
 	//{0,0,0,"THE START",0},
 	#include "parameters.h"
@@ -47,7 +47,7 @@ t_config_flash config_flash[255] =
 };
 
 //workaround to capture the float values
-t_config_flash_float_only config_float_only[255] =
+t_config_flash_float_only config_float_only[MAX_CFG_ITEMS] =
 {
 	//{0,0,0,"THE START",0},
 	#include "parameters.h"
@@ -65,7 +65,7 @@ t_config_flash_float_only config_float_only[255] =
 #define U08(grp, id, name, min, max, value) { grp, id , U08_VALUE , name, .v.u08= value },
 #define S08(grp, id, name, min, max, value) { grp, id , S08_VALUE , name, .v.s08= value },
 
-const t_config_flash config_flash[255] PROGMEM =
+const t_config_flash config_flash[MAX_CFG_ITEMS] PROGMEM =
 {
 	//{0,0,0,"THE START",0},
 	#include "parameters.h"
@@ -91,7 +91,7 @@ const t_config_flash config_flash[255] PROGMEM =
 #define U32(grp, id, name, min, max, value) { grp, id , .v.u32= value },
 #define S32(grp, id, name, min, max, value) { grp, id , .v.s32= value },
 
-t_config config[255] =
+t_config config[128] =
 {
 	//{0,0,-1},
 	#include "parameters.h"
@@ -110,7 +110,7 @@ void cfg_init(void)
 {
 	int i;
 	
-	for(i=0;i<255;i++)
+	for(i=0;i<MAX_CFG_ITEMS;i++)
 	{
 #ifdef WIN32
 		if(config_float_only[i].type == FLT_VALUE)
@@ -137,7 +137,7 @@ void cfg_test(void)
 void cfg_set_value_by_grp_id(uint8 grp, uint8 id, t_config_value v)
 {
 	u08 i;
-	for(i=0;i<255;i++)
+	for(i=0;i<MAX_CFG_ITEMS;i++)
 	{
 		if( (config[i].grp == grp) && (config[i].id == id) ) config[i].v.u32 = v.u32;
 		if( config[i].grp == 255 ) return;
@@ -148,10 +148,10 @@ void cfg_set_value_by_grp_id(uint8 grp, uint8 id, t_config_value v)
 u08 cfg_get_index_by_grp_and_id(uint8 grp, uint8 id)
 {
 	u08 i;
-	for(i=0;i<255;i++)
+	for(i=0;i<MAX_CFG_ITEMS;i++)
 	{
 		if( (config[i].grp == grp) && (config[i].id == id) ) break;;
-		if( config[i].grp == 255 ) {i=255; break;}
+		if( config[i].grp == 255 ) {i=MAX_CFG_ITEMS; break;}
 	}
 	usb_printf("cfg index of %d,%d = %d\n",grp,id,i);
 	return i;
@@ -220,7 +220,7 @@ void cfg_get_value_by_index(u08 index, u08 type_id, void* value)
 u08 cfg_get_u08_by_grp_id(uint8 grp, uint8 id)
 {
 	u08 i;
-	for(i=0;i<=255;i++)
+	for(i=0;i<=MAX_CFG_ITEMS;i++)
 	{
 		if( (config[i].grp == grp) && (config[i].id == id) ) return config[i].v.u08;
 		if(config[i].grp == 255) return 0; //reached the end
@@ -231,7 +231,7 @@ u08 cfg_get_u08_by_grp_id(uint8 grp, uint8 id)
 s16 cfg_get_s16_by_grp_id(uint8 grp, uint8 id)
 {
 	u08 i;
-	for(i=0;i<=255;i++)
+	for(i=0;i<=MAX_CFG_ITEMS;i++)
 	{
 		if( (config[i].grp == grp) && (config[i].id == id) ) return config[i].v.s16;
 		if(config[i].grp == 255) return 0; //reached the end

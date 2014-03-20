@@ -258,7 +258,7 @@ namespace robot_ui {
 			comboBox3->Items->Add("sonar[2]");
 			comboBox3->Items->Add("sonar[3]");
 
-			for(i=0; i<=255;i++)
+			for(i=0; i<=MAX_CFG_ITEMS;i++)
 			{
 				if(config[i].grp == 255) break;
 				dataGridView1->Rows->Add();

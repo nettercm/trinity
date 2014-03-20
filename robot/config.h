@@ -5,9 +5,10 @@
 #ifdef __cplusplus 
 extern "C" {
 #endif
-
-
+	
 #include "typedefs.h"
+
+#define MAX_CFG_ITEMS 128
 
 #define DEFINE_CFG(type,name,grp,id) static type name = 0; static u08 name##_cfg_idx = 0; const u08 name##_grp = grp; const u08 name##_id= id
 #define PREPARE_CFG(type,name) name##_cfg_idx = cfg_get_index_by_grp_and_id(name##_grp,name##_id)
@@ -157,11 +158,11 @@ t_config;
 
 
 #ifdef WIN32
-extern t_config_flash config[255];
-extern t_config_flash config_flash[255];
+extern t_config_flash config[MAX_CFG_ITEMS];
+extern t_config_flash config_flash[MAX_CFG_ITEMS];
 #else
-extern t_config config[255];
-extern const t_config_flash config_flash[255];
+extern t_config config[MAX_CFG_ITEMS];
+extern const t_config_flash config_flash[MAX_CFG_ITEMS];
 #endif
 
 
