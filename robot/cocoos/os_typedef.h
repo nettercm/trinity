@@ -47,6 +47,7 @@
 
 
 
-typedef void (*taskproctype) (void);
+//typedef void (*taskproctype) (void);
+typedef void (*taskproctype) (unsigned char, unsigned char*);
 
 #endif
