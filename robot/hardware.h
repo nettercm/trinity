@@ -19,9 +19,7 @@
 #define AI_IR_NE      4
 
 
-//#define AI_FLAME_NW   5
 #define AI_FLAME_N    2
-#define AI_FLAME_NE   3
 
 
 #define IO_US_ECHO_AND_PING_1 IO_D0
