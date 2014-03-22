@@ -17,7 +17,19 @@ motor command for turning:
 General:
 * add an API to start/stop a behavior & to wait for it to complete.
 
+start_behavior(b, s1?)						//start behavior b in state s1
+start_behavior_and_wait(b, s1?, s2?)		//start behavior b in state s1 and wait until it reaches s2
+stop_behavior(b)							//stop behavior b
+get_behavior_state(b)
 
+
+Notes:
+
+i2c 20x4 LCD:
+5mA + 30mA for the backlight
+123ms for 80 characters @ 100khz i2c speed  (1540us per character)
+55ms for 80 characters @ 400khz i2c speed  (690us per character)
+Arduino i2c speed is controlled by TWI_FREQ macro in twi.h;  default is 100khz
 
 How to fix the issue of USB serial port / bluetooth module being confused as a serial mouse:
 Location: HKEY_LOCAL_MACHINE\System\CurrentControlSet\Services\sermouse
