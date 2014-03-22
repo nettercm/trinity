@@ -254,8 +254,8 @@ void wall_follow_fsm(void)
 		s.inputs.watch[0]=error;
 		s.inputs.watch[1]=integral;
 		s.inputs.watch[2]=correction;
+		*/
 		s.inputs.watch[3]=state;
-		*/			
 		task_wait(interval);
 	}
 	

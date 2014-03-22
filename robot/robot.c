@@ -233,9 +233,9 @@ void lcd_update_fsm(void) //(uint32 event)
 		/***************************************************************************
 		// display the selected screen
 		***************************************************************************/
-		clear();  
 		if(s.lcd_screen==0)
 		{
+			clear();  
 			lcd_goto_xy(0,0);
 			lcd_printf("L: %3d %3d", s.inputs.analog[AI_LINE_RIGHT],s.inputs.analog[AI_LINE_LEFT]); 
 			OS_SCHEDULE;
@@ -244,6 +244,7 @@ void lcd_update_fsm(void) //(uint32 event)
 		}
 		else if(s.lcd_screen==1)
 		{
+			clear();  
 			lcd_goto_xy(0,0); 
 			lcd_printf("U: %4d %4d",  s.inputs.sonar[0],s.inputs.sonar[1]); 
 			OS_SCHEDULE;
@@ -252,6 +253,7 @@ void lcd_update_fsm(void) //(uint32 event)
 		}
 		else if(s.lcd_screen==2)
 		{
+			clear();  
 			lcd_goto_xy(0,0); 
 			lcd_printf("i%03d %03d %03d %03d",s.ir[AI_IR_NE], s.ir[AI_IR_N_long], s.ir[AI_IR_N], s.ir[AI_IR_NW]); 
 			OS_SCHEDULE;
@@ -260,10 +262,14 @@ void lcd_update_fsm(void) //(uint32 event)
 		}
 		else if(s.lcd_screen==3)
 		{
+			clear();  
 			lcd_goto_xy(0,0);   task_wait(5);
 			lcd_printf("V=%5d",	read_battery_millivolts_svp());     task_wait(5);
 			lcd_goto_xy(0,1);   task_wait(5);
 			lcd_printf("V=%5d,  %5d",	s.inputs.vbatt, count);     task_wait(5);
+		}
+		else if(s.lcd_screen==255) //allow another task to update the screen.
+		{
 		}
 	}
 	task_close();
@@ -448,7 +454,8 @@ void line_detection_fsm(void)
 			if( (s.line[0]>=black) && (s.line[1]>=black) )  state = s_not_crossed;
 			exit_(s_crossed_line)  {}
 		}
-		s.inputs.watch[0]=lines_crossed;
+		s.inputs.watch[0]=state;
+		s.inputs.watch[1]=lines_crossed;
 		OS_SCHEDULE;
 	}
 	task_close();
@@ -524,15 +531,16 @@ u08 move_manneuver(u08 cmd, s16 speed, float distance)
 	if(cmd==1) //start
 	{
 		odometry_set_checkpoint(); 
-		if(distance < 0) sign=-1;
+		if(distance < 0) sign=-1; else sign=1;
+		motor_command(7,2,2,(10)*sign,(10)*sign);
 		motor_command(6,1,1,(speed)*sign,(speed)*sign);
 		state = 1;
 	}
 	else
 	{
-		if     (( fabs(odometry_get_distance_since_checkpoint()) >= fabs(distance)    )) { motor_command(7,1,1, 0,  0); state = 0; } //done
-		else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-40 ))   motor_command(7,1,1, sign*5, sign*5 );
-		else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-90 ))   motor_command(6,1,1, sign*15,sign*15);
+		if     (( fabs(odometry_get_distance_since_checkpoint()) >= fabs(distance)    )) { motor_command(2,0,0, 0,  0); state = 0; } //done
+		else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-40 ))   motor_command(7,1,1, sign*10, sign*10 );
+		else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-90 ))   motor_command(6,1,1, sign*20,sign*20);
 	}
 	return state;
 }
@@ -546,15 +554,18 @@ u08 turn_in_place_manneuver(u08 cmd, s16 speed, float angle)
 	if(cmd==1) //initialize the state
 	{
 		odometry_set_checkpoint(); 
-		if(angle < 0) sign=-1;
-		motor_command(6,1,1,(speed)*-sign,(speed)*sign);
+		if(angle < 0) sign=-1; else sign=1;
+		motor_command(7,2,2,(10)*-sign,(10)*sign);
+		motor_command(6,2,2,(speed)*-sign,(speed)*sign);
 		state = 1;
 	}
 	else //update
 	{
-		if     (( fabs(odometry_get_rotation_since_checkpoint()) >= fabs(angle)    )) { motor_command(7,1,1, 0,  0); state = 0; } //done
-		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)-10 ))   motor_command(7,1,1, -sign*5, sign*5 );
-		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)-30 ))   motor_command(6,1,1, -sign*15,sign*15);
+		if     (( fabs(odometry_get_rotation_since_checkpoint()) >= fabs(angle)    )) { motor_command(2,0,0, 0,  0); state = 0; } //done
+		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)- 5))   motor_command(7,1,1, -sign*5, sign*5 );
+		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)-10))   motor_command(6,3,3, -sign*10, sign*10 );
+		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)/4 ))   motor_command(6,1,1, -sign*15, sign*15 );
+		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)/2 ))   motor_command(6,4,4, -sign*(speed/2),sign*(speed/2));
 	}
 	return state;
 }
@@ -577,6 +588,7 @@ void scan(u08 cmd)
 	if(cmd==1) //initialize the state
 	{
 		last_angle = angle;
+		memset(scan_data,0,sizeof(scan_data));
 		i=0;
 	}
 	else //update
@@ -596,6 +608,8 @@ void scan(u08 cmd)
 #define TURN_IN_PLACE(speed,angle) turn_in_place_manneuver(1,(speed),(angle)); while(turn_in_place_manneuver(0,(speed),(angle))) {OS_SCHEDULE;}
 #define MOVE(speed,distance) move_manneuver(1,(speed),(distance)); while(move_manneuver(0,(speed),(distance))) {OS_SCHEDULE;}
 #define TURN_IN_PLACE_AND_SCAN(speed,angle) turn_in_place_manneuver(1,(speed),(angle)); scan(1); while(turn_in_place_manneuver(0,(speed),(angle))) {scan(0); OS_SCHEDULE;}
+#define FAN_ON() set_digital_output(IO_D0,0)
+#define FAN_OFF() set_digital_output(IO_D0,1)
 
 #define move(speed,distance) \
 	odometry_set_checkpoint(); \
@@ -613,7 +627,7 @@ void scan(u08 cmd)
 
 void master_logic_fsm(void)
 {
-	t_scan_result scan_result;
+	static t_scan_result scan_result;
 	enum states 
 	{ 
 		s_none=0, 
@@ -699,9 +713,10 @@ void master_logic_fsm(void)
 			enter_(s_disabled) 
 			{  
 				motor_command(cmd,accel,decel,0,0);
+				FAN_OFF();
 				s.behavior_state[1] = 0;
 				s.behavior_state[2] = 0;
-				//s.behavior_state[3] = 0;
+				s.behavior_state[3] = 0;
 				lines_crossed=0;
 				last_lines_crossed=0;
 				s.inputs.watch[0] = 0;
@@ -788,22 +803,21 @@ void master_logic_fsm(void)
 			event_wait(line_alignment_done_evt);
 
 			//move 10cm into the room
-			//move(turn_speed, room3_enter);
-			//task_wait(200);
 			MOVE(turn_speed, room3_enter);
 
 			//we are facing more or less N right now.  turn right about 120degrees so that we are facing SE
-			//turn(turn_speed, room3_turn_1); //120);
-			//task_wait(200);
-			TURN_IN_PLACE(turn_speed, room3_enter);
+			TURN_IN_PLACE(turn_speed, room3_turn_1);
 
 			//now start to scan for the flame by turning left about 250 degrees
 			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			//turn(-turn_speed, room3_turn_2); //250 );
-			//task_wait(200);
 			TURN_IN_PLACE_AND_SCAN(turn_speed, room3_turn_2);
-			scan_result = find_peak_in_scan(scan_data,360,3);
-			if(scan_result.flame_center_value > 200) switch_(s_searching_room_3, s_move_to_candle);
+			scan_result = find_peak_in_scan(scan_data,360,30);
+			if(scan_result.flame_center_value > 200) 
+			{
+				//turn into the direction where we saw the peak
+				TURN_IN_PLACE( turn_speed, -(room3_turn_2-scan_result.center_angle) );
+				switch_(s_searching_room_3, s_move_to_candle);
+			}
 
 			//if there was no candle, go on to the next room.
 			//we should be facing the wall more or less SW, so we just need to start following the right wall
@@ -837,7 +851,7 @@ void master_logic_fsm(void)
 				if(still_inside_room) 
 				{
 					play_note(C(4), 50, 10);
-					s.inputs.watch[2]++;
+					//s.inputs.watch[2]++;
 					last_lines_crossed = lines_crossed;
 					still_inside_room=0;
 				}
@@ -863,20 +877,21 @@ void master_logic_fsm(void)
 			event_wait(line_alignment_done_evt);
 
 			//move 10cm into the room
-			//move(turn_speed,room2_enter);
-			//task_wait(200);
 			MOVE(turn_speed, room2_enter);
 
 			//we are facing more or less W right now.  turn right about 120degrees so that we are facing NE
-			//turn(turn_speed, room2_turn_1);
-			//task_wait(200);
 			TURN_IN_PLACE(turn_speed, room2_turn_1);
 
 			//now start to scan for the flame by turning left about 250 degrees
 			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			//turn(-turn_speed, room2_turn_2 );
-			//task_wait(200);
-			TURN_IN_PLACE(turn_speed, room2_turn_2);
+			TURN_IN_PLACE_AND_SCAN(turn_speed, room2_turn_2);
+			scan_result = find_peak_in_scan(scan_data,360,30);
+			if(scan_result.flame_center_value > 200) 
+			{
+				//turn into the direction where we saw the peak
+				TURN_IN_PLACE( turn_speed, -(room2_turn_2-scan_result.center_angle) );
+				switch_(s_searching_room_2, s_move_to_candle);
+			}
 
 			//if there was no candle, go on to the next room.
 			//we should be facing the wall more or less SE, we just need to start following the right wall
@@ -909,7 +924,7 @@ void master_logic_fsm(void)
 				if(still_inside_room) 
 				{
 					play_note(C(4), 50, 10);
-					s.inputs.watch[2]++;
+					//s.inputs.watch[2]++;
 					last_lines_crossed = lines_crossed;
 					still_inside_room=0;
 				}
@@ -942,7 +957,14 @@ void master_logic_fsm(void)
 
 			//now start to scan for the flame by turning right about 250 degrees
 			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			TURN_IN_PLACE(turn_speed, room1_turn_2);
+			TURN_IN_PLACE_AND_SCAN(turn_speed, room1_turn_2);
+			scan_result = find_peak_in_scan(scan_data,360,30);
+			if(scan_result.flame_center_value > 200) 
+			{
+				//turn into the direction where we saw the peak
+				TURN_IN_PLACE( turn_speed, -(room1_turn_2-scan_result.center_angle) );
+				switch_(s_searching_room_1, s_move_to_candle);
+			}
 
 			//if there was no candle, go on to the next room.
 			//we should be facing more or less SW, but too far away from the wall depending on door location
@@ -986,7 +1008,7 @@ void master_logic_fsm(void)
 			//completely exit from room 1 until we have reached the center of the intersection
 			//move(turn_speed,220);
 			//task_wait(400);
-			MOVE(turn_speed, 220);
+			MOVE(turn_speed, 230);
 
 			//turn left 90deg and check for dog
 			//turn(-turn_speed,ninety);
@@ -1001,6 +1023,7 @@ void master_logic_fsm(void)
 			//turn(turn_speed,ninety);
 			//task_wait(400);
 			TURN_IN_PLACE(turn_speed, -ninety);
+			MOVE(turn_speed, 230);
 
 			last_lines_crossed = lines_crossed;
 			s.behavior_state[2]=0; //left wall
@@ -1036,6 +1059,12 @@ void master_logic_fsm(void)
 		next_(s_searching_room_4)
 		{
 			enter_(s_searching_room_4) { }
+
+			event_signal(line_alignment_start_evt);
+			event_wait(line_alignment_done_evt);
+
+			state = s_disabled;
+
 			exit_(s_searching_room_4) {}
 		}
 
@@ -1044,17 +1073,21 @@ void master_logic_fsm(void)
 		{
 			enter_(s_move_to_candle) {}
 
-			//turn into the direction where we saw the peak
-
 			//make sure we are not in front of some obstacle (in case we saw a reflection from the wall)
 
 			//now move forward until we reach the candle circle
+			MOVE(turn_speed,200);
+			FAN_ON(); 
+			task_wait(2000);
+			FAN_OFF(); 
+
+			state = s_disabled;
 
 			exit_(s_move_to_candle) {}
 		}
 
 
-		s.inputs.watch[1]=state;
+		s.inputs.watch[2]=state;
 		task_wait(25);
 	}
 
@@ -1065,8 +1098,9 @@ void master_logic_fsm(void)
 
 void test(u08 cmd, u08 *param)
 {
+	static u16 i;
 	float time_to_stop=0,distance_to_stop;
-	t_scan_result scan_result;
+	static t_scan_result scan_result;
 	DEFINE_CFG2(s16,accel,99,1);					
 	DEFINE_CFG2(s16,decel,99,2);					
 	DEFINE_CFG2(s16,speed,99,3);					
@@ -1092,6 +1126,14 @@ void test(u08 cmd, u08 *param)
 	PREPARE_CFG2(distance);
 	
 	test(1,0x1234);
+
+	/*
+	for(;;)
+	{
+		dbg_printf("0123456789\n");
+		task_wait(100);
+	}
+	*/
 
 	/*
 	task_wait(200);
@@ -1130,14 +1172,53 @@ void test(u08 cmd, u08 *param)
 			motor_command(7,1,1,0,0);
 			*/
 
-			//MOVE(100,100);
-			//MOVE(100,-100);
-			//TURN_IN_PLACE( 50, 90);
-			//TURN_IN_PLACE( 50, -90);
+			/*
+			MOVE(50,100);
+			TURN_IN_PLACE( 50, 90);
+			MOVE(50,100);
+			TURN_IN_PLACE( 50, 90);
+			MOVE(50,100);
+			TURN_IN_PLACE( 50, 90);
+			MOVE(50,100);
+			TURN_IN_PLACE( 50, 90);
+			*/
 
-			TURN_IN_PLACE_AND_SCAN( 50, 90 );
+			//set_digital_output(IO_D1,0);
+			set_digital_output(IO_D0,0);
+			task_wait(2000);
+			//set_digital_output(IO_D1,1);
+			set_digital_output(IO_D0,1);
+
+			#if 0
+			//dbg_printf("Starting scan....\n");
+			TURN_IN_PLACE_AND_SCAN( 40, 220 );
+			//dbg_printf("....done\n");
+			scan_result = find_peak_in_scan(scan_data,360,30);
+			/*
+			dbg_printf("scan_result: %d,%d,%d\n",
+				scan_result.flame_center_value, scan_result.rising_edge_position, scan_result.falling_edge_position,
+				scan_result.center_angle, scan_result.rising_edge_angle, scan_result.falling_edge_angle);
+			*/
+			//for(i=0;i<360;i++) {dbg_printf("scan_data[%03d]=%03d,%03d\n",i, scan_data[i].angle, scan_data[i].flame);task_wait(5);}
+			TURN_IN_PLACE( 40, -(220-scan_result.center_angle) );
+			#endif
+			/*
+
+			task_wait(2000);
+
+			TURN_IN_PLACE_AND_SCAN( 100, -90 );
+			scan_result = find_peak_in_scan(scan_data,360,3);
+
+			task_wait(2000);
+
+			TURN_IN_PLACE_AND_SCAN( 100, 180 );
 			scan_result = find_peak_in_scan(scan_data,360,3);
 	
+			task_wait(2000);
+
+			TURN_IN_PLACE_AND_SCAN( 100, -180 );
+			scan_result = find_peak_in_scan(scan_data,360,3);
+			*/
 			s.behavior_state[11]=0;
 		}
 
@@ -1220,7 +1301,7 @@ int main(void)
 	task_create( serial_receive_fsm,		13,  NULL, 0, 0);
 	task_create( commands_process_fsm,		14,  NULL, 0, 0);
 	task_create( motor_command_fsm,			15,  NULL, 0, 0);
-	task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
+	//task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
 	//task_create( debug_fsm, 17, NULL, 0, 0); //not used right now
 	task_create( wall_follow_fsm,			18,  NULL, 0, 0);
 	task_create( master_logic_fsm,			19,  NULL, 0, 0);

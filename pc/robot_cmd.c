@@ -43,8 +43,16 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 	{
 		//the last sizeof(t_inputs) number of bytes from the retrieved buffer contain the t_inputs message
 		rx_buffer = (t_frame_to_pc*) &(buffer[size-sizeof(t_frame_to_pc)]);
-		memcpy((void*)(&inputs),(void*) &(rx_buffer->payload[2]),sizeof(inputs));
-		s.inputs = &inputs;
+
+		if(rx_buffer->payload[1]==2)
+		{
+			printf("%s",&(rx_buffer->payload[2]));
+		}
+		else
+		{
+			memcpy((void*)(&inputs),(void*) &(rx_buffer->payload[2]),sizeof(inputs));
+			s.inputs = &inputs;
+		}
 
 		if( (rx_buffer->magic1[0] != 0xab) ||
 			(rx_buffer->magic1[1] != 0xcd) ||
@@ -85,20 +93,20 @@ void display_inputs_and_state(t_inputs *inputs)
 	static u32 t_last=0;
 	static float t_delta_avg=20.0f;
 	u32 t_now,t_delta;
+	static u08 watch[4] = {0,0,0,0};
 
 	if(t_last==0) t_last=GetTickCount();
 
 	t_now = GetTickCount();
 	t_delta = t_now-t_last;
-	t_last=t_now;
 	t_delta_avg = (t_delta_avg*19.0f + t_delta)/20.0f;
 
 	//sprintf(s.msg, "%03u, %03u, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,    FSM,%1d,%1d,%1d,%1d,%1d,%1d,%1d,%1d  E,%4d,%4d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",				
-	sprintf(s.msg, "D_( %03u, %03u, %06ld, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,     E,%05d,%05d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%04d,%04d,%04d,%04d,  I,%04d,%04d,%04d,%04d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d )\n",				
+	sprintf(s.msg, "D_( %03u, %03u, %06ld,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,     E,%05d,%05d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%04d,%04d,%04d,%04d,  I,%04d,%04d,%04d,%04d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d )\n",				
 				rx_buffer->seq,
 				rx_buffer->ack,
 				inputs->timestamp,
-				t_delta, t_delta_avg,
+				/*t_delta, t_delta_avg,*/
 				inputs->vbatt/1000.0f,
 				inputs->flags,
 
@@ -120,7 +128,12 @@ void display_inputs_and_state(t_inputs *inputs)
 				inputs->watch[0], inputs->watch[1], inputs->watch[2], inputs->watch[3]
 			);
 
+	if( (t_delta >= 1000) || (memcmp(watch,inputs->watch,4)!=0) )
+	{
 		printf(s.msg);
+		memcpy(watch,inputs->watch,4);
+		t_last=t_now;
+	}
 }
 
 

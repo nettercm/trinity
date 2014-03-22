@@ -23,6 +23,11 @@ stop_behavior(b)							//stop behavior b
 get_behavior_state(b)
 
 
+Issues:
+* turning into room 4 w/ door on S side - turning too sharp
+* missing the line/door when entering room 1 w/ door on s side
+
+
 Notes:
 
 i2c 20x4 LCD:

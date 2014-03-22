@@ -10,7 +10,14 @@
 #define DEBUG_H_
 
 extern int	usb_printf(const char *__fmt, ...);
+extern int	dbg_printf(const char *__fmt, ...);
 extern char _b[];
+
+#define DBG_BUFFER_SIZE 2048
+
+extern u08 dbg_buffer[DBG_BUFFER_SIZE];
+extern s16 dbg_buffer_write;
+extern s16 dbg_buffer_read;
 
 #define DBG_printf(flag,p) if(flag){int size = sprintf p; if(usb_power_present()) serial_send_blocking(USB_COMM,_b,size); }
 

@@ -1077,7 +1077,7 @@ private: System::Void t1_Tick(System::Object^  sender, System::EventArgs^  e)
 
 			while(x<history_index)
 			{
-				chart1->Series[0]->Points->AddXY(x, inputs_history[x].ir[0]);
+				chart1->Series[0]->Points->AddXY(x, inputs_history[x].analog[2]);
 				chart1->Series[1]->Points->AddXY(x, inputs_history[x].ir[1]);
 				x++;
 			}

@@ -30,6 +30,8 @@ extern t_robot_model m;
 
 #ifndef WIN32
 #define lcd_printf printf
+#else
+extern int	lcd_printf(const char *__fmt, ...);
 #endif
 
 

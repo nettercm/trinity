@@ -14,6 +14,10 @@
 
 char _b[200];
 
+u08 dbg_buffer[DBG_BUFFER_SIZE];
+s16 dbg_buffer_write=0;
+s16 dbg_buffer_read=0;
+
 int	usb_printf(const char *__fmt, ...)
 {
 	#ifdef USB_COMM
@@ -30,6 +34,30 @@ int	usb_printf(const char *__fmt, ...)
 	#endif
 	#endif
 	return 0;
+}
+
+
+int	dbg_printf(const char *__fmt, ...)
+{
+	int size,i;
+	va_list ap;
+	va_start(ap, __fmt);
+	size = vsprintf(_b, __fmt, ap);
+	va_end(ap);
+	//serial_send_blocking(USB_COMM,_b,size);
+	for(i=0;i<size;i++)
+	{
+		dbg_buffer[dbg_buffer_write] = _b[i];
+		dbg_buffer_write++;
+		if(dbg_buffer_write>=DBG_BUFFER_SIZE) dbg_buffer_write=0;
+		if(dbg_buffer_write==dbg_buffer_read)
+		{
+			dbg_buffer_write--;
+			if(dbg_buffer_write<0) dbg_buffer_write=DBG_BUFFER_SIZE-1;
+			return i+1;
+		}
+	}
+	return i;
 }
 
 

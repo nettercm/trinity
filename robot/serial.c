@@ -90,10 +90,27 @@ void serial_send_fsm(void)
 		tx_buffer.magic1[1] = 0xcd;
 		tx_buffer.magic2[0] = 0xdc;
 		tx_buffer.magic2[1] = 0xba;
-		tx_buffer.payload[0] = sizeof(t_inputs);
-		tx_buffer.payload[1] = 1;
-		s.inputs.timestamp = get_ms();
-		memcpy(&(tx_buffer.payload[2]),&s.inputs,sizeof(t_inputs));
+		memset(tx_buffer.payload,0,sizeof(tx_buffer.payload));
+		if(dbg_buffer_read != dbg_buffer_write)
+		{
+			i=0;
+			while( (dbg_buffer_read != dbg_buffer_write) && (i < (sizeof(t_inputs)-1)) )
+			{
+				tx_buffer.payload[2+i]=dbg_buffer[dbg_buffer_read];
+				i++;
+				dbg_buffer_read++;
+				if(dbg_buffer_read>=DBG_BUFFER_SIZE) dbg_buffer_read=0;
+			}
+			tx_buffer.payload[0] = i;
+			tx_buffer.payload[1] = 2;
+		}
+		else
+		{
+			tx_buffer.payload[0] = sizeof(t_inputs);
+			tx_buffer.payload[1] = 1;
+			s.inputs.timestamp = get_ms();
+			memcpy(&(tx_buffer.payload[2]),&s.inputs,sizeof(t_inputs));
+		}
 		//for(i=0;i<sizeof(tx_buffer.payload);i++)tx_buffer.payload[i]=i;
 		_serial_send(UART_PC,(char*)&tx_buffer,sizeof(t_frame_to_pc)); //seems to work
 	}
