@@ -3,7 +3,7 @@
 
 volatile uint16 l_enc_cp=0,r_enc_cp=0;
 
-float PI = 3.1415926535897932384626433832795;
+float PI = 3.1415926535897932384626433832795f;
 
 //float odo_cml= 0.1346671682494093856046448480279;
 //float odo_cmr= 0.1346671682494093856046448480279;
@@ -21,7 +21,7 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 
 	d_Ul = odo_cml * l;
 	d_Ur = odo_cmr * r;
-	d_U  = (d_Ul + d_Ur) / 2.0;
+	d_U  = (d_Ul + d_Ur) / 2.0f;
 	d_theta = (d_Ur - d_Ul) / odo_b;
 
 	//update our absolute position
@@ -30,8 +30,8 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	s.inputs.x  = s.inputs.x + d_x;
 	s.inputs.y  = s.inputs.y + d_y;
 	s.inputs.theta = s.inputs.theta + d_theta;
-	if(s.inputs.theta > 2.0*PI) s.inputs.theta -= 2.0*PI;
-	if(s.inputs.theta < -2.0*PI) s.inputs.theta += 2.0*PI;
+	if(s.inputs.theta > 2.0f*PI) s.inputs.theta -= 2.0f*PI;
+	if(s.inputs.theta < -2.0f*PI) s.inputs.theta += 2.0f*PI;
 
 	//update relative position change since the last "checkpoint"
 	d_x = d_U * cos(s.dtheta);
@@ -40,8 +40,8 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	s.dy  = s.dy + d_y;
 	s.dU  = s.dU + d_U;
 	s.dtheta = s.dtheta + d_theta;
-	if(s.dtheta > 2.0*PI) s.dtheta -= 2.0*PI;
-	if(s.dtheta < -2.0*PI) s.dtheta += 2.0*PI;
+	if(s.dtheta > 2.0*PI) s.dtheta -= 2.0f*PI;
+	if(s.dtheta < -2.0*PI) s.dtheta += 2.0f*PI;
 }
 
 
