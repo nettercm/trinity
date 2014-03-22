@@ -17,41 +17,44 @@
 typedef struct
 {
 	//communication w/ PC
-	volatile t_inputs inputs;	//this gets sent to the PC
+	t_inputs inputs;	//this gets sent to the PC
 	//volatile t_outputs outputs;    //keep this one around for now
-	volatile t_commands commands; 
+	t_commands commands; 
 	
 	//motor control:
-	volatile sint16 lm_target;
-	volatile sint16 rm_target;
-	volatile sint16 lm_actual;
-	volatile sint16 rm_actual;
-	volatile sint16 m_ramp;
-	volatile uint8 motor_command_state;
+	sint16 lm_target;
+	sint16 rm_target;
+	sint16 lm_actual;
+	sint16 rm_actual;
+	sint16 m_ramp;
+	uint8 motor_command_state;
 	
 	//odometry (since checkpoint; global odometry state is part of inputs struct)
 	float dx,dy,dtheta,dU;
 	
 	//behavior control
-	volatile uint8 behavior_state[16];
+	uint8 behavior_state[16];
 	
 	//ir
-	volatile s16 ir[8]; //use 8 so we can simply mirror the analog input channel numbers in this array
-	volatile u08 line[2];
+	s16 ir[8]; //use 8 so we can simply mirror the analog input channel numbers in this array
+	u08 line[2];
 	
 	//lcd
-	volatile u08 lcd_screen;
+	u08 lcd_screen;
 	
 	//sonars
-	volatile uint16 us_avg[8];
-	volatile uint16 us_cycles;
+	uint16 us_avg[8];
+	uint16 us_cycles;
+
+	//navigation
+	u08 current_room;
 	
 } t_state;
 
 
 //extern t_outputs default_outputs;
 //extern t_outputs o;
-extern volatile t_state s;
+extern t_state s;
 extern uint32 main_iterations;
 
 
