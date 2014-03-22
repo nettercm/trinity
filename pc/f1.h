@@ -72,6 +72,14 @@ namespace robot_ui {
 	private: System::Windows::Forms::ComboBox^  comboBox5;
 	private: System::Windows::Forms::ComboBox^  comboBox4;
 	private: System::Windows::Forms::ComboBox^  comboBox3;
+
+
+
+
+
+
+
+	private: System::Windows::Forms::TabPage^  tabPage3;
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  Group;
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  id;
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  name;
@@ -79,6 +87,8 @@ namespace robot_ui {
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  val;
 	private: System::Windows::Forms::DataGridViewButtonColumn^  inc;
 	private: System::Windows::Forms::DataGridViewButtonColumn^  dec;
+	private: System::Windows::Forms::Button^  btn_write_all;
+	private: System::Windows::Forms::Button^  btn_read_all;
 
 
 
@@ -267,6 +277,8 @@ namespace robot_ui {
 				if(config[i].id == 0)
 				{
 					dataGridView1->Rows[i]->Cells[0]->Value = Convert::ToString(config[i].grp) + " - " + gcnew String(config[i].name);
+					dataGridView1->Rows[i]->Cells[2]->Value = Convert::ToString(config[i].grp) + " - " + gcnew String(config[i].name);
+					//dataGridView1->Rows[i]->Cells[2]->Style = 
 				}
 				else
 				{
@@ -302,7 +314,8 @@ namespace robot_ui {
 					break;
 				case FLT_VALUE:
 					dataGridView1->Rows[i]->Cells[3]->Value = "flt";
-					dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config[i].v.f);
+					//dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config[i].v.f);
+					dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config_float_only[i].f);
 					break;
 				}
 			}
@@ -384,30 +397,21 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 		void InitializeComponent(void)
 		{
 			this->components = (gcnew System::ComponentModel::Container());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea1 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea2 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::Legend^  legend1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle1 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle4 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle2 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle3 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle5 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle8 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle6 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle7 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea3 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea4 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Legend^  legend2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series3 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series4 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			this->bw1 = (gcnew System::ComponentModel::BackgroundWorker());
 			this->t1 = (gcnew System::Windows::Forms::Timer(this->components));
 			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
 			this->checkBox1 = (gcnew System::Windows::Forms::CheckBox());
 			this->label1 = (gcnew System::Windows::Forms::Label());
 			this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
-			this->tabPage1 = (gcnew System::Windows::Forms::TabPage());
-			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
-			this->tabPage2 = (gcnew System::Windows::Forms::TabPage());
-			this->comboBox5 = (gcnew System::Windows::Forms::ComboBox());
-			this->comboBox4 = (gcnew System::Windows::Forms::ComboBox());
-			this->comboBox3 = (gcnew System::Windows::Forms::ComboBox());
-			this->comboBox2 = (gcnew System::Windows::Forms::ComboBox());
-			this->checkBox2 = (gcnew System::Windows::Forms::CheckBox());
-			this->chart1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
 			this->tabSettings = (gcnew System::Windows::Forms::TabPage());
 			this->dataGridView1 = (gcnew System::Windows::Forms::DataGridView());
 			this->Group = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
@@ -417,18 +421,30 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->val = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
 			this->inc = (gcnew System::Windows::Forms::DataGridViewButtonColumn());
 			this->dec = (gcnew System::Windows::Forms::DataGridViewButtonColumn());
+			this->tabPage2 = (gcnew System::Windows::Forms::TabPage());
+			this->comboBox5 = (gcnew System::Windows::Forms::ComboBox());
+			this->comboBox4 = (gcnew System::Windows::Forms::ComboBox());
+			this->comboBox3 = (gcnew System::Windows::Forms::ComboBox());
+			this->comboBox2 = (gcnew System::Windows::Forms::ComboBox());
+			this->checkBox2 = (gcnew System::Windows::Forms::CheckBox());
+			this->chart1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
+			this->tabPage3 = (gcnew System::Windows::Forms::TabPage());
+			this->tabPage1 = (gcnew System::Windows::Forms::TabPage());
+			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
 			this->tabLog = (gcnew System::Windows::Forms::TabPage());
 			this->textBoxLog = (gcnew System::Windows::Forms::TextBox());
 			this->tb_Vbatt = (gcnew System::Windows::Forms::TextBox());
 			this->label9 = (gcnew System::Windows::Forms::Label());
 			this->textBox2 = (gcnew System::Windows::Forms::TextBox());
 			this->label5 = (gcnew System::Windows::Forms::Label());
+			this->btn_read_all = (gcnew System::Windows::Forms::Button());
+			this->btn_write_all = (gcnew System::Windows::Forms::Button());
 			this->tabControl1->SuspendLayout();
-			this->tabPage1->SuspendLayout();
-			this->tabPage2->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->chart1))->BeginInit();
 			this->tabSettings->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->dataGridView1))->BeginInit();
+			this->tabPage2->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->chart1))->BeginInit();
+			this->tabPage1->SuspendLayout();
 			this->tabLog->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -478,9 +494,10 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->tabControl1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left) 
 				| System::Windows::Forms::AnchorStyles::Right));
-			this->tabControl1->Controls->Add(this->tabPage1);
-			this->tabControl1->Controls->Add(this->tabPage2);
 			this->tabControl1->Controls->Add(this->tabSettings);
+			this->tabControl1->Controls->Add(this->tabPage2);
+			this->tabControl1->Controls->Add(this->tabPage3);
+			this->tabControl1->Controls->Add(this->tabPage1);
 			this->tabControl1->Controls->Add(this->tabLog);
 			this->tabControl1->Location = System::Drawing::Point(0, 51);
 			this->tabControl1->Margin = System::Windows::Forms::Padding(0);
@@ -489,33 +506,105 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->tabControl1->Size = System::Drawing::Size(1098, 484);
 			this->tabControl1->TabIndex = 4;
 			// 
-			// tabPage1
+			// tabSettings
 			// 
-			this->tabPage1->Controls->Add(this->textBox1);
-			this->tabPage1->Location = System::Drawing::Point(4, 22);
-			this->tabPage1->Name = L"tabPage1";
-			this->tabPage1->Padding = System::Windows::Forms::Padding(3);
-			this->tabPage1->Size = System::Drawing::Size(1090, 458);
-			this->tabPage1->TabIndex = 0;
-			this->tabPage1->Text = L"Terminal";
-			this->tabPage1->UseVisualStyleBackColor = true;
+			this->tabSettings->Controls->Add(this->btn_write_all);
+			this->tabSettings->Controls->Add(this->btn_read_all);
+			this->tabSettings->Controls->Add(this->dataGridView1);
+			this->tabSettings->Location = System::Drawing::Point(4, 22);
+			this->tabSettings->Name = L"tabSettings";
+			this->tabSettings->Padding = System::Windows::Forms::Padding(3);
+			this->tabSettings->Size = System::Drawing::Size(1090, 458);
+			this->tabSettings->TabIndex = 2;
+			this->tabSettings->Text = L"Parameters";
+			this->tabSettings->UseVisualStyleBackColor = true;
 			// 
-			// textBox1
+			// dataGridView1
 			// 
-			this->textBox1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
-				| System::Windows::Forms::AnchorStyles::Left) 
-				| System::Windows::Forms::AnchorStyles::Right));
-			this->textBox1->Font = (gcnew System::Drawing::Font(L"Courier New", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
-				static_cast<System::Byte>(0)));
-			this->textBox1->Location = System::Drawing::Point(-4, 0);
-			this->textBox1->Multiline = true;
-			this->textBox1->Name = L"textBox1";
-			this->textBox1->ScrollBars = System::Windows::Forms::ScrollBars::Both;
-			this->textBox1->Size = System::Drawing::Size(1094, 462);
-			this->textBox1->TabIndex = 4;
-			this->textBox1->WordWrap = false;
-			this->textBox1->TextChanged += gcnew System::EventHandler(this, &f1::textBox1_TextChanged);
-			this->textBox1->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &f1::textBox1_KeyDown);
+			this->dataGridView1->AllowUserToAddRows = false;
+			this->dataGridView1->AllowUserToDeleteRows = false;
+			this->dataGridView1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
+				| System::Windows::Forms::AnchorStyles::Left));
+			dataGridViewCellStyle5->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			dataGridViewCellStyle5->BackColor = System::Drawing::SystemColors::Control;
+			dataGridViewCellStyle5->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
+			dataGridViewCellStyle5->ForeColor = System::Drawing::SystemColors::WindowText;
+			dataGridViewCellStyle5->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle5->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle5->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
+			this->dataGridView1->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+			this->dataGridView1->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+			this->dataGridView1->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(7) {this->Group, 
+				this->id, this->name, this->Type, this->val, this->inc, this->dec});
+			dataGridViewCellStyle8->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
+			dataGridViewCellStyle8->BackColor = System::Drawing::SystemColors::Window;
+			dataGridViewCellStyle8->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
+			dataGridViewCellStyle8->ForeColor = System::Drawing::SystemColors::ControlText;
+			dataGridViewCellStyle8->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle8->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle8->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
+			this->dataGridView1->DefaultCellStyle = dataGridViewCellStyle8;
+			this->dataGridView1->Location = System::Drawing::Point(0, 0);
+			this->dataGridView1->Name = L"dataGridView1";
+			this->dataGridView1->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
+			this->dataGridView1->Size = System::Drawing::Size(630, 458);
+			this->dataGridView1->TabIndex = 3;
+			this->dataGridView1->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellContentClick);
+			this->dataGridView1->CellContentDoubleClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellContentDoubleClick);
+			this->dataGridView1->CellValueChanged += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellValueChanged);
+			// 
+			// Group
+			// 
+			dataGridViewCellStyle6->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->Group->DefaultCellStyle = dataGridViewCellStyle6;
+			this->Group->HeaderText = L"Group";
+			this->Group->Name = L"Group";
+			this->Group->ReadOnly = true;
+			this->Group->Width = 5;
+			// 
+			// id
+			// 
+			this->id->HeaderText = L"ID";
+			this->id->Name = L"id";
+			this->id->ReadOnly = true;
+			this->id->Width = 50;
+			// 
+			// name
+			// 
+			dataGridViewCellStyle7->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->name->DefaultCellStyle = dataGridViewCellStyle7;
+			this->name->HeaderText = L"Name";
+			this->name->Name = L"name";
+			this->name->ReadOnly = true;
+			this->name->Width = 305;
+			// 
+			// Type
+			// 
+			this->Type->HeaderText = L"Type";
+			this->Type->Name = L"Type";
+			this->Type->ReadOnly = true;
+			this->Type->Width = 70;
+			// 
+			// val
+			// 
+			this->val->HeaderText = L"Value";
+			this->val->Name = L"val";
+			// 
+			// inc
+			// 
+			this->inc->HeaderText = L"+";
+			this->inc->Name = L"inc";
+			this->inc->ReadOnly = true;
+			this->inc->Width = 20;
+			// 
+			// dec
+			// 
+			this->dec->HeaderText = L"-";
+			this->dec->Name = L"dec";
+			this->dec->ReadOnly = true;
+			this->dec->Width = 20;
 			// 
 			// tabPage2
 			// 
@@ -531,7 +620,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->tabPage2->Padding = System::Windows::Forms::Padding(3);
 			this->tabPage2->Size = System::Drawing::Size(1090, 458);
 			this->tabPage2->TabIndex = 1;
-			this->tabPage2->Text = L"Sensors";
+			this->tabPage2->Text = L"Graphs";
 			this->tabPage2->UseVisualStyleBackColor = true;
 			this->tabPage2->Click += gcnew System::EventHandler(this, &f1::tabPage2_Click);
 			// 
@@ -597,133 +686,73 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 				| System::Windows::Forms::AnchorStyles::Left) 
 				| System::Windows::Forms::AnchorStyles::Right));
 			this->chart1->AntiAliasing = System::Windows::Forms::DataVisualization::Charting::AntiAliasingStyles::None;
-			chartArea1->AxisX->MajorGrid->Enabled = false;
-			chartArea1->Name = L"ChartArea1";
-			chartArea2->AxisX->MajorGrid->Enabled = false;
-			chartArea2->Name = L"ChartArea2";
-			this->chart1->ChartAreas->Add(chartArea1);
-			this->chart1->ChartAreas->Add(chartArea2);
-			legend1->Name = L"Legend1";
-			this->chart1->Legends->Add(legend1);
+			chartArea3->AxisX->MajorGrid->Enabled = false;
+			chartArea3->Name = L"ChartArea1";
+			chartArea4->AxisX->MajorGrid->Enabled = false;
+			chartArea4->Name = L"ChartArea2";
+			this->chart1->ChartAreas->Add(chartArea3);
+			this->chart1->ChartAreas->Add(chartArea4);
+			legend2->Name = L"Legend1";
+			this->chart1->Legends->Add(legend2);
 			this->chart1->Location = System::Drawing::Point(-5, -1);
 			this->chart1->Margin = System::Windows::Forms::Padding(0);
 			this->chart1->Name = L"chart1";
-			series1->ChartArea = L"ChartArea1";
-			series1->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series1->IsXValueIndexed = true;
-			series1->Legend = L"Legend1";
-			series1->MarkerSize = 1;
-			series1->Name = L"analog[7]";
-			series1->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
-			series2->ChartArea = L"ChartArea2";
-			series2->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series2->IsXValueIndexed = true;
-			series2->Legend = L"Legend1";
-			series2->Name = L"analog[6]";
-			this->chart1->Series->Add(series1);
-			this->chart1->Series->Add(series2);
+			series3->ChartArea = L"ChartArea1";
+			series3->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series3->IsXValueIndexed = true;
+			series3->Legend = L"Legend1";
+			series3->MarkerSize = 1;
+			series3->Name = L"analog[7]";
+			series3->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
+			series4->ChartArea = L"ChartArea2";
+			series4->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series4->IsXValueIndexed = true;
+			series4->Legend = L"Legend1";
+			series4->Name = L"analog[6]";
+			this->chart1->Series->Add(series3);
+			this->chart1->Series->Add(series4);
 			this->chart1->Size = System::Drawing::Size(916, 458);
 			this->chart1->TabIndex = 0;
 			this->chart1->Text = L"chart1";
 			this->chart1->AxisViewChanged += gcnew System::EventHandler<System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^ >(this, &f1::chart1_AxisViewChanged);
 			// 
-			// tabSettings
+			// tabPage3
 			// 
-			this->tabSettings->Controls->Add(this->dataGridView1);
-			this->tabSettings->Location = System::Drawing::Point(4, 22);
-			this->tabSettings->Name = L"tabSettings";
-			this->tabSettings->Padding = System::Windows::Forms::Padding(3);
-			this->tabSettings->Size = System::Drawing::Size(1090, 458);
-			this->tabSettings->TabIndex = 2;
-			this->tabSettings->Text = L"Settings";
-			this->tabSettings->UseVisualStyleBackColor = true;
+			this->tabPage3->Location = System::Drawing::Point(4, 22);
+			this->tabPage3->Name = L"tabPage3";
+			this->tabPage3->Padding = System::Windows::Forms::Padding(3);
+			this->tabPage3->Size = System::Drawing::Size(1090, 458);
+			this->tabPage3->TabIndex = 4;
+			this->tabPage3->Text = L"\"Radar\"";
+			this->tabPage3->UseVisualStyleBackColor = true;
 			// 
-			// dataGridView1
+			// tabPage1
 			// 
-			this->dataGridView1->AllowUserToAddRows = false;
-			this->dataGridView1->AllowUserToDeleteRows = false;
-			this->dataGridView1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
-				| System::Windows::Forms::AnchorStyles::Left));
-			dataGridViewCellStyle1->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			dataGridViewCellStyle1->BackColor = System::Drawing::SystemColors::Control;
-			dataGridViewCellStyle1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
-				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle1->ForeColor = System::Drawing::SystemColors::WindowText;
-			dataGridViewCellStyle1->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle1->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle1->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
-			this->dataGridView1->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-			this->dataGridView1->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
-			this->dataGridView1->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(7) {this->Group, 
-				this->id, this->name, this->Type, this->val, this->inc, this->dec});
-			dataGridViewCellStyle4->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
-			dataGridViewCellStyle4->BackColor = System::Drawing::SystemColors::Window;
-			dataGridViewCellStyle4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
-				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle4->ForeColor = System::Drawing::SystemColors::ControlText;
-			dataGridViewCellStyle4->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle4->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle4->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
-			this->dataGridView1->DefaultCellStyle = dataGridViewCellStyle4;
-			this->dataGridView1->Location = System::Drawing::Point(0, 0);
-			this->dataGridView1->Name = L"dataGridView1";
-			this->dataGridView1->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
-			this->dataGridView1->Size = System::Drawing::Size(927, 458);
-			this->dataGridView1->TabIndex = 3;
-			this->dataGridView1->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellContentClick);
-			this->dataGridView1->CellContentDoubleClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellContentDoubleClick);
-			this->dataGridView1->CellValueChanged += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellValueChanged);
+			this->tabPage1->Controls->Add(this->textBox1);
+			this->tabPage1->Location = System::Drawing::Point(4, 22);
+			this->tabPage1->Name = L"tabPage1";
+			this->tabPage1->Padding = System::Windows::Forms::Padding(3);
+			this->tabPage1->Size = System::Drawing::Size(1090, 458);
+			this->tabPage1->TabIndex = 0;
+			this->tabPage1->Text = L"Terminal";
+			this->tabPage1->UseVisualStyleBackColor = true;
 			// 
-			// Group
+			// textBox1
 			// 
-			dataGridViewCellStyle2->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->Group->DefaultCellStyle = dataGridViewCellStyle2;
-			this->Group->HeaderText = L"Group";
-			this->Group->Name = L"Group";
-			this->Group->ReadOnly = true;
-			this->Group->Width = 300;
-			// 
-			// id
-			// 
-			this->id->HeaderText = L"ID";
-			this->id->Name = L"id";
-			this->id->ReadOnly = true;
-			this->id->Width = 50;
-			// 
-			// name
-			// 
-			dataGridViewCellStyle3->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->name->DefaultCellStyle = dataGridViewCellStyle3;
-			this->name->HeaderText = L"Name";
-			this->name->Name = L"name";
-			this->name->ReadOnly = true;
-			this->name->Width = 305;
-			// 
-			// Type
-			// 
-			this->Type->HeaderText = L"Type";
-			this->Type->Name = L"Type";
-			this->Type->ReadOnly = true;
-			this->Type->Width = 70;
-			// 
-			// val
-			// 
-			this->val->HeaderText = L"Value";
-			this->val->Name = L"val";
-			// 
-			// inc
-			// 
-			this->inc->HeaderText = L"+";
-			this->inc->Name = L"inc";
-			this->inc->ReadOnly = true;
-			this->inc->Width = 20;
-			// 
-			// dec
-			// 
-			this->dec->HeaderText = L"-";
-			this->dec->Name = L"dec";
-			this->dec->ReadOnly = true;
-			this->dec->Width = 20;
+			this->textBox1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
+				| System::Windows::Forms::AnchorStyles::Left) 
+				| System::Windows::Forms::AnchorStyles::Right));
+			this->textBox1->Font = (gcnew System::Drawing::Font(L"Courier New", 9, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
+				static_cast<System::Byte>(0)));
+			this->textBox1->Location = System::Drawing::Point(-4, 0);
+			this->textBox1->Multiline = true;
+			this->textBox1->Name = L"textBox1";
+			this->textBox1->ScrollBars = System::Windows::Forms::ScrollBars::Both;
+			this->textBox1->Size = System::Drawing::Size(1094, 462);
+			this->textBox1->TabIndex = 4;
+			this->textBox1->WordWrap = false;
+			this->textBox1->TextChanged += gcnew System::EventHandler(this, &f1::textBox1_TextChanged);
+			this->textBox1->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &f1::textBox1_KeyDown);
 			// 
 			// tabLog
 			// 
@@ -741,6 +770,8 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->textBoxLog->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left) 
 				| System::Windows::Forms::AnchorStyles::Right));
+			this->textBoxLog->Font = (gcnew System::Drawing::Font(L"Courier New", 8.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point, 
+				static_cast<System::Byte>(0)));
 			this->textBoxLog->Location = System::Drawing::Point(0, 0);
 			this->textBoxLog->Multiline = true;
 			this->textBoxLog->Name = L"textBoxLog";
@@ -786,6 +817,24 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->label5->Text = L"Cmd";
 			this->label5->Click += gcnew System::EventHandler(this, &f1::label9_Click);
 			// 
+			// btn_read_all
+			// 
+			this->btn_read_all->Location = System::Drawing::Point(649, 16);
+			this->btn_read_all->Name = L"btn_read_all";
+			this->btn_read_all->Size = System::Drawing::Size(114, 26);
+			this->btn_read_all->TabIndex = 4;
+			this->btn_read_all->Text = L"Read All";
+			this->btn_read_all->UseVisualStyleBackColor = true;
+			// 
+			// btn_write_all
+			// 
+			this->btn_write_all->Location = System::Drawing::Point(801, 16);
+			this->btn_write_all->Name = L"btn_write_all";
+			this->btn_write_all->Size = System::Drawing::Size(114, 26);
+			this->btn_write_all->TabIndex = 4;
+			this->btn_write_all->Text = L"Write All";
+			this->btn_write_all->UseVisualStyleBackColor = true;
+			// 
 			// f1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -803,13 +852,13 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->Text = L"Robot UI";
 			this->Load += gcnew System::EventHandler(this, &f1::f1_Load);
 			this->tabControl1->ResumeLayout(false);
-			this->tabPage1->ResumeLayout(false);
-			this->tabPage1->PerformLayout();
+			this->tabSettings->ResumeLayout(false);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->dataGridView1))->EndInit();
 			this->tabPage2->ResumeLayout(false);
 			this->tabPage2->PerformLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->chart1))->EndInit();
-			this->tabSettings->ResumeLayout(false);
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->dataGridView1))->EndInit();
+			this->tabPage1->ResumeLayout(false);
+			this->tabPage1->PerformLayout();
 			this->tabLog->ResumeLayout(false);
 			this->tabLog->PerformLayout();
 			this->ResumeLayout(false);
