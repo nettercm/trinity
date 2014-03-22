@@ -28,61 +28,176 @@ void uvtron_update(void)
 	}
 }
 
-//TODO: the following needs to be rewritting to match the 2014 platform
-#if 0
-uint8 find_peak(uint8 *history, uint8 size)
+
+u08 data[256];
+void test_flame(void)
+{
+	int x,y;
+	t_peak result;
+	t_scan_result scan_result;
+
+	memset(data,0,256);
+
+	for(x=0;x<256;x++)
+	{
+		y=x*2;
+		if(y>255) y=255;
+		data[x] = y;
+	}
+	result = find_peak(data,256,3);
+
+	{
+		u08 d[] = {1,2,3,4,5,6,4,6,4,6,4,6,4,3,2,1,0};
+		result = find_peak(d,sizeof(d),3);
+		NOP();
+	}
+	{
+		u08 d[] = {1,2,3,4,5,6,4,6,4,6,4,6,4,9,9,9,9};
+		result = find_peak(d,sizeof(d),1);
+		NOP();
+	}
+	{
+		t_scan d[] = { {-90,1,2},{-80,1,4},{-75,1,6},{-60,1,8},{-40,1,8},{-25,1,8},{-22,1,8},{-20,1,6},{-10,1,2},{-00,1,2},{10,1,2},{20,1,0} };
+		scan_result = find_peak_in_scan(d,12,3);
+		NOP();
+	}
+}
+
+
+
+
+t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threashold)
 {
 	uint8 min,max;
-	uint8 i;
-	uint8 rising, falling;
+	uint16 i;
 	uint8 value;
-	uint8 peak;
-	uint8 valley=0; //0 means we don't know where we are. 1=valley;  2=hill
+	u16 position1,position2;
+	uint8 state=0; //0 means we don't know where we are. 1=valley;  2=hill
+	t_scan_result result = {0,0,0,0,0,0,0}; //initialize w/ values that indicate that we did not find a peak
+	
+	min=255;
+	max=0;
+	
+	for(i=0;i<number_of_points;i++)
+	{
+		if(data[i].flame<min) min=data[i].flame;
+		if(data[i].flame>max) max=data[i].flame;
+	}
+	
+	//if( (min<=0) && (max<=5) ) return result;
+	
+	result.rising_edge_position  = 0;
+	result.falling_edge_position = number_of_points-1;
+	
+	//find the rising/falling edges
+	//we'll keep going until all the data points have been processed
+	//as a result of that, only the location of the last peak will be remembered
+	for(i=0;i<number_of_points;i++)
+	{
+		value = data[i].flame;
+		if(state==0) //if we don't know where we are, let's first initialize the state
+		{
+			if(value >= max-threashold) state=2; //we could be starting out on a hill....
+			else state=1;				//...or not
+		}
+
+		if(state==1) //if we are currently in a valley...
+		{
+			if(value >= max-threashold) //...and if we suddently reach a point near the peak....
+			{ 
+				state = 2;  //...then let's say we have reached the peak...
+				result.rising_edge_position = i; //...and mark this as the rising edge location
+				result.rising_edge_angle = data[i].angle;
+			}			
+		}
+
+		if(state==2)  //if we are currently on are near the peak....
+		{
+			if(value < max-threashold) //...and if we then suddenly drop below the peak....
+			{ 
+				state = 1;  //..then let's assume we are back in a valley
+				result.falling_edge_position = i-1; ////...and mark this as the falling edge location
+				result.falling_edge_angle = data[i-1].angle;
+			}
+		}
+	}
+
+	//if( (rising_edge_position==size) /*|| (falling_edge_position==size)*/ ) return result;
+
+	position1					= result.rising_edge_position + ( result.falling_edge_position   - result.rising_edge_position)/2;
+	position2					= result.rising_edge_position + ((result.falling_edge_position+1)- result.rising_edge_position)/2;
+	result.center_position		= (position1+position2)/2;
+	result.center_angle			= (result.rising_edge_angle + result.falling_edge_angle)/2;
+	result.flame_center_value	= max;
+
+	return result;
+}
+
+
+t_peak find_peak(uint8 *data, uint16 size, uint8 threashold)
+{
+	uint8 min,max;
+	uint16 i;
+	uint16 rising_edge_position, falling_edge_position;
+	uint8 value;
+	uint16 position;
+	uint8 state=0; //0 means we don't know where we are. 1=valley;  2=hill
+	t_peak result = {255, 255}; //initialize w/ values that indicate that we did not find a peak
 	
 	min=255;
 	max=0;
 	
 	for(i=0;i<size;i++)
 	{
-		if(history[i]<min) min=history[i];
-		if(history[i]>max) max=history[i];
+		if(data[i]<min) min=data[i];
+		if(data[i]>max) max=data[i];
 	}
-	if( (min<=0) && (max<=5) ) return 255;
+	if( (min<=0) && (max<=5) ) return result;
 	
-	rising=falling=255;
+	rising_edge_position  = 0;
+	falling_edge_position = size-1;
 	
 	//find the rising/falling edges
+	//we'll keep going until all the data points have been processed
+	//as a result of that, only the location of the last peak will be remembered
 	for(i=0;i<size;i++)
 	{
-		value = history[i];
-		if(valley==0)
+		value = data[i];
+		if(state==0) //if we don't know where we are, let's first initialize the state
 		{
-			if(value >= max-3) valley=2; else valley=1; //we might be starting out on a hill....
+			if(value >= max-threashold) state=2; //we could be starting out on a hill....
+			else state=1;				//...or not
 		}
-		if(valley==1)
+
+		if(state==1) //if we are currently in a valley...
 		{
-			if(value >= max-3) 
+			if(value >= max-threashold) //...and if we suddently reach a point near the peak....
 			{ 
-				valley = 2;  
-				rising = i; //found rising edge;
+				state = 2;  //...then let's say we have reached the peak...
+				rising_edge_position = i; //...and mark this as the rising edge location
 			}			
 		}
-		if(valley==2)
+
+		if(state==2)  //if we are currently on are near the peak....
 		{
-			if(value < max-3) 
+			if(value < max-threashold) //...and if we then suddenly drop below the peak....
 			{ 
-				valley = 1;  
-				falling = i; 
+				state = 1;  //..then let's assume we are back in a valley
+				falling_edge_position = i; ////...and mark this as the falling edge location
 			}
 		}
 	}
 
-	if( (rising==255) || (falling==255) ) return 255;
+	//if( (rising_edge_position==size) /*|| (falling_edge_position==size)*/ ) return result;
 
-	peak = rising + (falling-rising)/2;
-	return peak;
+	result.position = rising_edge_position + (falling_edge_position-rising_edge_position)/2;
+	result.value    = max;
+
+	return result;
 }
 
+#if 0
+//TODO: the following needs to be rewritting to match the 2014 platform
 uint8 hone_in_on_candle(uint8 cmd, uint8 range)
 {
 	//use an array of 150 to maintain history 	
