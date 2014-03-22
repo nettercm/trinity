@@ -160,6 +160,7 @@ t_config;
 #ifdef WIN32
 extern t_config_flash config[MAX_CFG_ITEMS];
 extern t_config_flash config_flash[MAX_CFG_ITEMS];
+extern t_config_flash_float_only config_float_only[MAX_CFG_ITEMS];
 #else
 extern t_config config[MAX_CFG_ITEMS];
 extern const t_config_flash config_flash[MAX_CFG_ITEMS];
