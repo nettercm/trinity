@@ -98,6 +98,33 @@ void motors_reapply_target_speed()
 }
 
 
+/*
+5	26900
+10	21200
+20	19100
+30	17700
+40	17600
+50	17500
+60	17500
+80	16500
+100	16400
+120	16300
+
+*/
+s16 lookup_K(s16 s)
+{
+	s=abs(s);
+	if      (s>=120) return (s16)16300;
+	else if (s>=100) return (s16)16400;
+	else if (s>= 80) return (s16)16500;
+	else if (s>= 60) return (s16)17500;
+	else if (s>= 50) return (s16)17500;
+	else if (s>= 40) return (s16)17600;
+	else if (s>= 30) return (s16)17700;
+	else if (s>= 20) return (s16)19100;
+	else if (s>= 10) return (s16)21200;
+	else             return (s16)26900;
+}
 
 
 
@@ -354,13 +381,13 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			{
 				//if we are already in this mode and adjusting the speed by a large amount, 
 				//then do feed-forward control, i.e. apply the new pwm value right away in set_motors() below
-				if(abs(lm_speed - s.lm_target)>5) s.lm_actual = (lm_speed * ((s16)18300/((s16)s.inputs.vbatt/(s16)100)))/100;
-				if(abs(rm_speed - s.rm_target)>5) s.rm_actual = (rm_speed * ((s16)18300/((s16)s.inputs.vbatt/(s16)100)))/100;
+				if(abs(lm_speed - s.lm_target)>5) s.lm_actual = (lm_speed * ((s16)lookup_K(lm_speed)/((s16)s.inputs.vbatt/(s16)100)))/100;
+				if(abs(rm_speed - s.rm_target)>5) s.rm_actual = (rm_speed * ((s16)lookup_K(rm_speed)/((s16)s.inputs.vbatt/(s16)100)))/100;
 			}
 			else
 			{
-				s.lm_actual = (lm_speed * ((s16)18300/((s16)s.inputs.vbatt/(s16)100)))/100;
-				s.rm_actual = (rm_speed * ((s16)18300/((s16)s.inputs.vbatt/(s16)100)))/100;
+				s.lm_actual = (lm_speed * ((s16)lookup_K(lm_speed)/((s16)s.inputs.vbatt/(s16)100)))/100;
+				s.rm_actual = (rm_speed * ((s16)lookup_K(rm_speed)/((s16)s.inputs.vbatt/(s16)100)))/100;
 			}
 			s.lm_target = lm_speed;
 			s.rm_target = rm_speed;
@@ -380,8 +407,10 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			LIMIT(lm_speed,-120,+120);
 			LIMIT(rm_speed,-120,+120);
 			
-			s.lm_actual = (lm_speed * ((s16)18300/((s16)s.inputs.vbatt/(s16)100)))/100;
-			s.rm_actual = (rm_speed * ((s16)18300/((s16)s.inputs.vbatt/(s16)100)))/100;
+			//pwm = target * K/vbatt
+			//K = (pwm * vbatt)/target
+			s.lm_actual = (lm_speed * ((s16)lookup_K(lm_speed)/((s16)s.inputs.vbatt/(s16)100)))/100;
+			s.rm_actual = (rm_speed * ((s16)lookup_K(rm_speed)/((s16)s.inputs.vbatt/(s16)100)))/100;
 
 			s.lm_target = lm_speed;
 			s.rm_target = rm_speed;

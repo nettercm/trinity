@@ -128,7 +128,7 @@ void display_inputs_and_state(t_inputs *inputs)
 				inputs->watch[0], inputs->watch[1], inputs->watch[2], inputs->watch[3]
 			);
 
-	if( (t_delta >= 1000) || (memcmp(watch,inputs->watch,4)!=0) )
+	//if( (t_delta >= 1000) || (memcmp(watch,inputs->watch,4)!=0) )
 	{
 		printf(s.msg);
 		memcpy(watch,inputs->watch,4);

@@ -13,8 +13,8 @@
 #include "commands.h"
 
 static sint16 m_r_speed=0, m_l_speed=0;
-static sint16 m_r_delta=10 ,m_l_delta=10;
-static sint16 m_r_min=10, m_l_min=10, m_r_max=260, m_l_max=260;
+static sint16 m_r_delta=5 ,m_l_delta=5;
+static sint16 m_r_min=5, m_l_min=5, m_r_max=260, m_l_max=260;
 static sint16 m_r_target=0, m_l_target=0;
 static sint16 m_ramp=5;
 
