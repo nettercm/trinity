@@ -66,7 +66,7 @@ void test_flame(void)
 
 
 
-t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threashold)
+t_scan_result find_peak_in_scan_v1(t_scan *data, u16 number_of_points, uint8 threashold)
 {
 	uint8 min,max;
 	uint16 i;
@@ -80,8 +80,8 @@ t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threas
 	
 	for(i=0;i<number_of_points;i++)
 	{
-		if(data[i].flame<min) min=data[i].flame;
-		if(data[i].flame>max) max=data[i].flame;
+		if(data[i].flame<min) { min=data[i].flame; position1=i; }
+		if(data[i].flame>max) { max=data[i].flame; position2=i; }
 	}
 	
 	//if( (min<=0) && (max<=5) ) return result;
@@ -123,6 +123,63 @@ t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threas
 	}
 
 	//if( (rising_edge_position==size) /*|| (falling_edge_position==size)*/ ) return result;
+
+	position1					= result.rising_edge_position + ( result.falling_edge_position   - result.rising_edge_position)/2;
+	position2					= result.rising_edge_position + ((result.falling_edge_position+1)- result.rising_edge_position)/2;
+	result.center_position		= (position1+position2)/2;
+	result.center_angle			= (result.rising_edge_angle + result.falling_edge_angle)/2;
+	result.flame_center_value	= max;
+
+	return result;
+}
+
+
+t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threashold)
+{
+	uint8 min,max;
+	uint16 i;
+	uint8 value;
+	u16 position1,position2;
+	uint8 state=0; //0 means we don't know where we are. 1=valley;  2=hill
+	t_scan_result result = {0,0,0,0,0,0,0}; //initialize w/ values that indicate that we did not find a peak
+	
+	min=255;
+	max=0;
+	
+	for(i=0;i<number_of_points;i++)
+	{
+		if(data[i].flame<min) { min=data[i].flame; position1=i; }
+		if(data[i].flame>max) { max=data[i].flame; position2=i; }
+	}
+	
+	//if( (min<=0) && (max<=5) ) return result;
+	
+	result.rising_edge_position  = 0;
+	result.falling_edge_position = number_of_points-1;
+
+	//start from the peak and find the falling edge
+	for(i=position2;i<number_of_points;i++)
+	{
+		value = data[i].flame;
+		if(value < max-threashold)
+		{
+			result.falling_edge_position = i-1; ////...and mark this as the falling edge location
+			result.falling_edge_angle = data[i-1].angle;
+			break;
+		}
+	}
+
+	//start from the peak and find the rising edge
+	for(i=position2+1;i>0;i--)
+	{
+		value = data[i-1].flame;
+		if(value < max-threashold)
+		{
+			result.rising_edge_position = i; ////...and mark this as the falling edge location
+			result.rising_edge_angle = data[i].angle;
+			break;
+		}
+	}
 
 	position1					= result.rising_edge_position + ( result.falling_edge_position   - result.rising_edge_position)/2;
 	position2					= result.rising_edge_position + ((result.falling_edge_position+1)- result.rising_edge_position)/2;
