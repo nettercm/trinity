@@ -5,7 +5,7 @@
 const unsigned char pulseInPins[] = { IO_US_ECHO_AND_PING_1 , IO_US_ECHO_AND_PING_2 };
 
 extern int svp_demo(void);
-extern void commands_process_fsm(void);
+extern void commands_process_fsm(u08 cmd, u08 *param);
 
 
 /*
@@ -23,6 +23,7 @@ char buffer[128];
 uint32 t_last_output_update = 0;
 //const int t_cycle = 100;
 
+const char welcome[] PROGMEM = ">g32>>c32";
 
 
 
@@ -111,7 +112,7 @@ int hardware_init(void)
 
 
 
-void analog_update_fsm(void)
+void analog_update_fsm(u08 cmd, u08 *param)
 {
 	static uint8 count=0;
 	static uint32 vbatt;
@@ -192,7 +193,7 @@ void analog_update_fsm(void)
 
 
 
-void lcd_update_fsm(void) //(uint32 event)
+void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 {
 	static uint8 state=0;
 	static uint32 t_last=0, t_now=0;
@@ -389,7 +390,7 @@ u08 lines_crossed=0;
 DEFINE_CFG2(u08,black,6,1);					
 DEFINE_CFG2(u08,white,6,2);					
 
-void line_detection_fsm(void)
+void line_detection_fsm(u08 cmd, u08 *param)
 {
 	enum states { s_none=0, s_disabled=1, s_not_crossed, s_l_crossed, s_r_crossed, s_crossed_line };
 	static enum states state=s_disabled;
@@ -465,7 +466,7 @@ void line_detection_fsm(void)
 Evt_t line_alignment_start_evt;
 Evt_t line_alignment_done_evt;
 
-void line_alignment_fsm(void)
+void line_alignment_fsm(u08 cmd, u08 *param)
 {
 	task_open();
 
@@ -596,7 +597,7 @@ void scan(u08 cmd)
 		if(angle != last_angle) 
 		{
 			scan_data[i].angle = angle;
-			scan_data[i].flame = s.inputs.analog[AI_FLAME_N];
+			scan_data[i].flame = 255- s.inputs.analog[AI_FLAME_N];
 			scan_data[i].ir_north = s.ir[AI_IR_N];
 			last_angle = angle;
 			i++;
@@ -625,7 +626,7 @@ void scan(u08 cmd)
 	motor_command(cmd,accel,decel,0,0)
 
 
-void master_logic_fsm(void)
+void master_logic_fsm(u08 fsm_cmd, u08 *param)
 {
 	static t_scan_result scan_result;
 	enum states 
@@ -1078,7 +1079,9 @@ void master_logic_fsm(void)
 			//now move forward until we reach the candle circle
 			MOVE(turn_speed,200);
 			FAN_ON(); 
-			task_wait(2000);
+			TURN_IN_PLACE(10,-20);
+			TURN_IN_PLACE(10, 20);
+			TURN_IN_PLACE(10,-10);
 			FAN_OFF(); 
 
 			state = s_disabled;
@@ -1183,23 +1186,23 @@ void test(u08 cmd, u08 *param)
 			TURN_IN_PLACE( 50, 90);
 			*/
 
+			#if 0
 			//set_digital_output(IO_D1,0);
 			set_digital_output(IO_D0,0);
 			task_wait(2000);
 			//set_digital_output(IO_D1,1);
 			set_digital_output(IO_D0,1);
+			#endif
 
-			#if 0
+			#if 1
 			//dbg_printf("Starting scan....\n");
 			TURN_IN_PLACE_AND_SCAN( 40, 220 );
 			//dbg_printf("....done\n");
 			scan_result = find_peak_in_scan(scan_data,360,30);
-			/*
-			dbg_printf("scan_result: %d,%d,%d\n",
+			dbg_printf("scan_result: %d,%d,%d,%d,%d,%d\n",
 				scan_result.flame_center_value, scan_result.rising_edge_position, scan_result.falling_edge_position,
 				scan_result.center_angle, scan_result.rising_edge_angle, scan_result.falling_edge_angle);
-			*/
-			//for(i=0;i<360;i++) {dbg_printf("scan_data[%03d]=%03d,%03d\n",i, scan_data[i].angle, scan_data[i].flame);task_wait(5);}
+			for(i=0;i<360;i++) {dbg_printf("scan_data[%03d]=%03d,%03d\n",i, scan_data[i].angle, scan_data[i].flame);task_wait(10);}
 			TURN_IN_PLACE( 40, -(220-scan_result.center_angle) );
 			#endif
 			/*
@@ -1251,8 +1254,6 @@ void test(u08 cmd, u08 *param)
 
 int main(void)
 {
-	test_flame();
-
 	//initialize hardware & pololu libraries
 	hardware_init();
 	//i2c_init();
@@ -1261,7 +1262,8 @@ int main(void)
 
 
 	//wait_for_start_button();
-	play_note(A(4), 50, 10);
+	//play_note(A(4), 50, 10);
+	play_from_program_space(welcome);
 
 
 	//initialize the configuration parameter module
@@ -1274,6 +1276,7 @@ int main(void)
 	//PID_init();  //not actually using the PID module right now
 	//servos_start(demuxPins, sizeof(demuxPins));
 	//set_servo_target(0, 1375);
+	//test_flame();
 
 
 	//initialize our state

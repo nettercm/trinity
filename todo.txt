@@ -26,7 +26,7 @@ get_behavior_state(b)
 Issues:
 * turning into room 4 w/ door on S side - turning too sharp
 * missing the line/door when entering room 1 w/ door on s side
-
+* BT1 seems to have stopped working.  It will pair, but can't exchange data.
 
 Notes:
 
