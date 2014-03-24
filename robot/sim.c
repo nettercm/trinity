@@ -45,7 +45,7 @@ int	lcd_printf(const char *__fmt, ...)
 
 
 
-void sim(void)
+void sim(u08 cmd, u08 *param)
 {
 	static u08 initialized=0;
 	static u32 t_last = 0, t_now = 0;

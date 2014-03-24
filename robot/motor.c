@@ -464,7 +464,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 }
 
 
-void motor_command_fsm(void)
+void motor_command_fsm(u08 cmd, u08 *param)
 {
 	DEFINE_CFG(u08,update_rate,3,1);
 	DEFINE_CFG(flt,odo_cml,5,1);

@@ -66,7 +66,7 @@ void serial_hardware_init(void)
 
 
 
-void serial_send_fsm(void)
+void serial_send_fsm(u08 cmd, u08 *param)
 {
 	//static uint8 state=0;
 	//static uint32 t_last=0, t_now=0;
@@ -203,7 +203,7 @@ uint8 serial_process_byte(uint8 byte)
 
 
 
-void serial_receive_fsm(void)
+void serial_receive_fsm(u08 cmd, u08 *param)
 {
 	static uint8 state=0;
 	static uint32 count=0;

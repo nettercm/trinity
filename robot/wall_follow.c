@@ -6,7 +6,7 @@
 #define invalid_error_value 9999
 
 
-void wall_follow_fsm(void)
+void wall_follow_fsm(u08 cmd, u08 *param)
 {
 	enum states { s_none=0, s_disabled=1, s_tracking_wall=2, s_lost_wall=3, s_turning_corner=4, s_turning_sharp_corner=5 };
 	static enum states state=s_disabled;

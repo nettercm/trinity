@@ -19,9 +19,9 @@ extern uint8 rx_buffer[];
 
 extern Evt_t serial_cmd_evt;
 
-extern void serial_receive_fsm(void);
+extern void serial_receive_fsm(u08 cmd, u08 *param);
 //extern void commands_receive_fsm(void);
-extern void serial_send_fsm(void);
+extern void serial_send_fsm(u08 cmd, u08 *param);
 extern void serial_hardware_init(void);
 extern void serial_test(void);
 

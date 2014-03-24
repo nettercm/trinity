@@ -22,7 +22,7 @@ typedef struct
 
 } t_robot_model;
 
-extern void sim(void);
+extern void sim(u08 cmd, u08 *param);
 
 t_robot_model m;
 
@@ -32,6 +32,7 @@ extern t_robot_model m;
 #define lcd_printf printf
 #else
 extern int	lcd_printf(const char *__fmt, ...);
+#define PROGMEM
 #endif
 
 

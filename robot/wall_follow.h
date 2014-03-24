@@ -2,7 +2,7 @@
 #ifndef _wall_follow_h
 #define _wall_follow_h
 
-extern void wall_follow_fsm(void);
+extern void wall_follow_fsm(u08 cmd, u08 *param);
 
 /*
 extern uint8 follow_left_wall_using_ir(s16 min_distance, s16 max_distance, s16 correction);

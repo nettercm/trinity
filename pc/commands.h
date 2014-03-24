@@ -97,7 +97,7 @@ extern void CMD_reset_encoders(void);
 extern void CMD_set_config_value(uint8 grp, uint8 id, uint8* value);
 extern int  CMD_send(void);
 
-extern void commands_process_fsm(void);
+extern void commands_process_fsm(uint8 cmd, uint8 *param);
 
 #ifdef __cplusplus 
 }
