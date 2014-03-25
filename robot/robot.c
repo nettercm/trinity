@@ -244,7 +244,8 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 		if(button_is_pressed(TOP_BUTTON))
 		{
 			play_note(A(3), 50, 10);
-			START_BEHAVIOR(FOLLOW_WALL, LEFT_WALL); 
+			//START_BEHAVIOR(FOLLOW_WALL, LEFT_WALL); 
+			START_BEHAVIOR(MASTER_LOGIC,9); 
 		}
 		if(button_is_pressed(BOTTOM_BUTTON))
 		{
@@ -617,8 +618,9 @@ void scan(u08 cmd)
 		if(angle != last_angle) 
 		{
 			scan_data[i].angle = angle;
-			scan_data[i].flame = 255- s.inputs.analog[AI_FLAME_N];
-			scan_data[i].ir_north = s.ir[AI_IR_N];
+			scan_data[i].flame			= 255- s.inputs.analog[AI_FLAME_N];
+			scan_data[i].ir_north		= s.ir[AI_IR_N];
+			scan_data[i].ir_far_north	= s.ir[AI_IR_FAR_N];
 			last_angle = angle;
 			i++;
 		}
@@ -663,8 +665,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static t_scan_result scan_result;
 	enum states 
 	{ 
-		s_none=0, 
-		s_disabled=1, 
+		s_disabled=0, 
 		s_waiting_for_start, 
 		s_aligning_south, 
 		s_finding_room_3, 
@@ -678,7 +679,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		s_move_to_candle
 	};
 	static enum states state=s_disabled;
-	static enum states last_state=s_none;
+	static enum states last_state=s_disabled;
 	static u32 t_entry=0;
 	static u08 still_inside_room=0;
 	DEFINE_CFG2(s16,turn_speed,			9,1);
@@ -746,7 +747,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				s.inputs.watch[0] = s.inputs.watch[1] = s.inputs.watch[2] = s.inputs.watch[3] = 0;
 			}
 
-			if(s.behavior_state[MASTER_LOGIC]==1) state = s_waiting_for_start;
+			if(s.behavior_state[MASTER_LOGIC]!=0) state = s.behavior_state[MASTER_LOGIC]; //s_waiting_for_start;
 
 			exit_(s_disabled)  { }
 		}
@@ -1023,39 +1024,56 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_wait(line_alignment_done_evt);
 
 			//completely exit from room 1 until we have reached the center of the intersection
-			MOVE(turn_speed, 230);
+			MOVE(turn_speed, 240);
 
-			//turn left 90deg and check for dog
-			TURN_IN_PLACE(turn_speed, ninety);
-
-			//if there is a dog / obstacle right in front, then 
+			//turn left and check for dog
+			TURN_IN_PLACE(turn_speed, 45);
+			TURN_IN_PLACE_AND_SCAN( 40, 90 );
+			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1);
+			
+			if(scan_result.opening <= 30) //TODO: fix this angle
+			{
+				//if there is a dog / obstacle right in front, then 
 				//turn right 90deg and start following the left wall
 				//there won't be a 2nd dog to worry about...
 				//eventuall we'll wind up inside room 4, either via door on North side or on South side
-				//go to state "searching room 4"
-			TURN_IN_PLACE(turn_speed, -ninety);
-			MOVE(turn_speed, 230);
+				TURN_IN_PLACE(turn_speed, -(90+45));
+				MOVE(turn_speed, 240);
+				RESET_LINE_DETECTION();
+				START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL); //start  following the LEFT wall
 
-			last_lines_crossed = lines_crossed;
-			//s.behavior_state[2]=0; //left wall
-			START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL); //start  following the LEFT wall
+				//keep following the left wall until we have passed through the door
+				WAIT_FOR_LINE_DETECTION();
+				play_note(C(3), 50, 10);
+				STOP_BEHAVIOR(FOLLOW_WALL);
+				HARD_STOP();
+				RESET_LINE_DETECTION();
+				state = s_searching_room_4;
+			}
 
-			//keep following the left wall until we have passed through the door
-			WAIT_FOR_LINE_DETECTION();
-			play_note(C(3), 50, 10);
-			STOP_BEHAVIOR(FOLLOW_WALL);
-			HARD_STOP();
-			RESET_LINE_DETECTION();
-
-			state = s_searching_room_4;
 
 			//there was no dog at the exit of room 1
 
 			//check for door on South side of room 4
-			
-			//if there is no door on Rm4-south, then 
+			TURN_IN_PLACE(turn_speed, -45);
+			MOVE(turn_speed, 30*25);
+			TURN_IN_PLACE(turn_speed, -90);
+			if(s.inputs.ir[AI_IR_N] < 160)
+			{
+				//if there is no door on Rm4-south, then 
 				//turn around (to face E)
+				TURN_IN_PLACE(turn_speed, -90);
 				//start following left wall
+				RESET_LINE_DETECTION();
+				START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL);
+				//keep following the left wall until we have passed through the door
+				WAIT_FOR_LINE_DETECTION();
+				play_note(C(3), 50, 10);
+				STOP_BEHAVIOR(FOLLOW_WALL);
+				HARD_STOP();
+				RESET_LINE_DETECTION();
+				state = s_searching_room_4;
+			}
 				//if we hit a dead end (i.e. dog) before we reach the door
 					//turn around 180deg
 					//start following right wall
@@ -1114,15 +1132,18 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//make sure we are not in front of some obstacle (in case we saw a reflection from the wall)
 
 			//now move forward until we reach the candle circle; 
+			RESET_LINE_DETECTION();
 
 			//start moving straight
-			GO(turn_speed);
+			GO(turn_speed*2);
 
 			//if we reach the candle circle, stop - at this point we are withing 30cm / 12" of the candle
-			while(lines_crossed == last_lines_crossed);
+			WAIT_FOR_LINE_DETECTION();
+			HARD_STOP();
+			task_wait(1000);
 
 			//now get a little closer
-			MOVE(turn_speed,200);
+			//MOVE(turn_speed,100);
 
 			//now turn on the fan and sweep left and right for some time
 			FAN_ON(); 
@@ -1180,7 +1201,7 @@ void test(u08 cmd, u08 *param)
 	PREPARE_CFG2(speed);
 	PREPARE_CFG2(distance);
 	
-	test(1,0x1234);
+	test(1,(uint8 *)0x1234);
 
 	/*
 	for(;;)
@@ -1246,7 +1267,7 @@ void test(u08 cmd, u08 *param)
 			set_digital_output(IO_D0,1);
 			#endif
 
-			#if 1
+			#if 0
 			//dbg_printf("Starting scan....\n");
 			TURN_IN_PLACE_AND_SCAN( 40, 220 );
 			//dbg_printf("....done\n");
@@ -1257,6 +1278,14 @@ void test(u08 cmd, u08 *param)
 			for(i=0;i<360;i++) {dbg_printf("scan_data[%03d]=%03d,%03d\n",i, scan_data[i].angle, scan_data[i].flame);task_wait(10);}
 			TURN_IN_PLACE( 40, -(220-scan_result.center_angle) );
 			#endif
+
+			TURN_IN_PLACE_AND_SCAN( 40, 90 );
+			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1);
+			dbg_printf("scan_result: %d,%d,%d,%d\n", scan_result.opening, scan_result.center_angle, scan_result.rising_edge_angle, scan_result.falling_edge_angle);
+			//for(i=0;i<100;i++) {dbg_printf("scan_data[%03d]=%03d,%03d\n",i, scan_data[i].angle, scan_data[i].ir_north);task_wait(10);}
+			TURN_IN_PLACE(40,-90);
+
+
 			/*
 
 			task_wait(2000);
@@ -1328,8 +1357,9 @@ int main(void)
 	//PID_init();  //not actually using the PID module right now
 	//servos_start(demuxPins, sizeof(demuxPins));
 	//set_servo_target(0, 1375);
-	//test_flame();
-
+#ifdef WIN32
+	test_flame();
+#endif
 
 	//initialize our state
 	memset(&s,0,sizeof(t_state));

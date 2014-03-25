@@ -16,6 +16,7 @@
 #define AI_IR_NW      7
 #define AI_IR_N       6
 #define AI_IR_N_long  5
+#define AI_IR_FAR_N	  AI_IR_N_long
 #define AI_IR_NE      4
 
 
