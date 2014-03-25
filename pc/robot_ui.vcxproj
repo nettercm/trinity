@@ -180,9 +180,6 @@
     <ResourceCompile Include="app.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="f1.resX">
       <DependentUpon>f1.h</DependentUpon>
       <SubType>Designer</SubType>

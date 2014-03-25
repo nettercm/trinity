@@ -95,9 +95,6 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="f1.resX">
       <Filter>Resource Files</Filter>
     </EmbeddedResource>

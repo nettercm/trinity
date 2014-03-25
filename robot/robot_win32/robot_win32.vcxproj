@@ -91,7 +91,6 @@
     <Text Include="..\..\todo.txt" />
     <Text Include="port\avr\pgmspace.h" />
     <Text Include="port\inttypes.h" />
-    <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\behaviors.h" />
