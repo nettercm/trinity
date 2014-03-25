@@ -11,7 +11,7 @@ void commands_process(void)
 	t_config_value *v;
 	t_motor_command *motor_cmd;
 		
-	c  = &(s.commands);
+	c  = (uint8*) &(s.commands);
 	end= c+sizeof(t_commands);
 	usb_printf("commands_process(end=0x%02x, c=0x%02x:  ",end,c);
 	for(i=0;i<sizeof(t_commands);i++)
