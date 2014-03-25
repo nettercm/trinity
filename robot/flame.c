@@ -37,9 +37,60 @@ void test_flame(void)
 		scan_result = find_peak_in_scan(d,12,3);
 		NOP();
 	}
+	{
+		t_scan d[100];
+		int i;
+		for(i=0;i<100;i++) { d[i].angle = i; d[i].ir_north=997; }
+		scan_result = find_path_in_scan(d,100,100,0,0);
+		NOP();
+	}
+	{
+		t_scan d[] = { {-90,0,0},{-80,100,0},{-75,110,0},{-60,100,0},{-40,90,0},{-25,0,0},{-22,0,0},{-20,0,0},{-10,0,0},{-00,0,0},{10,0,0},{20,0,0} };
+		scan_result = find_path_in_scan(d,12,100,0,0);
+		NOP();
+	}
 }
 
 
+t_scan_result find_path_in_scan(t_scan *data, u16 number_of_points, u16 threashold, u16 hysteresis, u08 use_far_north)
+{
+	u08 state=1;
+	s16 angle1, angle2, opening;
+	u16 i;
+	u16 distance;
+	t_scan_result result = {0,0,0,0,0,0,0,0}; //initialize w/ values that indicate that we did not find a peak
+	//output:  starting and ending angle of the largest opening in the radar scan
+	//iterate through the data points
+
+	//when we find a data point that is greater than the threashold, start tracking this opening
+
+	for(i=0;i<number_of_points;i++)
+	{
+		distance = (use_far_north ? data[i].ir_far_north : data[i].ir_north);
+		if(state == 1)
+		{
+			if(distance >= threashold+hysteresis) { state=2;  angle1=data[i].angle; }
+		}
+		else if(state == 2)
+		{
+			if( (distance < threashold-hysteresis) || (i==number_of_points) ) 
+			{ 
+				state = 1; 
+				angle2 = data[i-1].angle; 
+				opening = abs(abs(angle2)-abs(angle1));
+				if(opening > result.opening) 
+				{
+					result.opening=opening;
+					result.rising_edge_angle = angle1;
+					result.falling_edge_angle = angle2;
+					result.center_angle	= (result.rising_edge_angle + result.falling_edge_angle)/2;
+				}
+			}
+		}
+	}
+	NOP();
+	return result;
+}
 
 
 t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threashold)
@@ -47,9 +98,8 @@ t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threas
 	uint8 min,max;
 	uint16 i;
 	uint8 value;
-	u16 position1,position2;
-	uint8 state=0; //0 means we don't know where we are. 1=valley;  2=hill
-	t_scan_result result = {0,0,0,0,0,0,0}; //initialize w/ values that indicate that we did not find a peak
+	u16 position1=0,position2=0;
+	t_scan_result result = {0,0,0,0,0,0,0,0}; //initialize w/ values that indicate that we did not find a peak
 	
 	min=255;
 	max=0;
@@ -108,7 +158,6 @@ t_peak find_peak(uint8 *data, uint16 size, uint8 threashold)
 	uint16 i;
 	uint16 rising_edge_position, falling_edge_position;
 	uint8 value;
-	uint16 position;
 	uint8 state=0; //0 means we don't know where we are. 1=valley;  2=hill
 	t_peak result = {255, 255}; //initialize w/ values that indicate that we did not find a peak
 	

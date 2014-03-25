@@ -12,12 +12,14 @@ typedef struct
 {
 	s16 angle;
 	u16 ir_north;
+	u16 ir_far_north;
 	u08 flame;
 } t_scan;
 
 typedef struct
 {
 	u08 flame_center_value;
+	s16 opening;
 	u16 rising_edge_position;
 	s16 rising_edge_angle;
 	u16 falling_edge_position;
@@ -31,6 +33,7 @@ extern t_peak find_peak(uint8 *data, uint16 size, uint8 threashold);
 extern t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threashold);
 extern uint8 hone_in_on_candle(uint8 cmd, uint8 range);
 extern  uint8 find_flame_fsm(uint8 cmd);
+extern t_scan_result find_path_in_scan(t_scan *data, u16 number_of_points, u16 threashold, u16 hysteresis, u08 use_far_north);
 
 extern void test_flame(void);
 
