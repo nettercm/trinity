@@ -24,6 +24,7 @@
 #include "../pc/commands.h"
 #include "config.h"
 #include "fsm.h"
+#include "behaviors.h"
 
 #include "debug.h" //should always be the last one
-#include "sim.h"  //well, actually this should be the last one in case we need to override some functions when running in simulation mode
+#include "sim.h"   //well, actually this needs to be the last one in case we need to override some functions when running in simulation mode

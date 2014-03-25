@@ -25,8 +25,14 @@ uint32 t_last_output_update = 0;
 
 const char welcome[] PROGMEM = ">g32>>c32";
 
+//line crossing / candle circle / home circle detection
+u08 lines_crossed=0;
+u08 last_lines_crossed=0;
+DEFINE_CFG2(u08,black,6,1);					
+DEFINE_CFG2(u08,white,6,2);					
 
 
+#if 0
 t_LOOKUP_table line_sensor_table[] = // R,L  I.E. Left senser reads a smaller value
 {
 	{16},
@@ -47,6 +53,7 @@ t_LOOKUP_table line_sensor_table[] = // R,L  I.E. Left senser reads a smaller va
 	{199	,182},
 	{255	,255},	
 };
+#endif
 
 /*
 void wait_for_start_button(void)
@@ -232,6 +239,21 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 
 
 		/***************************************************************************
+		// control behavior state via buttons
+		***************************************************************************/
+		if(button_is_pressed(TOP_BUTTON))
+		{
+			play_note(A(3), 50, 10);
+			START_BEHAVIOR(FOLLOW_WALL, LEFT_WALL); 
+		}
+		if(button_is_pressed(BOTTOM_BUTTON))
+		{
+			play_note(A(3), 50, 10);
+			START_BEHAVIOR(MASTER_LOGIC,1); 
+		}
+
+
+		/***************************************************************************
 		// display the selected screen
 		***************************************************************************/
 		if(s.lcd_screen==0)
@@ -269,8 +291,9 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 			lcd_goto_xy(0,1);   task_wait(5);
 			lcd_printf("V=%5d,  %5d",	s.inputs.vbatt, count);     task_wait(5);
 		}
-		else if(s.lcd_screen==255) //allow another task to update the screen.
+		else if(s.lcd_screen==255) 
 		{
+			//allow another task to update the screen, i.e. don't clear the screen
 		}
 	}
 	task_close();
@@ -386,9 +409,6 @@ void idle(void)
 #endif
 
 
-u08 lines_crossed=0;
-DEFINE_CFG2(u08,black,6,1);					
-DEFINE_CFG2(u08,white,6,2);					
 
 void line_detection_fsm(u08 cmd, u08 *param)
 {
@@ -607,11 +627,23 @@ void scan(u08 cmd)
 
 
 #define TURN_IN_PLACE(speed,angle) turn_in_place_manneuver(1,(speed),(angle)); while(turn_in_place_manneuver(0,(speed),(angle))) {OS_SCHEDULE;}
-#define MOVE(speed,distance) move_manneuver(1,(speed),(distance)); while(move_manneuver(0,(speed),(distance))) {OS_SCHEDULE;}
 #define TURN_IN_PLACE_AND_SCAN(speed,angle) turn_in_place_manneuver(1,(speed),(angle)); scan(1); while(turn_in_place_manneuver(0,(speed),(angle))) {scan(0); OS_SCHEDULE;}
-#define FAN_ON() set_digital_output(IO_D0,0)
-#define FAN_OFF() set_digital_output(IO_D0,1)
 
+#define MOVE(speed,distance)		move_manneuver(1,(speed),(distance)); while(move_manneuver(0,(speed),(distance))) {OS_SCHEDULE;}
+#define GO(speed)					motor_command(7,2,2,10,10); motor_command(6,1,1,(speed),(speed))
+
+#define HARD_STOP()					motor_command(2,0,0,0,0);
+#define SOFT_STOP()					motor_command(6,5,5,0,0);
+
+#define FAN_ON()					set_digital_output(IO_D0,0)
+#define FAN_OFF()					set_digital_output(IO_D0,1)
+
+#define RESET_LINE_DETECTION()		last_lines_crossed = lines_crossed;
+#define WAIT_FOR_LINE_DETECTION()	while(lines_crossed == last_lines_crossed) {OS_SCHEDULE;}
+#define LINE_WAS_DETECTED()			(lines_crossed != last_lines_crossed)
+
+
+/*
 #define move(speed,distance) \
 	odometry_set_checkpoint(); \
 	motor_command(cmd,accel,decel,(speed),(speed)); \
@@ -624,8 +656,8 @@ void scan(u08 cmd)
 	motor_command(cmd,accel,decel,(speed),-(speed)); \
 	while ( abs(odometry_get_rotation_since_checkpoint()) < angle ) { task_wait(10); } \
 	motor_command(cmd,accel,decel,0,0)
-
-
+*/
+#pragma region Master Logic FSM
 void master_logic_fsm(u08 fsm_cmd, u08 *param)
 {
 	static t_scan_result scan_result;
@@ -648,7 +680,6 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static enum states state=s_disabled;
 	static enum states last_state=s_none;
 	static u32 t_entry=0;
-	static u08 last_lines_crossed=0;
 	static u08 still_inside_room=0;
 	DEFINE_CFG2(s16,turn_speed,			9,1);
 	DEFINE_CFG2(s16,room3_enter,		9,2);
@@ -700,38 +731,24 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		UPDATE_CFG2(ninety);
 
 		//the following state transition applies to all states
-		if(s.behavior_state[3]==0) state = s_disabled;
+		if(s.behavior_state[MASTER_LOGIC]==0) state = s_disabled;
 
-		if(button_is_pressed(BOTTOM_BUTTON))
-		{
-			play_note(A(3), 50, 10);
-			s.behavior_state[3] = 1; 
-			state = s_disabled;
-		}
 
 		first_(s_disabled)
 		{
 			enter_(s_disabled) 
 			{  
-				motor_command(cmd,accel,decel,0,0);
+				HARD_STOP(); //motor_command(cmd,accel,decel,0,0);
 				FAN_OFF();
-				s.behavior_state[1] = 0;
-				s.behavior_state[2] = 0;
-				s.behavior_state[3] = 0;
-				lines_crossed=0;
-				last_lines_crossed=0;
-				s.inputs.watch[0] = 0;
-				s.inputs.watch[1] = 0;
-				s.inputs.watch[2] = 0;
-				s.inputs.watch[3] = 0;
+				STOP_BEHAVIOR(FOLLOW_WALL);
+				STOP_BEHAVIOR(MASTER_LOGIC);
+				RESET_LINE_DETECTION();
+				s.inputs.watch[0] = s.inputs.watch[1] = s.inputs.watch[2] = s.inputs.watch[3] = 0;
 			}
 
+			if(s.behavior_state[MASTER_LOGIC]==1) state = s_waiting_for_start;
 
-			if(s.behavior_state[3]==1) state = s_waiting_for_start;
-
-			exit_(s_disabled)  
-			{ 
-			}
+			exit_(s_disabled)  { }
 		}
 
 		//-------------------------------------------------------------------------------------------------------
@@ -740,54 +757,52 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_waiting_for_start) { }
 
-			//just fall through for now
+			//TODO: Add actual start button / audio start logic. For now,  just fall through to the next state
 			state = s_aligning_south;
 
 			exit_(s_waiting_for_start) { }
 		}
 		
-		//-------------------------------------------------------------------------------------------------------
 
+		//-------------------------------------------------------------------------------------------------------
+		//		Align the robot so that it faces south
+		//-------------------------------------------------------------------------------------------------------
 		next_(s_aligning_south)
 		{
 			enter_(s_aligning_south) { }
 			
-			//turn(turn_speed,ninety); //turn 90 degrees right @ speed 20
-			//task_wait(200);
 			TURN_IN_PLACE(turn_speed, -ninety);
 
-			if(s.ir[AI_IR_N] < 120)  //something right in front of us?
-			{
-				//if so, then we were facing south initially, now we are facing west; turn back...
-				//turn(-turn_speed,ninety); //turn 90 degrees left @ speed 20
-				//task_wait(200);
-				TURN_IN_PLACE(turn_speed, ninety);
+			//is something right in front of us?
+			//if so, then we were facing south initially, and now we are facing west; turn back...
+			if(s.ir[AI_IR_N] < 120)  TURN_IN_PLACE(turn_speed, ninety);
 
-			}
+			//on to the next state...
 			state = s_finding_room_3;
 
 			exit_(s_aligning_south) { }
 		}
 
-		//-------------------------------------------------------------------------------------------------------
 
+		//-------------------------------------------------------------------------------------------------------
+		//	Find Room #3
+		//-------------------------------------------------------------------------------------------------------
 		next_(s_finding_room_3)
 		{
 			enter_(s_finding_room_3)
 			{
-				//activate "follow right wall"
-				s.behavior_state[2]=1; //right wall
-				s.behavior_state[1]=1; //start wall following
-				last_lines_crossed = lines_crossed;
+				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
+				//TODO: need to take into account the fact that initiall we'll be on the home circle
+				RESET_LINE_DETECTION();
 			}
 
-			if(lines_crossed != last_lines_crossed)
+			if( LINE_WAS_DETECTED() )
 			{
 
-				last_lines_crossed = lines_crossed;
+				RESET_LINE_DETECTION();
 				play_note(C(3), 50, 10);
-				motor_command(cmd,accel,decel,0,0);
-				s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
+				HARD_STOP();
+				STOP_BEHAVIOR(FOLLOW_WALL);
 				state = s_searching_room_3;
 			}
 
@@ -803,64 +818,68 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_signal(line_alignment_start_evt); 
 			event_wait(line_alignment_done_evt);
 
-			//move 10cm into the room
+			//move a little into the room
 			MOVE(turn_speed, room3_enter);
 
-			//we are facing more or less N right now.  turn right about 120degrees so that we are facing SE
+			//we should facing more or less N right now.  turn right about 120degrees so that we are facing SE
 			TURN_IN_PLACE(turn_speed, room3_turn_1);
 
 			//now start to scan for the flame by turning left about 250 degrees
 			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
 			TURN_IN_PLACE_AND_SCAN(turn_speed, room3_turn_2);
+
+			//now analyze the data...
 			scan_result = find_peak_in_scan(scan_data,360,30);
-			if(scan_result.flame_center_value > 200) 
+			if(scan_result.flame_center_value > 200) //TODO: make the minimum flame value a parameter
 			{
 				//turn into the direction where we saw the peak
+				//TODO: move the "turn into the direction of the flame" logic into the "move to candle" state
 				TURN_IN_PLACE( turn_speed, -(room3_turn_2-scan_result.center_angle) );
 				switch_(s_searching_room_3, s_move_to_candle);
 			}
 
 			//if there was no candle, go on to the next room.
 			//we should be facing the wall more or less SW, so we just need to start following the right wall
-			//move(turn_speed, room3_enter);
-			//task_wait(200);
+			//TODO:  implement a more general "find wall" logic and make it part of the "follow wall" state machine
 			still_inside_room = 1;
-			last_lines_crossed = lines_crossed;
+			RESET_LINE_DETECTION();
+
 			motor_command(cmd,accel,decel,turn_speed+5,turn_speed);
 			while( (s.ir[AI_IR_NE] > 100) && (s.ir[AI_IR_N] > 80) ) task_wait(10);
 			motor_command(cmd,accel,decel,0,0);
 
+			//at this point we should be able to just follow the line a gain
 			state = s_finding_room_2;
 
 			exit_(s_searching_room_3) { }
 		}
 
-		//-------------------------------------------------------------------------------------------------------
 
+
+		//-------------------------------------------------------------------------------------------------------
+		//
+		//-------------------------------------------------------------------------------------------------------
 		next_(s_finding_room_2)
 		{
 			enter_(s_finding_room_2)
 			{
-				//activate "follow right wall"
-				s.behavior_state[2]=1; //right wall
-				s.behavior_state[1]=1; //start wall following
+				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
 			}
 
-			if(lines_crossed != last_lines_crossed)
+			if( LINE_WAS_DETECTED() )
 			{
-				//we'll be crossing the line while exiting from the prev. room!!!!
+				//we'll be crossing the line while exiting from the prev. room, so let's take that into account!!!!
 				if(still_inside_room) 
 				{
 					play_note(C(4), 50, 10);
-					//s.inputs.watch[2]++;
-					last_lines_crossed = lines_crossed;
+					RESET_LINE_DETECTION();
 					still_inside_room=0;
 				}
 				else
 				{
 					play_note(C(3), 50, 10);
-					motor_command(cmd,accel,decel,0,0);
-					s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
+					HARD_STOP();
+					STOP_BEHAVIOR(FOLLOW_WALL);
 					state = s_searching_room_2;
 				}
 			}
@@ -868,16 +887,19 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			exit_(s_finding_room_2) { }
 		}
 
-		//-------------------------------------------------------------------------------------------------------
 
+
+		//-------------------------------------------------------------------------------------------------------
+		//
+		//-------------------------------------------------------------------------------------------------------
 		next_(s_searching_room_2)
 		{
-			enter_(s_searching_room_2) { }
+			enter_(s_searching_room_2) { s.current_room = 2;}
 
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 
-			//move 10cm into the room
+			//move a little bit into the room
 			MOVE(turn_speed, room2_enter);
 
 			//we are facing more or less W right now.  turn right about 120degrees so that we are facing NE
@@ -891,13 +913,12 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			{
 				//turn into the direction where we saw the peak
 				TURN_IN_PLACE( turn_speed, -(room2_turn_2-scan_result.center_angle) );
+				//we are looging straight at the candle - proceed with extinguishing
 				switch_(s_searching_room_2, s_move_to_candle);
 			}
 
 			//if there was no candle, go on to the next room.
 			//we should be facing the wall more or less SE, we just need to start following the right wall
-			//move(turn_speed, room1_enter);
-			//task_wait(200);
 			still_inside_room = 1;
 			last_lines_crossed = lines_crossed;
 			motor_command(6,accel,decel,turn_speed+5,turn_speed);
@@ -914,9 +935,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_finding_room_1)
 			{
-				//activate "follow right wall"
-				s.behavior_state[2]=1; //right wall
-				s.behavior_state[1]=1; //start wall following
+				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
 			}
 
 			if(lines_crossed != last_lines_crossed)
@@ -933,7 +952,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				{
 					play_note(C(3), 50, 10);
 					motor_command(cmd,accel,decel,0,0);
-					s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
+					s.behavior_state[FOLLOW_WALL] = 0;  //s.behavior_state[2] = 0;
 					state = s_searching_room_1;
 				}
 			}
@@ -945,7 +964,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 		next_(s_searching_room_1)
 		{
-			enter_(s_searching_room_1) { }
+			enter_(s_searching_room_1) { s.current_room = 1; }
 
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
@@ -989,31 +1008,24 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_finding_room_4) 
 			{ 
-				//activate "follow right wall"
-				s.behavior_state[2]=1; //right wall
-				s.behavior_state[1]=1; //start wall following
+				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
 			}
 
 			//keep following the right wall until we have passed through the door
-			while(lines_crossed == last_lines_crossed) task_wait(20);
+			WAIT_FOR_LINE_DETECTION();
 
 			//now we are facing N
 			play_note(C(3), 50, 10);
-			s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
-			motor_command(cmd,accel,decel,0,0);
-			task_wait(400);
+			STOP_BEHAVIOR(FOLLOW_WALL);  //s.behavior_state[2] = 0;
+			HARD_STOP();
 
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 
 			//completely exit from room 1 until we have reached the center of the intersection
-			//move(turn_speed,220);
-			//task_wait(400);
 			MOVE(turn_speed, 230);
 
 			//turn left 90deg and check for dog
-			//turn(-turn_speed,ninety);
-			//task_wait(400);
 			TURN_IN_PLACE(turn_speed, ninety);
 
 			//if there is a dog / obstacle right in front, then 
@@ -1021,22 +1033,19 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				//there won't be a 2nd dog to worry about...
 				//eventuall we'll wind up inside room 4, either via door on North side or on South side
 				//go to state "searching room 4"
-			//turn(turn_speed,ninety);
-			//task_wait(400);
 			TURN_IN_PLACE(turn_speed, -ninety);
 			MOVE(turn_speed, 230);
 
 			last_lines_crossed = lines_crossed;
-			s.behavior_state[2]=0; //left wall
-			s.behavior_state[1]=1; //start wall following
+			//s.behavior_state[2]=0; //left wall
+			START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL); //start  following the LEFT wall
 
 			//keep following the left wall until we have passed through the door
-			while(lines_crossed == last_lines_crossed) task_wait(20);
+			WAIT_FOR_LINE_DETECTION();
 			play_note(C(3), 50, 10);
-			s.behavior_state[1] = 0;  s.behavior_state[2] = 0;
-			motor_command(cmd,accel,decel,0,0);
-			task_wait(400);
-			last_lines_crossed = lines_crossed;
+			STOP_BEHAVIOR(FOLLOW_WALL);
+			HARD_STOP();
+			RESET_LINE_DETECTION();
 
 			state = s_searching_room_4;
 
@@ -1055,35 +1064,77 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			exit_(s_finding_room_4) {}
 		}
 
-		//-------------------------------------------------------------------------------------------------------
 
+
+		//-------------------------------------------------------------------------------------------------------
+		//    Search for the candle in Room #4
+		//-------------------------------------------------------------------------------------------------------
 		next_(s_searching_room_4)
 		{
-			enter_(s_searching_room_4) { }
+			enter_(s_searching_room_4) { s.current_room = 4; }
 
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 
+			//move a little bit into the room
+			MOVE(turn_speed, 100);
+
+			//we are facing either North or South, but it doesn't really matter...
+
+			//turn right
+			TURN_IN_PLACE(turn_speed, -100);
+
+			//now start to scan for the flame by turning left about 200 degrees
+			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
+			TURN_IN_PLACE_AND_SCAN(turn_speed, 200);
+			scan_result = find_peak_in_scan(scan_data,360,30);
+			if(scan_result.flame_center_value > 200) 
+			{
+				//turn into the direction where we saw the peak
+				TURN_IN_PLACE( turn_speed, -(200-scan_result.center_angle) );
+				//we are looging straight at the candle - proceed with extinguishing
+				switch_(s_searching_room_4, s_move_to_candle);
+			}
+
+			//if there was no candle, then we messed up, because Room #4 is alwasy the last room we search!
 			state = s_disabled;
 
 			exit_(s_searching_room_4) {}
 		}
 
 
+
+		//-------------------------------------------------------------------------------------------------------
+		//    Move closer to the candle and blow it out
+		//-------------------------------------------------------------------------------------------------------
 		next_(s_move_to_candle)
 		{
 			enter_(s_move_to_candle) {}
 
 			//make sure we are not in front of some obstacle (in case we saw a reflection from the wall)
 
-			//now move forward until we reach the candle circle
+			//now move forward until we reach the candle circle; 
+
+			//start moving straight
+			GO(turn_speed);
+
+			//if we reach the candle circle, stop - at this point we are withing 30cm / 12" of the candle
+			while(lines_crossed == last_lines_crossed);
+
+			//now get a little closer
 			MOVE(turn_speed,200);
+
+			//now turn on the fan and sweep left and right for some time
 			FAN_ON(); 
-			TURN_IN_PLACE(10,-20);
-			TURN_IN_PLACE(10, 20);
-			TURN_IN_PLACE(10,-10);
+			task_wait(1000);
+			TURN_IN_PLACE(5,-20);
+			TURN_IN_PLACE(5, 40);
+			TURN_IN_PLACE(5,-40);
+			TURN_IN_PLACE(5, 20);
+			task_wait(1000);
 			FAN_OFF(); 
 
+			//TODO: go back to the home circle (optional)
 			state = s_disabled;
 
 			exit_(s_move_to_candle) {}
@@ -1096,6 +1147,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 	task_close();
 }
+#pragma endregion
 
 
 
@@ -1156,7 +1208,7 @@ void test(u08 cmd, u08 *param)
 		UPDATE_CFG2(speed);
 		UPDATE_CFG2(distance);
 
-		if(s.behavior_state[11]==1) 
+		if(s.behavior_state[TEST_LOGIC]==1) 
 		{
 			/*
 			1) gradually ramp up (at specified rate) to target speed
@@ -1222,7 +1274,7 @@ void test(u08 cmd, u08 *param)
 			TURN_IN_PLACE_AND_SCAN( 100, -180 );
 			scan_result = find_peak_in_scan(scan_data,360,3);
 			*/
-			s.behavior_state[11]=0;
+			s.behavior_state[TEST_LOGIC]=0;
 		}
 
 
@@ -1242,7 +1294,7 @@ void test(u08 cmd, u08 *param)
 			else
 			{
 				motor_command(6,accel,decel,0,0);
-				s.behavior_state[11]=0;
+				s.behavior_state[TEST_LOGIC]=0;
 			}
 			task_wait(20);
 		}

@@ -1,6 +1,16 @@
 
 #include "typedefs.h"
 
+
+#define FOLLOW_WALL		1
+#define MASTER_LOGIC	3 
+#define TEST_LOGIC		11
+
+#define START_BEHAVIOR(b,signal)	s.behavior_state[b]=signal
+#define STOP_BEHAVIOR(b)			s.behavior_state[b]=0
+
+
+//the following is not yet used
 typedef struct 
 {
 	//u08 priority;

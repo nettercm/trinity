@@ -2,6 +2,9 @@
 #ifndef _wall_follow_h
 #define _wall_follow_h
 
+#define LEFT_WALL  1
+#define RIGHT_WALL 2
+
 extern void wall_follow_fsm(u08 cmd, u08 *param);
 
 /*

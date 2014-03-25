@@ -1,3 +1,11 @@
+
+High-priority:
+* add start button
+* create proper dog detection logic
+* create proper "move to candle" logic
+* add sound activation
+
+
 Wall following:
 •	Add logic to "follow wall" behavior so that it first finds the wall or create a separate "find wall" behavior
 •	Limit the amount by which the integrator is increased/decreased (new parameter!)
@@ -8,12 +16,6 @@ General Motor control / locomotion:
 	o	(10 per interval @ 50hz/20ms => 0.5s for full 0-255 PWM range)
 
 
-motor command for turning:
-1) gradually ramp up (at specified rate) to target speed
-2) when we are <= 30degrees from the target, start ramping down to speed 15
-3) when we are <= 10degrees from the target, apply target speed 5 (w/ feed forward) & regulate to maintain 5
-3) when we are at the target, hit the brakes - full stop w/out ramping down
-
 General:
 * add an API to start/stop a behavior & to wait for it to complete.
 
@@ -23,12 +25,24 @@ stop_behavior(b)							//stop behavior b
 get_behavior_state(b)
 
 
+
+
 Issues:
-* turning into room 4 w/ door on S side - turning too sharp
-* missing the line/door when entering room 1 w/ door on s side
-* BT1 seems to have stopped working.  It will pair, but can't exchange data.
+
+* when turning into room #4 w/ door on the south side - turning too sharp
+* sometimes missing the line/door when entering room 1 w/ door on the south side
+* BT1 Bluetooth module seems to have stopped working.  It will pair, but can't exchange data.  Using BT2 now.
+
+
+
 
 Notes:
+
+motor command for turning:
+1) gradually ramp up (at specified rate) to target speed
+2) when we are <= 30degrees from the target, start ramping down to speed 15
+3) when we are <= 10degrees from the target, apply target speed 5 (w/ feed forward) & regulate to maintain 5
+3) when we are at the target, hit the brakes - full stop w/out ramping down
 
 i2c 20x4 LCD:
 5mA + 30mA for the backlight

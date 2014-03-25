@@ -8,15 +8,15 @@
 
 void wall_follow_fsm(u08 cmd, u08 *param)
 {
-	enum states { s_none=0, s_disabled=1, s_tracking_wall=2, s_lost_wall=3, s_turning_corner=4, s_turning_sharp_corner=5 };
+	enum states { s_disabled=0, s_tracking_wall=1, s_lost_wall=2, s_turning_corner=3, s_turning_sharp_corner=4 };
 	static enum states state=s_disabled;
-	static enum states last_state=s_none;
+	static enum states last_state=s_disabled;
 	//static u08 state=1, last_state=0;
 	
 	s16 error=0, e1=0, e2=0, correction=0;
 	u08 at_limit_flag=0;
 	static s16 target_speed=0;
-	static u08 which_wall = 0; //left
+	static u08 which_wall = LEFT_WALL; //left
 	static s16 side=0, front=0;
 	
 	DEFINE_CFG2(u08,interval,			10,1);			DEFINE_CFG2(s16,nominal_speed,		10,2);
@@ -67,16 +67,9 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 		
 		//the following state transition applies to all states
-		if(s.behavior_state[1]==0) state = s_disabled;
+		if(s.behavior_state[FOLLOW_WALL]==0) state = s_disabled;
 		
-		if(button_is_pressed(TOP_BUTTON))
-		{
-			play_note(A(3), 50, 10);
-			s.behavior_state[1] = 1; 
-			state = s_disabled;
-		}
-		
-		side =  (which_wall == 0 ? s.ir[AI_IR_NW] : s.ir[AI_IR_NE]);
+		side =  (which_wall == LEFT_WALL ? s.ir[AI_IR_NW] : s.ir[AI_IR_NE]);
 		front = s.ir[AI_IR_N];
 		
 		/*
@@ -88,8 +81,11 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		first_(s_disabled)
 		{
 			enter_(s_disabled) { motor_command(6,2,2,0,0); }
-			which_wall = s.behavior_state[2];
-			if(s.behavior_state[1]==1) state = s_tracking_wall;
+			if(s.behavior_state[FOLLOW_WALL]!=0)
+			{
+				which_wall = s.behavior_state[FOLLOW_WALL];
+				state = s_tracking_wall;
+			}
 			exit_(s_disabled)  { motor_command(8,1000,0,min_speed/2,min_speed/2); target_speed = min_speed; }
 		}
 		
@@ -146,7 +142,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 				LIMIT(integral,-integral_limit,integral_limit);
 			}
 
-			if(which_wall == 1) correction *= -1; //reverse the motor command if we are tracking the right wall
+			if(which_wall == RIGHT_WALL) correction *= -1; //reverse the motor command if we are tracking the right wall
 			
 			if(correction > 0)
 			{
@@ -203,16 +199,11 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		*/		
 		next_(s_turning_corner)
 		{
-			enter_(s_turning_corner) 
-			{ 
-				//play_note(G(3), 50, 10);
-				//s.inputs.x = s.inputs.y = s.inputs.theta = 0; 
-				odometry_set_checkpoint();
-			}
+			enter_(s_turning_corner) { odometry_set_checkpoint(); }
 			
 			if(target_speed > corner_speed) target_speed -= down_ramp;
 			if(target_speed < corner_speed) target_speed += up_ramp;
-			if(which_wall==0) motor_command(8,0,0,(target_speed*10)/corner_radius,target_speed);
+			if(which_wall==LEFT_WALL) motor_command(8,0,0,(target_speed*10)/corner_radius,target_speed);
 			else motor_command(8,0,0,target_speed,(target_speed*10)/corner_radius);
 	
 			if( side <= target_distance ) state = s_tracking_wall;
@@ -229,15 +220,11 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 		next_(s_turning_sharp_corner)
 		{
-			enter_(s_turning_sharp_corner)
-			{
-				//play_note(C(4), 50, 10);
-				//s.inputs.x = s.inputs.y = s.inputs.theta = 0; 
-				odometry_set_checkpoint();
-			}
-			if(target_speed > corner_speed) target_speed -= down_ramp;
-			if(target_speed < corner_speed) target_speed += up_ramp;
-			if(which_wall==0) motor_command(8,0,0,(target_speed*10)/sharp_corner_radius,target_speed);
+			enter_(s_turning_sharp_corner)	{ odometry_set_checkpoint(); }
+
+			if( target_speed > corner_speed )	target_speed -= down_ramp;
+			if( target_speed < corner_speed )	target_speed += up_ramp;
+			if( which_wall==LEFT_WALL )			motor_command(8,0,0,(target_speed*10)/sharp_corner_radius,target_speed);
 			else motor_command(8,0,0,target_speed,(target_speed*10)/sharp_corner_radius);
 			
 			if( side <= target_distance ) state = s_tracking_wall;
@@ -248,7 +235,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 			}
 			//if( s.ir[AI_IR_N] <= 50 ) state = 2;
 			
-				exit_(s_turning_sharp_corner) { }
+			exit_(s_turning_sharp_corner) { }
 		}
 		/*	
 		s.inputs.watch[0]=error;
