@@ -111,22 +111,22 @@ void process_user_input(void)
 
 	//outputs->cmd = 0;
 
-/*
+
 #ifdef WIN32UI
 	if(key) 
 	{
 		c=key; 
 		key=0;
 	}
-#else
-*/
+#endif
+
 	//this works in a UI app as well, provided AllocConsole() was called on startup
 	if(_kbhit())
 	{
 		c = _getch();
 		if(c==0x00) c=_getch() + 0xe100;
 		if(c==0xe0) c=_getch() + 0xe000;
-		//printf("c = '%c' = 0x%02x\n",c,c);
+		printf("c = '%c' = 0x%04x\n",c,c);
 	}
 //#endif
 
