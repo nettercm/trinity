@@ -96,8 +96,8 @@
 #define OS_BEGIN_1			uint16_t os_task_state
 #define OS_BEGIN_2			os_task_state = os_task_internal_state_get(running_tid); switch ( os_task_state ) { case 0:
 
-#define task_open_1()				OS_BEGIN_1
-#define task_open_2()				OS_BEGIN_2
+#define task_open_1()		OS_BEGIN_1
+#define task_open_2()		OS_BEGIN_2
 
 #define OS_END	            os_task_kill(running_tid);\
                             running_tid = NO_TID;\

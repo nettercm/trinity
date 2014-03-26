@@ -418,6 +418,7 @@ void line_detection_fsm(u08 cmd, u08 *param)
 	static enum states last_state=s_none;
 	static u32 t_crossed=0;
 	static u08 loop_counter=0;
+	//NOTE: parameters black and white are defined as globals, but the updating happens in this task
 	
 	task_open();
 
@@ -682,6 +683,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static enum states last_state=s_disabled;
 	static u32 t_entry=0;
 	static u08 still_inside_room=0;
+	static u32 context_switch_counter=0;
+	static u32 t_last=0;
+
 	DEFINE_CFG2(s16,turn_speed,			9,1);
 	DEFINE_CFG2(s16,room3_enter,		9,2);
 	DEFINE_CFG2(s16,room3_turn_1,		9,3);
@@ -697,24 +701,29 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	DEFINE_CFG2(s16,decel,				9,13);
 	DEFINE_CFG2(s16,ninety,				9,14);
 	
-	task_open();
+	task_open_1();
 
-	PREPARE_CFG2(turn_speed);
-	PREPARE_CFG2(room3_enter);
-	PREPARE_CFG2(room3_turn_1);
-	PREPARE_CFG2(room3_turn_2);
-	PREPARE_CFG2(room2_enter);
-	PREPARE_CFG2(room2_turn_1);
-	PREPARE_CFG2(room2_turn_2);
-	PREPARE_CFG2(room1_enter);
-	PREPARE_CFG2(room1_turn_1);
-	PREPARE_CFG2(room1_turn_2);
-	PREPARE_CFG2(cmd);
-	PREPARE_CFG2(accel);
-	PREPARE_CFG2(decel);
-	PREPARE_CFG2(ninety);
+	//initialize the parmater logic onely the first time through
+	if( context_switch_counter==0 )
+	{
+		PREPARE_CFG2(turn_speed);
+		PREPARE_CFG2(room3_enter);
+		PREPARE_CFG2(room3_turn_1);
+		PREPARE_CFG2(room3_turn_2);
+		PREPARE_CFG2(room2_enter);
+		PREPARE_CFG2(room2_turn_1);
+		PREPARE_CFG2(room2_turn_2);
+		PREPARE_CFG2(room1_enter);
+		PREPARE_CFG2(room1_turn_1);
+		PREPARE_CFG2(room1_turn_2);
+		PREPARE_CFG2(cmd);
+		PREPARE_CFG2(accel);
+		PREPARE_CFG2(decel);
+		PREPARE_CFG2(ninety);
+	}
 
-	while(1)
+	//update the parameter values the first time through and then everyh 500ms
+	if( (context_switch_counter==0) || (get_ms()-t_last) > 500 )  
 	{
 		UPDATE_CFG2(turn_speed);
 		UPDATE_CFG2(room3_enter);
@@ -730,7 +739,16 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		UPDATE_CFG2(accel);
 		UPDATE_CFG2(decel);
 		UPDATE_CFG2(ninety);
+		t_last = get_ms();
+	}
 
+	context_switch_counter++;
+
+	task_open_2();
+	//code after this point resumes execution wherever it left off when a context switch happened
+
+	while(1)
+	{
 		//the following state transition applies to all states
 		if(s.behavior_state[MASTER_LOGIC]==0) state = s_disabled;
 
@@ -811,7 +829,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		}
 
 		//-------------------------------------------------------------------------------------------------------
-
+		//  We are standing at the entrace to room 3 - let's see if there is a candle in this room
+		//-------------------------------------------------------------------------------------------------------
 		next_(s_searching_room_3)
 		{
 			enter_(s_searching_room_3) { s.current_room = 3;}
@@ -1019,24 +1038,25 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			play_note(C(3), 50, 10);
 			STOP_BEHAVIOR(FOLLOW_WALL);  //s.behavior_state[2] = 0;
 			HARD_STOP();
-
+			
+			//now we are on the line that marks the north-side door of Room #1 - let's align ourselves to that line so that we are facing North
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 
 			//completely exit from room 1 until we have reached the center of the intersection
-			MOVE(turn_speed, 240);
+			MOVE(turn_speed, 240); //TODO: make this a parameter
 
 			//turn left and check for dog
 			TURN_IN_PLACE(turn_speed, 45);
 			TURN_IN_PLACE_AND_SCAN( 40, 90 );
-			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1);
+			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
 			
 			if(scan_result.opening <= 30) //TODO: fix this angle
 			{
 				//if there is a dog / obstacle right in front, then 
 				//turn right 90deg and start following the left wall
 				//there won't be a 2nd dog to worry about...
-				//eventuall we'll wind up inside room 4, either via door on North side or on South side
+				//eventually we'll wind up inside room 4, either via door on North side or on South side
 				TURN_IN_PLACE(turn_speed, -(90+45));
 				MOVE(turn_speed, 240);
 				RESET_LINE_DETECTION();
@@ -1048,31 +1068,32 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				STOP_BEHAVIOR(FOLLOW_WALL);
 				HARD_STOP();
 				RESET_LINE_DETECTION();
-				state = s_searching_room_4;
+				switch_(s_finding_room_4, s_searching_room_4);
 			}
 
 
-			//there was no dog at the exit of room 1
+			//there was no dog at the exit of room 1, blocking our way into room 4 from the south side, so....
+			//...check for a door on the South side of room 4
 
-			//check for door on South side of room 4
-			TURN_IN_PLACE(turn_speed, -45);
-			MOVE(turn_speed, 30*25);
-			TURN_IN_PLACE(turn_speed, -90);
-			if(s.inputs.ir[AI_IR_N] < 160)
+			TURN_IN_PLACE(turn_speed, -45);	//now we are facing West again
+			MOVE(turn_speed, 30*25);		//move forward about 30inches so that we are in the position where the door could be
+			TURN_IN_PLACE(turn_speed, -90);	//now we would be facing the door
+			if(s.inputs.ir[AI_IR_N] < 160)	//is there an opening right in front of us?
 			{
-				//if there is no door on Rm4-south, then 
-				//turn around (to face E)
+				//if there is no door on Rm4-south, then turn around (to face E)
 				TURN_IN_PLACE(turn_speed, -90);
-				//start following left wall
+
+				//keep following the left wall until we have passed through the door
 				RESET_LINE_DETECTION();
 				START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL);
-				//keep following the left wall until we have passed through the door
 				WAIT_FOR_LINE_DETECTION();
+
+				//we reached room 4 - so proceed to the appropriate state
 				play_note(C(3), 50, 10);
 				STOP_BEHAVIOR(FOLLOW_WALL);
 				HARD_STOP();
 				RESET_LINE_DETECTION();
-				state = s_searching_room_4;
+				switch_(s_finding_room_4, s_searching_room_4);
 			}
 				//if we hit a dead end (i.e. dog) before we reach the door
 					//turn around 180deg
@@ -1177,12 +1198,14 @@ void test(u08 cmd, u08 *param)
 	static u16 i;
 	float time_to_stop=0,distance_to_stop;
 	static t_scan_result scan_result;
-	DEFINE_CFG2(s16,accel,99,1);					
-	DEFINE_CFG2(s16,decel,99,2);					
-	DEFINE_CFG2(s16,speed,99,3);					
-	DEFINE_CFG2(s16,distance,99,4);					
+	DEFINE_CFG2(s16,accel,		99,1);					
+	DEFINE_CFG2(s16,decel,		99,2);					
+	DEFINE_CFG2(s16,speed,		99,3);					
+	DEFINE_CFG2(s16,distance,	99,4);					
+	DEFINE_CFG2(s16,angle,		99,5);					
 
 	task_open_1();
+	//code between _1() and _2() will get executed every time the scheduler resumes this task
 
 	if(cmd==0) 
 	{
@@ -1193,13 +1216,16 @@ void test(u08 cmd, u08 *param)
 		NOP();
 		return;
 	}
-	//task_open();
+	
+	
 	task_open_2();
+	//execution below this point will resume wherever it left off when a context switch happens
 
 	PREPARE_CFG2(accel);
 	PREPARE_CFG2(decel);
 	PREPARE_CFG2(speed);
 	PREPARE_CFG2(distance);
+	PREPARE_CFG2(angle);
 	
 	test(1,(uint8 *)0x1234);
 
@@ -1228,6 +1254,7 @@ void test(u08 cmd, u08 *param)
 		UPDATE_CFG2(decel);
 		UPDATE_CFG2(speed);
 		UPDATE_CFG2(distance);
+		UPDATE_CFG2(angle);
 
 		if(s.behavior_state[TEST_LOGIC]==1) 
 		{
@@ -1303,6 +1330,12 @@ void test(u08 cmd, u08 *param)
 			TURN_IN_PLACE_AND_SCAN( 100, -180 );
 			scan_result = find_peak_in_scan(scan_data,360,3);
 			*/
+			s.behavior_state[TEST_LOGIC]=0;
+		}
+
+		if(s.behavior_state[TEST_LOGIC]==2)
+		{
+			TURN_IN_PLACE(speed,angle);
 			s.behavior_state[TEST_LOGIC]=0;
 		}
 
