@@ -731,7 +731,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->comboBox5->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBox5->FormattingEnabled = true;
 			this->comboBox5->Items->AddRange(gcnew cli::array< System::Object^  >(7) {L"1", L"2", L"3", L"4", L"5", L"6", L"7"});
-			this->comboBox5->Location = System::Drawing::Point(892, 97);
+			this->comboBox5->Location = System::Drawing::Point(892, 337);
 			this->comboBox5->Name = L"comboBox5";
 			this->comboBox5->Size = System::Drawing::Size(187, 21);
 			this->comboBox5->TabIndex = 4;
@@ -741,8 +741,9 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->comboBox4->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->comboBox4->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBox4->FormattingEnabled = true;
-			this->comboBox4->Items->AddRange(gcnew cli::array< System::Object^  >(7) {L"1", L"2", L"3", L"4", L"5", L"6", L"7"});
-			this->comboBox4->Location = System::Drawing::Point(892, 70);
+			this->comboBox4->Items->AddRange(gcnew cli::array< System::Object^  >(13) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]"});
+			this->comboBox4->Location = System::Drawing::Point(892, 310);
 			this->comboBox4->Name = L"comboBox4";
 			this->comboBox4->Size = System::Drawing::Size(187, 21);
 			this->comboBox4->TabIndex = 4;
@@ -763,17 +764,19 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->comboBox2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->comboBox2->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBox2->FormattingEnabled = true;
-			this->comboBox2->Items->AddRange(gcnew cli::array< System::Object^  >(4) {L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]"});
+			this->comboBox2->Items->AddRange(gcnew cli::array< System::Object^  >(13) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]"});
 			this->comboBox2->Location = System::Drawing::Point(892, 16);
 			this->comboBox2->Name = L"comboBox2";
 			this->comboBox2->Size = System::Drawing::Size(187, 21);
 			this->comboBox2->TabIndex = 4;
+			this->comboBox2->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::comboBox2_SelectedIndexChanged);
 			// 
 			// checkBox2
 			// 
-			this->checkBox2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->checkBox2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->checkBox2->AutoSize = true;
-			this->checkBox2->Location = System::Drawing::Point(904, 400);
+			this->checkBox2->Location = System::Drawing::Point(1023, 571);
 			this->checkBox2->Name = L"checkBox2";
 			this->checkBox2->Size = System::Drawing::Size(59, 17);
 			this->checkBox2->TabIndex = 2;
@@ -812,7 +815,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			series2->Name = L"analog[6]";
 			this->chart1->Series->Add(series1);
 			this->chart1->Series->Add(series2);
-			this->chart1->Size = System::Drawing::Size(916, 458);
+			this->chart1->Size = System::Drawing::Size(894, 600);
 			this->chart1->TabIndex = 0;
 			this->chart1->Text = L"chart1";
 			this->chart1->AxisViewChanged += gcnew System::EventHandler<System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^ >(this, &f1::chart1_AxisViewChanged);
@@ -1335,8 +1338,25 @@ private: System::Void t1_Tick(System::Object^  sender, System::EventArgs^  e)
 
 			while(x<history_index)
 			{
-				chart1->Series[0]->Points->AddXY(x, inputs_history[x].analog[2]);
-				chart1->Series[1]->Points->AddXY(x, inputs_history[x].ir[1]);
+				if(comboBox2->Text == "analog[0]") y = inputs_history[x].analog[0];
+				else if(comboBox2->Text == "analog[1]") y = inputs_history[x].analog[1];
+				else if(comboBox2->Text == "analog[2]") y = inputs_history[x].analog[2];
+				else if(comboBox2->Text == "ir[0]") y = inputs_history[x].ir[0];
+				else if(comboBox2->Text == "ir[1]") y = inputs_history[x].ir[1];
+				else if(comboBox2->Text == "ir[2]") y = inputs_history[x].ir[2];
+				else if(comboBox2->Text == "ir[3]") y = inputs_history[x].ir[3];
+				else y = x % 500;
+				chart1->Series[0]->Points->AddXY(x, y);
+
+				if(comboBox4->Text == "analog[0]") y = inputs_history[x].analog[0];
+				else if(comboBox4->Text == "analog[1]") y = inputs_history[x].analog[1];
+				else if(comboBox4->Text == "analog[2]") y = inputs_history[x].analog[2];
+				else if(comboBox4->Text == "ir[0]") y = inputs_history[x].ir[0];
+				else if(comboBox4->Text == "ir[1]") y = inputs_history[x].ir[1];
+				else if(comboBox4->Text == "ir[2]") y = inputs_history[x].ir[2];
+				else if(comboBox4->Text == "ir[3]") y = inputs_history[x].ir[3];
+				else y = x % 500;
+				chart1->Series[1]->Points->AddXY(x, y);
 				x++;
 			}
 			// Keep a constant number of points by removing them from the left
@@ -1409,6 +1429,8 @@ private: System::Void btn_stop_Click(System::Object^  sender, System::EventArgs^
 		{
 
 		}
+private: System::Void comboBox2_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
+		 }
 };
 
 
