@@ -5,7 +5,7 @@
 extern void fsm_test_task(void);
 
 
-#define STATE_HAS_CHANGED ( last_state != state ? (last_state=state) : 0)
+#define STATE_HAS_CHANGED ( last_state != state ? ((last_state=state)+1) : 0) /*need to make sure this always returns >0 even if new state is '0'*/
 #define ENTER(s) if(STATE_HAS_CHANGED)
 #define EXIT(s) _label ## s: if(state!=last_state)
 #define FIRST_STATE(s) if(state==s)
