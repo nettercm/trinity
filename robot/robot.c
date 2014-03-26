@@ -1046,11 +1046,20 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//completely exit from room 1 until we have reached the center of the intersection
 			MOVE(turn_speed, 240); //TODO: make this a parameter
 
-			//turn left and check for dog
+			//TODO:  add a scan for a possible dog to the east side of room #4, before we look for the dog & door on the south side
 			TURN_IN_PLACE(turn_speed, 45);
+			TURN_IN_PLACE_AND_SCAN( 40, -90 );
+			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
+			if(scan_result.opening <= 30) //TODO: fix this angle
+			{
+			}
+
+			//turn left and check for dog on the south side of room #4
+			TURN_IN_PLACE(turn_speed, 90);
+
 			TURN_IN_PLACE_AND_SCAN( 40, 90 );
 			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
-			
+
 			if(scan_result.opening <= 30) //TODO: fix this angle
 			{
 				//if there is a dog / obstacle right in front, then 
@@ -1078,7 +1087,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			TURN_IN_PLACE(turn_speed, -45);	//now we are facing West again
 			MOVE(turn_speed, 30*25);		//move forward about 30inches so that we are in the position where the door could be
 			TURN_IN_PLACE(turn_speed, -90);	//now we would be facing the door
-			if(s.inputs.ir[AI_IR_N] < 160)	//is there an opening right in front of us?
+			if(s.ir[AI_IR_N] < 160)	//is there an opening right in front of us?
 			{
 				//if there is no door on Rm4-south, then turn around (to face E)
 				TURN_IN_PLACE(turn_speed, -90);
@@ -1095,10 +1104,14 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				RESET_LINE_DETECTION();
 				switch_(s_finding_room_4, s_searching_room_4);
 			}
-				//if we hit a dead end (i.e. dog) before we reach the door
-					//turn around 180deg
-					//start following right wall
 
+			//at this point we are facing north and a door into room #4 is right in front of us
+			RESET_LINE_DETECTION();
+			GO(turn_speed);
+			WAIT_FOR_LINE_DETECTION();
+			HARD_STOP();
+			switch_(s_finding_room_4, s_searching_room_4);
+		
 
 			exit_(s_finding_room_4) {}
 		}
