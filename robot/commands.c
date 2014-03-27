@@ -54,7 +54,7 @@ void commands_process(void)
 				play_note(A(4), 50, 10);			
 				s.behavior_state[ c[0] ] = c[1];
 				usb_printf("CMD_SET_BEHAVIOR_STATE %02x %02x\r\n",c[0],c[1]);
-				if((c[0]==1) && (c[1]==1)) ultrasonic_set_sequence(us_sequence_W_priority); else ultrasonic_set_sequence(us_sequence_uniform);
+				//if((c[0]==1) && (c[1]==1)) ultrasonic_set_sequence(us_sequence_W_priority); else ultrasonic_set_sequence(us_sequence_uniform);
 				c+=2;
 			break;
 			

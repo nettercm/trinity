@@ -28,7 +28,8 @@ get_behavior_state(b)
 
 
 Issues:
-
+* IR_N and IR_FAR_N interfere with each other - need to mount at an offset AND need to point IR_FAR_N off-axis 
+  (but this doesn't seem to interfere w/ dog detection)
 * when turning into room #4 w/ door on the south side - turning too sharp
 * sometimes missing the line/door when entering room 1 w/ door on the south side
 * when the candle is near the wall, we might bump into the wall before we get close enough to the candle
