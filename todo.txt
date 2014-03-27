@@ -31,12 +31,15 @@ Issues:
 
 * when turning into room #4 w/ door on the south side - turning too sharp
 * sometimes missing the line/door when entering room 1 w/ door on the south side
-* BT1 Bluetooth module seems to have stopped working.  It will pair, but can't exchange data.  Using BT2 now.
+* when the candle is near the wall, we might bump into the wall before we get close enough to the candle
 
-
+Checklist
+* sensor alignment.   If the NW / NE sensors are misaligned, cornering gets messed up
 
 
 Notes:
+
+* BT1 Bluetooth module seems to have stopped working.  It will pair, but can't exchange data.  Using BT2 now.
 
 motor command for turning:
 1) gradually ramp up (at specified rate) to target speed
