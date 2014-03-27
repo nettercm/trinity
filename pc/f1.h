@@ -44,41 +44,49 @@ namespace robot_ui {
 	/// </summary>
 	public ref class f1 : public System::Windows::Forms::Form
 	{
+	public: f1(void);
+
+	private: int ignore_parameter_changes;
 
 	public: delegate void UpdateUI(String ^str);
 	public: delegate void UpdateChart(String^ series, double x, double y);
 	public: UpdateUI^ UpdateUI_delegate;
 	public: UpdateChart^ UpdateChart_delegate; 
 	public: UpdateUI^ Update_textBox1_delegate;
+	public: UpdateUI^ Update_textBoxLog_delegate;
 
-	public: 
+	public: void UpdateChart_method(String^ series, double x, double y);
+	public: void UpdateUI_method(String ^str);
+	public: void f1::Update_textBoxLog_method(String ^str);
+	public: void f1::Update_textBox1_method(String ^str);
+
+	public: void InitializeParametersTab(void);
+	public: void UpdateRadar(float theta, int measurement)	{	}
+	public: void DrawGrid(Graphics ^g);
+	public: void InitializeGraphsTab(void);
+
+	private: System::Void t1_Tick(System::Object^  sender, System::EventArgs^  e); 
+	private: System::Void checkBox1_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void bw1_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e); 
+	private: System::Void f1_Load(System::Object^  sender, System::EventArgs^  e); 
+
+	public: void log(String ^str) { this->Invoke( this->Update_textBoxLog_delegate, str); }
+	public: void log(char *str)  { this->Invoke( this->Update_textBoxLog_delegate, gcnew String(str)); }
+	public: void term(char *str)  { this->Invoke( this->Update_textBox1_delegate, gcnew String(str)); }
+	public: void update_ui(void) { this->Invoke( this->UpdateUI_delegate, gcnew String("")); }
+
+	private: System::Void dataGridView1_CellValueChanged(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) ;
+	private: System::Void dataGridView1_CellContentClick(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) ;
 
 
-
-
-
+			  
 	private: System::Windows::Forms::DataGridView^  dataGridView1;
-
-
-
-
-
-
-
 	private: System::Windows::Forms::DataVisualization::Charting::Chart^  chart1;
-
 	private: System::Windows::Forms::CheckBox^  checkBox2;
 	private: System::Windows::Forms::ComboBox^  comboBox2;
 	private: System::Windows::Forms::ComboBox^  comboBox5;
 	private: System::Windows::Forms::ComboBox^  comboBox4;
 	private: System::Windows::Forms::ComboBox^  comboBox3;
-
-
-
-
-
-
-
 	private: System::Windows::Forms::TabPage^  tabPage3;
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  Group;
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  id;
@@ -93,9 +101,7 @@ namespace robot_ui {
 	private: System::Windows::Forms::CheckBox^  cb_show_ir_far_north;
 	private: System::Windows::Forms::CheckBox^  cb_show_ir_north;
 	private: System::Windows::Forms::Button^  btn_stop_scan;
-
 	private: System::Windows::Forms::Button^  btn_start_scan;
-
 	private: System::Windows::Forms::Label^  label2;
 	private: System::Windows::Forms::TextBox^  txt_scan_range;
 	private: System::Windows::Forms::Label^  label3;
@@ -107,292 +113,17 @@ namespace robot_ui {
 	private: System::Windows::Forms::Button^  btn_right;
 	private: System::Windows::Forms::Button^  btn_stop;
 	private: System::Windows::Forms::Timer^  radar_timer;
+	private: System::Windows::Forms::Label^  label4;
+	private: System::Windows::Forms::ComboBox^  cB_beh;
+	private: System::Windows::Forms::ComboBox^  cb_state;
+	private: System::Windows::Forms::Button^  btn_start_beh;
+	private: System::Windows::Forms::Button^  btn_stop_beh;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public: UpdateUI^ Update_textBoxLog_delegate;
-
-	public: void Update_textBox1_method(String ^str)
-	{
-		//if(textBox1->TextLength > 64000) 	textBox1->Text = textBox1->Text->Substring(32000,textBox1->TextLength - 32000);
-		textBox1->AppendText(str);
-	}
-
-	public: void Update_textBoxLog_method(String ^str)
-	{
-		//if(textBoxLog->TextLength > 64000) 	textBoxLog->Text = textBoxLog->Text->Substring(32000,textBoxLog->TextLength - 32000);
-		textBoxLog->AppendText(str);
-	}
-
-	public: void log(String ^str) { this->Invoke( this->Update_textBoxLog_delegate, str); }
-	public: void log(char *str)  { this->Invoke( this->Update_textBoxLog_delegate, gcnew String(str)); }
-	public: void term(char *str)  { this->Invoke( this->Update_textBox1_delegate, gcnew String(str)); }
-	public: void update_ui(void) { this->Invoke( this->UpdateUI_delegate, gcnew String("")); }
 
 	private: System::Random^	random;
-
 	private: System::Windows::Forms::ComboBox::ObjectCollection^ chartitems;
-
-	public: void UpdateRadar(float theta, int measurement)
-			{
-			}
-
-	public: void DrawGrid(Graphics ^g)
-			{
-				int x,y,width,height, x_count=0,y_count=0,count=0;
-				// Create pen.
-				Brush^ b =  gcnew SolidBrush(Color::LightBlue);
-				Pen^ p1 = gcnew Pen( b );
-				Pen^ p2 = gcnew Pen(Color::Gray, 0.5);
-
-				y=g->VisibleClipBounds.X;
-				for(x=g->VisibleClipBounds.X; x<g->VisibleClipBounds.X + g->VisibleClipBounds.Width; x+=10)
-				{
-					g->DrawLine(p2,x,y,x,(int)(y+g->VisibleClipBounds.Height));
-					x_count++;
-					//printf(".");
-				}
-
-				x=g->VisibleClipBounds.X;
-				for(y=g->VisibleClipBounds.Y; y<g->VisibleClipBounds.Y + g->VisibleClipBounds.Height; y+=10)
-				{
-					g->DrawLine(p2,x,y,(int)(x+g->VisibleClipBounds.Width),y);
-					y_count++;
-					//printf("-");
-				}
-
-				for(x=g->VisibleClipBounds.X; x<g->VisibleClipBounds.X + g->VisibleClipBounds.Width; x+=10)
-				{
-					for(y=g->VisibleClipBounds.Y; y<g->VisibleClipBounds.Y + g->VisibleClipBounds.Height; y+=10)
-					{
-						//g->DrawRectangle(p2,x,y,10,10);
-						g->FillRectangle(b,x+2,y+2,7,7);
-						count++;
-					}
-				}
-				printf("grid x,y,total,w,h=%d,%d,%d,%f,%f\n",x_count,y_count,count,g->VisibleClipBounds.Width,g->VisibleClipBounds.Height);
-			}
-
-	public: void UpdateChart_method(String^ series, double x, double y)
-	{
-		unsigned int t;
-		double y1,y2;
-
-		if(x>=500) 
-		{
-			//chart1->Series[series]->Points->RemoveAt(0);
-			chart1->Series["analog[6]"]->Points->RemoveAt(0);
-			chart1->Series["analog[7]"]->Points->RemoveAt(0);
-		}
-		//chart1->Series[series]->Points->AddXY(x,y);
-		//ir[0] == NW
-		//ir[2] == W (rear)
-		y1 = s.inputs->watch[0]; //actual_speed[0]; //ir[0];
-		y2 = s.inputs->watch[1]; //ir[2]; //ir[1];
-		t = GetTickCount();
-		//log(Convert::ToString(t) + ": y = " + Convert::ToString(y2) + "\n");
-		chart1->Series["analog[6]"]->Points->AddXY(x,y1);
-		chart1->Series["analog[7]"]->Points->AddXY(x,y2);
-		//chart1->Invalidate();
-	}
-
-
-	public: void UpdateUI_method(String ^str)
-	{
-		/*
-		if(textBox1->TextLength > 64000)
-		{
-			textBox1->Text = textBox1->Text->Substring(32000,textBox1->TextLength - 32000);
-		}
-		//textBox1->Text += str;
-		textBox1->AppendText(str);
-		*/
-		tb_Vbatt->Text = Convert::ToString(((float)s.inputs->vbatt)/1000.0f)+"V";
-	}
-
-	private: int ignore_parameter_changes;
-
-	public:
-		f1(void)
-		{
-			int i;
-			float f;
-			String ^s;
-
-			timeBeginPeriod(1);
-
-			DWORD t1 = timeGetTime();
-			Sleep(1);
-			DWORD t2 = timeGetTime();
-
-			ignore_parameter_changes = 1;
-
-			random = gcnew Random();
-
-			UpdateUI_delegate = gcnew UpdateUI( this, &f1::UpdateUI_method );
-			Update_textBox1_delegate =   gcnew UpdateUI( this, &f1::Update_textBox1_method );
-			Update_textBoxLog_delegate = gcnew UpdateUI( this, &f1::Update_textBoxLog_method );
-			UpdateChart_delegate = gcnew UpdateChart( this, &f1::UpdateChart_method );
-
-			InitializeComponent();
-
-			
-			// Zoom into the X axis
-			//chart1->ChartAreas["ChartArea1"]->AxisX->ScaleView->Zoom(2, 3);
-
-			// Enable range selection and zooming end user interface
-			chart1->ChartAreas["ChartArea1"]->CursorX->IsUserEnabled = true;
-			chart1->ChartAreas["ChartArea1"]->CursorX->IsUserSelectionEnabled = true;
-			chart1->ChartAreas["ChartArea1"]->AxisX->ScaleView->Zoomable = true;
-			chart1->ChartAreas["ChartArea1"]->AxisX->ScrollBar->IsPositionedInside = true;
-			chart1->ChartAreas["ChartArea1"]->CursorY->IsUserEnabled = true;
-			chart1->ChartAreas["ChartArea1"]->CursorY->IsUserSelectionEnabled = true;
-			chart1->ChartAreas["ChartArea1"]->AxisY->ScaleView->Zoomable = true;
-			chart1->ChartAreas["ChartArea1"]->AxisY->ScrollBar->IsPositionedInside = true;
-
-			// Enable range selection and zooming end user interface
-			chart1->ChartAreas["ChartArea2"]->CursorX->IsUserEnabled = true;
-			chart1->ChartAreas["ChartArea2"]->CursorX->IsUserSelectionEnabled = true;
-			chart1->ChartAreas["ChartArea2"]->AxisX->ScaleView->Zoomable = true;
-			chart1->ChartAreas["ChartArea2"]->AxisX->ScrollBar->IsPositionedInside = true;
-			chart1->ChartAreas["ChartArea2"]->CursorY->IsUserEnabled = true;
-			chart1->ChartAreas["ChartArea2"]->CursorY->IsUserSelectionEnabled = true;
-			chart1->ChartAreas["ChartArea2"]->AxisY->ScaleView->Zoomable = true;
-			chart1->ChartAreas["ChartArea2"]->AxisY->ScrollBar->IsPositionedInside = true;
-
-			chart1->ChartAreas["ChartArea2"]->AxisX->ScaleView = chart1->ChartAreas["ChartArea1"]->AxisX->ScaleView;
-
-
-			chart1->Series["analog[7]"]->Points->Clear();
-			chart1->Series["analog[7]"]->IsXValueIndexed=TRUE;
-			chart1->Series["analog[6]"]->Points->Clear();
-			chart1->Series["analog[6]"]->IsXValueIndexed=TRUE;
-
-			chart1->Series["analog[6]"]->Enabled = TRUE; //FALSE;
-			chart1->Series["analog[7]"]->Enabled = TRUE; //FALSE;
-
-			/*
-			chart1->Series->Add("2");
-			chart1->Series[2]->ChartArea = L"ChartArea1";
-			chart1->Series[2]->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			chart1->Series[2]->IsXValueIndexed = true;
-			chart1->Series[2]->Legend = L"Legend1";
-			chart1->Series[2]->MarkerSize = 1;
-			chart1->Series[2]->Name = L"2d";
-			chart1->Series[2]->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
-
-			chart1->Series->Add("3");
-			*/
-
-			comboBox3->Items->Clear();
-			comboBox3->Items->Add("--- NONE ---");
-			comboBox3->Items->Add("ir[0]");
-			comboBox3->Items->Add("ir[1]");
-			comboBox3->Items->Add("ir[2]");
-			comboBox3->Items->Add("ir[3]");
-			comboBox3->Items->Add("sonar[0]");
-			comboBox3->Items->Add("sonar[1]");
-			comboBox3->Items->Add("sonar[2]");
-			comboBox3->Items->Add("sonar[3]");
-
-			for(i=0; i<=MAX_CFG_ITEMS;i++)
-			{
-				if(config[i].grp == 255) break;
-				dataGridView1->Rows->Add();
-				dataGridView1->Rows[i]->Cells[0]->Value = config[i].grp;
-				dataGridView1->Rows[i]->Cells[1]->Value = config[i].id;
-				if(config[i].id == 0)
-				{
-					dataGridView1->Rows[i]->Cells[0]->Value = Convert::ToString(config[i].grp) + " - " + gcnew String(config[i].name);
-					dataGridView1->Rows[i]->Cells[2]->Value = Convert::ToString(config[i].grp) + " - " + gcnew String(config[i].name);
-					//dataGridView1->Rows[i]->Cells[2]->Style = 
-				}
-				else
-				{
-					dataGridView1->Rows[i]->Cells[2]->Value = gcnew String(config[i].name);
-				}
-				dataGridView1->Rows[i]->Cells[5]->Value = "+";
-				dataGridView1->Rows[i]->Cells[6]->Value = "-";
-				switch(config[i].type)
-				{
-				case U08_VALUE:
-					dataGridView1->Rows[i]->Cells[3]->Value = "u08";
-					dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config[i].v.u08);
-					break;
-				case S08_VALUE:
-					dataGridView1->Rows[i]->Cells[3]->Value = "s08";
-					dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config[i].v.s08);
-					break;
-				case U16_VALUE:
-					dataGridView1->Rows[i]->Cells[3]->Value = "u16";
-					dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config[i].v.u16);
-					break;
-				case S16_VALUE:
-					dataGridView1->Rows[i]->Cells[3]->Value = "s16";
-					dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config[i].v.s16);
-					break;
-				case U32_VALUE:
-					dataGridView1->Rows[i]->Cells[3]->Value = "u32";
-					dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString((unsigned int)config[i].v.u32);
-					break; 
-				case S32_VALUE:
-					dataGridView1->Rows[i]->Cells[3]->Value = "s32";
-					dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config[i].v.s32);
-					break;
-				case FLT_VALUE:
-					dataGridView1->Rows[i]->Cells[3]->Value = "flt";
-					//dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config[i].v.f);
-					dataGridView1->Rows[i]->Cells[4]->Value = Convert::ToString(config_float_only[i].f);
-					break;
-				}
-			}
-			//s = dataGridView1->Rows[0]->Cells[2]->Value->ToString();
-			//f = (float)(Convert::ToSingle(s));
-
-
-			//
-			//TODO: Add the constructor code here
-			//
-			ignore_parameter_changes = 0;
-		}
 
 	protected:
 		/// <summary>
@@ -406,12 +137,7 @@ namespace robot_ui {
 			}
 		}
 	private: System::ComponentModel::BackgroundWorker^  bw1;
-	protected: 
 	private: System::Windows::Forms::Timer^  t1;
-
-
-
-
 	private: System::Windows::Forms::ComboBox^  comboBox1;
 	private: System::Windows::Forms::CheckBox^  checkBox1;
 	private: System::Windows::Forms::Label^  label1;
@@ -421,31 +147,11 @@ namespace robot_ui {
 	private: System::Windows::Forms::TextBox^  textBox1;
 	private: System::Windows::Forms::TextBox^  tb_Vbatt;
 	private: System::Windows::Forms::Label^  label9;
-
-
-
-
-
-
-
-
 	private: System::Windows::Forms::TabPage^  tabSettings;
-
-
-
-
-
-
 	private: System::Windows::Forms::TextBox^  textBox2;
-private: System::Windows::Forms::Label^  label5;
-private: System::Windows::Forms::TabPage^  tabLog;
-private: System::Windows::Forms::TextBox^  textBoxLog;
-
-
-
-
-
-
+	private: System::Windows::Forms::Label^  label5;
+	private: System::Windows::Forms::TabPage^  tabLog;
+	private: System::Windows::Forms::TextBox^  textBoxLog;
 	private: System::ComponentModel::IContainer^  components;
 
 	private:
@@ -521,6 +227,11 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->btn_right = (gcnew System::Windows::Forms::Button());
 			this->btn_stop = (gcnew System::Windows::Forms::Button());
 			this->radar_timer = (gcnew System::Windows::Forms::Timer(this->components));
+			this->label4 = (gcnew System::Windows::Forms::Label());
+			this->cB_beh = (gcnew System::Windows::Forms::ComboBox());
+			this->cb_state = (gcnew System::Windows::Forms::ComboBox());
+			this->btn_start_beh = (gcnew System::Windows::Forms::Button());
+			this->btn_stop_beh = (gcnew System::Windows::Forms::Button());
 			this->tabControl1->SuspendLayout();
 			this->tabSettings->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->dataGridView1))->BeginInit();
@@ -610,6 +321,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->btn_write_all->TabIndex = 4;
 			this->btn_write_all->Text = L"Write All";
 			this->btn_write_all->UseVisualStyleBackColor = true;
+			this->btn_write_all->Click += gcnew System::EventHandler(this, &f1::btn_write_all_Click);
 			// 
 			// btn_read_all
 			// 
@@ -730,7 +442,9 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->comboBox5->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->comboBox5->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBox5->FormattingEnabled = true;
-			this->comboBox5->Items->AddRange(gcnew cli::array< System::Object^  >(7) {L"1", L"2", L"3", L"4", L"5", L"6", L"7"});
+			this->comboBox5->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", L"actual_speed[0]", 
+				L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", L"x", L"y", L"theta", L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]"});
 			this->comboBox5->Location = System::Drawing::Point(892, 337);
 			this->comboBox5->Name = L"comboBox5";
 			this->comboBox5->Size = System::Drawing::Size(187, 21);
@@ -741,8 +455,9 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->comboBox4->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->comboBox4->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBox4->FormattingEnabled = true;
-			this->comboBox4->Items->AddRange(gcnew cli::array< System::Object^  >(13) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
-				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]"});
+			this->comboBox4->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", L"actual_speed[0]", 
+				L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", L"x", L"y", L"theta", L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]"});
 			this->comboBox4->Location = System::Drawing::Point(892, 310);
 			this->comboBox4->Name = L"comboBox4";
 			this->comboBox4->Size = System::Drawing::Size(187, 21);
@@ -753,7 +468,9 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->comboBox3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->comboBox3->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBox3->FormattingEnabled = true;
-			this->comboBox3->Items->AddRange(gcnew cli::array< System::Object^  >(7) {L"1", L"2", L"3", L"4", L"5", L"6", L"7"});
+			this->comboBox3->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", L"actual_speed[0]", 
+				L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", L"x", L"y", L"theta", L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]"});
 			this->comboBox3->Location = System::Drawing::Point(892, 43);
 			this->comboBox3->Name = L"comboBox3";
 			this->comboBox3->Size = System::Drawing::Size(187, 21);
@@ -764,8 +481,9 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->comboBox2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->comboBox2->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
 			this->comboBox2->FormattingEnabled = true;
-			this->comboBox2->Items->AddRange(gcnew cli::array< System::Object^  >(13) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
-				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]"});
+			this->comboBox2->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", L"actual_speed[0]", 
+				L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", L"x", L"y", L"theta", L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]"});
 			this->comboBox2->Location = System::Drawing::Point(892, 16);
 			this->comboBox2->Name = L"comboBox2";
 			this->comboBox2->Size = System::Drawing::Size(187, 21);
@@ -790,6 +508,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 				| System::Windows::Forms::AnchorStyles::Left) 
 				| System::Windows::Forms::AnchorStyles::Right));
 			this->chart1->AntiAliasing = System::Windows::Forms::DataVisualization::Charting::AntiAliasingStyles::None;
+			this->chart1->BorderlineColor = System::Drawing::Color::RoyalBlue;
 			chartArea1->AxisX->MajorGrid->Enabled = false;
 			chartArea1->Name = L"ChartArea1";
 			chartArea2->AxisX->MajorGrid->Enabled = false;
@@ -806,13 +525,13 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			series1->IsXValueIndexed = true;
 			series1->Legend = L"Legend1";
 			series1->MarkerSize = 1;
-			series1->Name = L"analog[7]";
+			series1->Name = L"Series 1";
 			series1->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
 			series2->ChartArea = L"ChartArea2";
 			series2->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
 			series2->IsXValueIndexed = true;
 			series2->Legend = L"Legend1";
-			series2->Name = L"analog[6]";
+			series2->Name = L"Series 2";
 			this->chart1->Series->Add(series1);
 			this->chart1->Series->Add(series2);
 			this->chart1->Size = System::Drawing::Size(894, 600);
@@ -842,6 +561,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// 
 			// btn_stop_scan
 			// 
+			this->btn_stop_scan->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->btn_stop_scan->Location = System::Drawing::Point(1006, 63);
 			this->btn_stop_scan->Name = L"btn_stop_scan";
 			this->btn_stop_scan->Size = System::Drawing::Size(67, 23);
@@ -852,6 +572,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// 
 			// btn_start_scan
 			// 
+			this->btn_start_scan->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->btn_start_scan->Location = System::Drawing::Point(933, 63);
 			this->btn_start_scan->Name = L"btn_start_scan";
 			this->btn_start_scan->Size = System::Drawing::Size(67, 23);
@@ -862,6 +583,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// 
 			// label3
 			// 
+			this->label3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label3->AutoSize = true;
 			this->label3->Location = System::Drawing::Point(958, 40);
 			this->label3->Name = L"label3";
@@ -872,6 +594,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// 
 			// label2
 			// 
+			this->label2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label2->AutoSize = true;
 			this->label2->Location = System::Drawing::Point(929, 14);
 			this->label2->Name = L"label2";
@@ -881,6 +604,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// 
 			// txt_speed
 			// 
+			this->txt_speed->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->txt_speed->Location = System::Drawing::Point(1006, 37);
 			this->txt_speed->Name = L"txt_speed";
 			this->txt_speed->Size = System::Drawing::Size(67, 20);
@@ -890,6 +614,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// 
 			// txt_scan_range
 			// 
+			this->txt_scan_range->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->txt_scan_range->Location = System::Drawing::Point(1006, 11);
 			this->txt_scan_range->Name = L"txt_scan_range";
 			this->txt_scan_range->Size = System::Drawing::Size(67, 20);
@@ -898,6 +623,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// 
 			// cb_show_ir_far_north
 			// 
+			this->cb_show_ir_far_north->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->cb_show_ir_far_north->AutoSize = true;
 			this->cb_show_ir_far_north->Location = System::Drawing::Point(933, 159);
 			this->cb_show_ir_far_north->Name = L"cb_show_ir_far_north";
@@ -908,6 +634,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// 
 			// cb_show_ir_north
 			// 
+			this->cb_show_ir_north->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->cb_show_ir_north->AutoSize = true;
 			this->cb_show_ir_north->Location = System::Drawing::Point(933, 136);
 			this->cb_show_ir_north->Name = L"cb_show_ir_north";
@@ -1031,12 +758,12 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->btn_estop->Size = System::Drawing::Size(67, 61);
 			this->btn_estop->TabIndex = 6;
 			this->btn_estop->UseVisualStyleBackColor = false;
-			this->btn_estop->Click += gcnew System::EventHandler(this, &f1::button1_Click);
+			this->btn_estop->Click += gcnew System::EventHandler(this, &f1::btn_estop_Click);
 			// 
 			// btn_up
 			// 
 			this->btn_up->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_up->Location = System::Drawing::Point(963, 1);
+			this->btn_up->Location = System::Drawing::Point(948, 1);
 			this->btn_up->Name = L"btn_up";
 			this->btn_up->Size = System::Drawing::Size(25, 21);
 			this->btn_up->TabIndex = 7;
@@ -1046,7 +773,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// btn_down
 			// 
 			this->btn_down->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_down->Location = System::Drawing::Point(963, 47);
+			this->btn_down->Location = System::Drawing::Point(948, 47);
 			this->btn_down->Name = L"btn_down";
 			this->btn_down->Size = System::Drawing::Size(25, 21);
 			this->btn_down->TabIndex = 7;
@@ -1056,7 +783,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// btn_left
 			// 
 			this->btn_left->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_left->Location = System::Drawing::Point(935, 24);
+			this->btn_left->Location = System::Drawing::Point(920, 24);
 			this->btn_left->Name = L"btn_left";
 			this->btn_left->Size = System::Drawing::Size(25, 21);
 			this->btn_left->TabIndex = 7;
@@ -1066,7 +793,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// btn_right
 			// 
 			this->btn_right->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_right->Location = System::Drawing::Point(991, 24);
+			this->btn_right->Location = System::Drawing::Point(976, 24);
 			this->btn_right->Name = L"btn_right";
 			this->btn_right->Size = System::Drawing::Size(25, 21);
 			this->btn_right->TabIndex = 7;
@@ -1076,7 +803,7 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			// btn_stop
 			// 
 			this->btn_stop->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_stop->Location = System::Drawing::Point(963, 24);
+			this->btn_stop->Location = System::Drawing::Point(948, 24);
 			this->btn_stop->Name = L"btn_stop";
 			this->btn_stop->Size = System::Drawing::Size(25, 21);
 			this->btn_stop->TabIndex = 7;
@@ -1089,11 +816,68 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 			this->radar_timer->Enabled = true;
 			this->radar_timer->Tick += gcnew System::EventHandler(this, &f1::radar_timer_Tick);
 			// 
+			// label4
+			// 
+			this->label4->AutoSize = true;
+			this->label4->Location = System::Drawing::Point(624, 5);
+			this->label4->Name = L"label4";
+			this->label4->Size = System::Drawing::Size(229, 13);
+			this->label4->TabIndex = 8;
+			this->label4->Text = L"Behavior:              Initial State:          Command:";
+			// 
+			// cB_beh
+			// 
+			this->cB_beh->FormattingEnabled = true;
+			this->cB_beh->Items->AddRange(gcnew cli::array< System::Object^  >(16) {L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", L"9", 
+				L"10", L"11", L"12", L"13", L"14", L"15", L"16"});
+			this->cB_beh->Location = System::Drawing::Point(625, 24);
+			this->cB_beh->Name = L"cB_beh";
+			this->cB_beh->Size = System::Drawing::Size(61, 21);
+			this->cB_beh->TabIndex = 9;
+			this->cB_beh->Text = L"1";
+			this->cB_beh->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::cB_beh_SelectedIndexChanged);
+			// 
+			// cb_state
+			// 
+			this->cb_state->FormattingEnabled = true;
+			this->cb_state->Items->AddRange(gcnew cli::array< System::Object^  >(16) {L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", 
+				L"9", L"10", L"11", L"12", L"13", L"14", L"15", L"16"});
+			this->cb_state->Location = System::Drawing::Point(712, 24);
+			this->cb_state->Name = L"cb_state";
+			this->cb_state->Size = System::Drawing::Size(61, 21);
+			this->cb_state->TabIndex = 9;
+			this->cb_state->Text = L"1";
+			// 
+			// btn_start_beh
+			// 
+			this->btn_start_beh->Location = System::Drawing::Point(798, 21);
+			this->btn_start_beh->Name = L"btn_start_beh";
+			this->btn_start_beh->Size = System::Drawing::Size(42, 23);
+			this->btn_start_beh->TabIndex = 10;
+			this->btn_start_beh->Text = L"Start";
+			this->btn_start_beh->UseVisualStyleBackColor = true;
+			this->btn_start_beh->Click += gcnew System::EventHandler(this, &f1::btn_start_beh_Click);
+			// 
+			// btn_stop_beh
+			// 
+			this->btn_stop_beh->Location = System::Drawing::Point(846, 21);
+			this->btn_stop_beh->Name = L"btn_stop_beh";
+			this->btn_stop_beh->Size = System::Drawing::Size(42, 23);
+			this->btn_stop_beh->TabIndex = 10;
+			this->btn_stop_beh->Text = L"Stop";
+			this->btn_stop_beh->UseVisualStyleBackColor = true;
+			this->btn_stop_beh->Click += gcnew System::EventHandler(this, &f1::btn_stop_beh_Click);
+			// 
 			// f1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(1096, 672);
+			this->Controls->Add(this->btn_stop_beh);
+			this->Controls->Add(this->btn_start_beh);
+			this->Controls->Add(this->cb_state);
+			this->Controls->Add(this->cB_beh);
+			this->Controls->Add(this->label4);
 			this->Controls->Add(this->btn_right);
 			this->Controls->Add(this->btn_left);
 			this->Controls->Add(this->btn_down);
@@ -1129,95 +913,6 @@ private: System::Windows::Forms::TextBox^  textBoxLog;
 		}
 #pragma endregion
 
-	private: System::Void f1_Load(System::Object^  sender, System::EventArgs^  e) 
-	{
-		//p=serial_init("\\\\.\\COM11",115200);
-		bw1->RunWorkerAsync();
-	}
-
-	private: System::Void bw1_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) 
-	{
-		//t_inputs *inputs;
-		int result = 0;
-
-		data_init();
-
-		while(1)
-		{
-			if(s.p == INVALID_HANDLE_VALUE)
-			{
-				Sleep(20);
-				//inputs_history[history_index].analog[0] = history_index;
-				//history_index++;
-				//log(".");
-			}
-			else
-			{
-				result = loop();
-				if(result)
-				{
-					/*  the following is already done inside loop()
-					inputs = s.inputs;
-					inputs_history[history_index] = *inputs;
-					history_index++;
-					*/
-
-					update_ui();
-				}
-
-				//skip--; if(skip==0) { term(s.msg); skip=5;}
-			}
-		}
-	}
-
-
-	private: System::Void checkBox1_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
-	{
-		static HANDLE h;
-		BOOL result;
-		char port[30];
-		System::String ^str;
-		str = comboBox1->Text;
-		char* str2 = (char*)(void*)Marshal::StringToHGlobalAnsi(str);
-		//printf(str2);
-
-		sprintf(port,"\\\\.\\COM%s",str2);
-		sprintf(s.port,"\\\\.\\COM%s",str2);
-
-		if(checkBox1->Checked)
-		{
-			log("Opening serial port COM" + str + "\r\n" );
-			s.p = serial_init(port,115200,ONESTOPBIT);
-			h = s.p;
-			printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
-			if(s.p == INVALID_HANDLE_VALUE) 
-			{
-				log("Unable to open the serial port\r\n");
-			}
-			else
-			{
-				//t1->Enabled = TRUE;
-			}
-		}
-		else
-		{
-			sprintf(s.port,"");
-			printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
-			if(s.p != INVALID_HANDLE_VALUE)
-			{
-				s.p = INVALID_HANDLE_VALUE;
-				Sleep(100);
-				sprintf(s.port,"");
-				log("Closing the serial port\r\n");
-				result = CloseHandle(h); if(!result) show_last_error("CloseHandle()");
-				printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
-				t1->Enabled = FALSE;
-				checkBox2->Checked = false;
-			}
-		}
-
-		Marshal::FreeHGlobal(System::IntPtr((void*)str2));
-	}
 
 
 
@@ -1240,130 +935,7 @@ private: System::Void label9_Click(System::Object^  sender, System::EventArgs^  
 private: System::Void textBox2_TextChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 
-private: System::Void textBox2_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) 
-		 {
-			 String ^s = e->KeyData.ToString();
-			 e->Handled = true;
-			 log(s + "\n");
-			 textBox2->Clear();
-			 key=0;
-			 if(s=="F1") key=0xe13b;
-			 printf("Key = 0x%04x\n",key);
-		 }
-
-
-private: System::Void dataGridView1_CellContentClick(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) 
-		 {
-			 int r,c;
-			 float f;
-			 c = e->ColumnIndex;
-			 r = e->RowIndex;
-
-			 //log("dataGridView1_CellContentClick\n");
-
-			 //don't allow a change if this is a group name definition only
-			 if(Convert::ToInt16(dataGridView1->Rows[r]->Cells[1]->Value)==0) return;
-
-			 if(r>=0 && c==5)
-			 {
-				 f = (float)(Convert::ToSingle(dataGridView1->Rows[r]->Cells[4]->Value));
-				 f+=1;
-				 dataGridView1->Rows[r]->Cells[4]->Value = Convert::ToString(f);
-			 }
-			 if(r>=0 && c==6)
-			 {
-				 f = (float)(Convert::ToSingle(dataGridView1->Rows[r]->Cells[4]->Value));
-				 f-=1;
-				 dataGridView1->Rows[r]->Cells[4]->Value = Convert::ToString(f);
-			 }
-		 }
-
-
-private: System::Void dataGridView1_CellValueChanged(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) 
-		 {
-			 t_config_value v;
-			 int r,c,grp,id,i;
-
-			 if(!ignore_parameter_changes)
-			 {
-				c = e->ColumnIndex;
-				r = e->RowIndex;
-				grp = Convert::ToInt32(dataGridView1->Rows[r]->Cells[0]->Value);
-				id	= Convert::ToInt32(dataGridView1->Rows[r]->Cells[1]->Value);
-				i = cfg_get_index_by_grp_and_id(grp,id);
-				log("dataGridView1_CellValueChanged(): ");
-				log(Convert::ToString(e->RowIndex) + "," + Convert::ToString(e->ColumnIndex) + " = ");
-				switch(config[i].type)
-				{
-				case U08_VALUE:
-					v.u08 = (uint8) Convert::ToUInt16(dataGridView1->Rows[r]->Cells[4]->Value);
-					log(Convert::ToString(v.u08) + "\n");
-					break;
-				case S08_VALUE:
-					v.s08 = (sint8) Convert::ToInt16(dataGridView1->Rows[r]->Cells[4]->Value);
-					break;
-				case U16_VALUE:
-					v.u16 = Convert::ToUInt16(dataGridView1->Rows[r]->Cells[4]->Value);
-					break;
-				case S16_VALUE:
-					v.s16 = Convert::ToInt16(dataGridView1->Rows[r]->Cells[4]->Value);
-					log(Convert::ToString(v.s16));
-					break;
-				case U32_VALUE:
-					v.u32 = Convert::ToUInt32(dataGridView1->Rows[r]->Cells[4]->Value);
-					break; 
-				case S32_VALUE:
-					v.s32 = Convert::ToInt32(dataGridView1->Rows[r]->Cells[4]->Value);
-					break;
-				case FLT_VALUE:
-					v.f = Convert::ToSingle(dataGridView1->Rows[r]->Cells[4]->Value);
-					break;
-
-				}
-				log("\n");
-				//for some reasone,  issuing commands from here results in some seq # skipping 
-				CMD_set_config_value(grp,id, (uint8*)&v);
-				CMD_send();
-			}
-		 }
-
-
-
-private: System::Void t1_Tick(System::Object^  sender, System::EventArgs^  e) 
-		{
-			static int x=0;
-			static int y=0;
-
-			if(history_index - x > 2000) x=history_index-2000;
-
-			while(x<history_index)
-			{
-				if(comboBox2->Text == "analog[0]") y = inputs_history[x].analog[0];
-				else if(comboBox2->Text == "analog[1]") y = inputs_history[x].analog[1];
-				else if(comboBox2->Text == "analog[2]") y = inputs_history[x].analog[2];
-				else if(comboBox2->Text == "ir[0]") y = inputs_history[x].ir[0];
-				else if(comboBox2->Text == "ir[1]") y = inputs_history[x].ir[1];
-				else if(comboBox2->Text == "ir[2]") y = inputs_history[x].ir[2];
-				else if(comboBox2->Text == "ir[3]") y = inputs_history[x].ir[3];
-				else y = x % 500;
-				chart1->Series[0]->Points->AddXY(x, y);
-
-				if(comboBox4->Text == "analog[0]") y = inputs_history[x].analog[0];
-				else if(comboBox4->Text == "analog[1]") y = inputs_history[x].analog[1];
-				else if(comboBox4->Text == "analog[2]") y = inputs_history[x].analog[2];
-				else if(comboBox4->Text == "ir[0]") y = inputs_history[x].ir[0];
-				else if(comboBox4->Text == "ir[1]") y = inputs_history[x].ir[1];
-				else if(comboBox4->Text == "ir[2]") y = inputs_history[x].ir[2];
-				else if(comboBox4->Text == "ir[3]") y = inputs_history[x].ir[3];
-				else y = x % 500;
-				chart1->Series[1]->Points->AddXY(x, y);
-				x++;
-			}
-			// Keep a constant number of points by removing them from the left
-			while(chart1->Series[0]->Points->Count > 2000) chart1->Series[0]->Points->RemoveAt(0);
-			while(chart1->Series[1]->Points->Count > 2000) chart1->Series[1]->Points->RemoveAt(0);
-		}
-
+private: System::Void textBox2_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) ;
 
 private: System::Void checkedListBox1_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
@@ -1371,25 +943,12 @@ private: System::Void checkedListBox1_SelectedValueChanged(System::Object^  send
 		 }
 private: System::Void dataGridView1_CellContentDoubleClick(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) {
 		 }
-private: System::Void checkBox2_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
-		 {
-			 if(checkBox2->Checked) t1->Enabled = TRUE;
-			 else t1->Enabled = FALSE;
-		 }
-private: System::Void chart1_AxisViewChanged(System::Object^  sender, System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^  e) 
-		 {
-			 if(e->ChartArea->Name == "ChartArea1")
-			 {
-				 //chart1->ChartAreas["ChartArea2"]->AxisX->ScaleView = chart1->ChartAreas["ChartArea1"]->AxisX->ScaleView;
-			 }
-		 }
 private: System::Void tabPage3_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) 
 	{
 	}
-private: System::Void panel1_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) 
-		 {
-			DrawGrid(e->Graphics);
-		 }
+private: System::Void chart1_AxisViewChanged(System::Object^  sender, System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^  e) ;
+private: System::Void checkBox2_CheckedChanged(System::Object^  sender, System::EventArgs^  e) ;
+private: System::Void panel1_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) ;
 private: System::Void label3_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
 private: System::Void textBox3_TextChanged(System::Object^  sender, System::EventArgs^  e) {
@@ -1398,38 +957,50 @@ private: System::Void btn_start_scan_Click(System::Object^  sender, System::Even
 		 }
 private: System::Void btn_stop_scan_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
-private: System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) 
-		{
-				log("STOP!!!\n");
-				CMD_set_behavior_state(1,0);	CMD_send();
-				CMD_set_behavior_state(2,0);	CMD_send();
-				CMD_set_behavior_state(3,0);	CMD_send();
-				CMD_set_behavior_state(4,0);	CMD_send();
-				CMD_set_behavior_state(10,0);	CMD_send();
-				CMD_set_behavior_state(11,0);	CMD_send();
-				CMD_motor_command(2,0,0,0,0);	CMD_send();
-				
-		}
 
-private: System::Void radar_timer_Tick(System::Object^  sender, System::EventArgs^  e) 
-		{
-			static int x=0;
-			static int y=0;
-
-			if(history_index - x > 2000) x=history_index-2000;
-
-			while(x<history_index)
-			{
-				UpdateRadar( inputs_history[x].theta, inputs_history[x].ir[1]);
-				x++;
-			}
-		}
+private: System::Void radar_timer_Tick(System::Object^  sender, System::EventArgs^  e); 
 
 private: System::Void btn_stop_Click(System::Object^  sender, System::EventArgs^  e) 
 		{
 
 		}
 private: System::Void comboBox2_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
+		 }
+
+private: System::Void cB_beh_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
+		 }
+
+private: System::Void btn_start_beh_Click(System::Object^  sender, System::EventArgs^  e) 
+		 {
+			 CMD_set_behavior_state(Convert::ToByte(cB_beh->Text), Convert::ToByte(cb_state->Text));
+			 CMD_send();
+		 }
+
+private: System::Void btn_stop_beh_Click(System::Object^  sender, System::EventArgs^  e) 
+		 {
+			 CMD_set_behavior_state(Convert::ToByte(cB_beh->Text), 0);
+			 CMD_send();
+		 }
+private: System::Void btn_estop_Click(System::Object^  sender, System::EventArgs^  e);
+
+private: System::Void btn_write_all_Click(System::Object^  sender, System::EventArgs^  e) 
+		 {
+			 int i;
+
+			 i=0;
+			 Application::UseWaitCursor = 1;
+			 while(config[i].grp != 255)
+			 {
+				 if(config[i].id != 0)
+				 {
+					 CMD_set_config_value(config[i].grp, config[i].id, (uint8*)&(config[i].v));
+					 CMD_send();
+					 Sleep(50);
+					 Application::DoEvents();
+				 }
+				 i++;
+			 }
+			 Application::UseWaitCursor = 0;
 		 }
 };
 

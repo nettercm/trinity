@@ -57,6 +57,15 @@
     <ClCompile Include="..\robot\config.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ui_tab_graphs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ui_tab_parameters.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ui_tab_radar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.h">
