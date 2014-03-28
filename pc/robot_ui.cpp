@@ -75,7 +75,7 @@ namespace robot_ui
 
 		printf("Sleep(1) = %lu\n",t2-t1);
 
-		g = panel1->CreateGraphics();
+		g = radar_tabPage->CreateGraphics();
 		//
 		//TODO: Add the constructor code here
 		//
@@ -85,7 +85,7 @@ namespace robot_ui
 
 
 
-	System::Void f1::btn_estop_Click(System::Object^  sender, System::EventArgs^  e) 
+	System::Void f1::main_btn_estop_Click(System::Object^  sender, System::EventArgs^  e) 
 	{
 		log("STOP!!!\n");
 		CMD_set_behavior_state(1,0);	CMD_send();
@@ -106,7 +106,7 @@ namespace robot_ui
 	******************************************************************************************************************************************/
 	void f1::UpdateUI_method(String ^str)
 	{
-		tb_Vbatt->Text = Convert::ToString(((float)s.inputs->vbatt)/1000.0f)+"V";
+		main_textBox_vbatt->Text = Convert::ToString(((float)s.inputs->vbatt)/1000.0f)+"V";
 	}
 
 
@@ -166,20 +166,20 @@ namespace robot_ui
 	/******************************************************************************************************************************************
 	*
 	******************************************************************************************************************************************/
-	System::Void f1::checkBox1_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
+	System::Void f1::main_checkBox_connect_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
 	{
 		static HANDLE h;
 		BOOL result;
 		char port[30];
 		System::String ^str;
-		str = comboBox1->Text;
+		str = main_comboBox_port->Text;
 		char* str2 = (char*)(void*)Marshal::StringToHGlobalAnsi(str);
 		//printf(str2);
 
 		sprintf(port,"\\\\.\\COM%s",str2);
 		sprintf(s.port,"\\\\.\\COM%s",str2);
 
-		if(checkBox1->Checked)
+		if(main_checkBox_connect->Checked)
 		{
 			log("Opening serial port COM" + str + "\r\n" );
 			s.p = serial_init(port,115200,ONESTOPBIT);
@@ -207,7 +207,7 @@ namespace robot_ui
 				result = CloseHandle(h); if(!result) show_last_error("CloseHandle()");
 				printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
 				t1->Enabled = FALSE;
-				checkBox2->Checked = false;
+				graphs_checkBox_enable->Checked = false;
 			}
 		}
 
@@ -243,12 +243,12 @@ namespace robot_ui
 	*
 	******************************************************************************************************************************************/
 	//for the "cmd" text box, basically for catching up,down,left,right etc keystrokes
-	System::Void f1::textBox2_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) 
+	System::Void f1::main_textBox_keyb_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) 
 	{
 		String ^s = e->KeyData.ToString();
 		e->Handled = true;
 		log(s + "\n");
-		textBox2->Clear();
+		main_textBox_keyb->Clear();
 		key=0;
 
 		if(s == "Left"	) key=KEY_LEFT;

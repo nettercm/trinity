@@ -57,8 +57,10 @@ namespace robot_ui {
 	public: UpdateUI^ UpdateUI_delegate;
 	public: UpdateChart^ UpdateChart_delegate; 
 	public: UpdateUI^ Update_textBox1_delegate;
-	private: System::Windows::Forms::Label^  label6;
-	private: System::Windows::Forms::ComboBox^  cB_Rate;
+	private: System::Windows::Forms::Label^  main_lbl_rate;
+	public: 
+
+	private: System::Windows::Forms::ComboBox^  main_comboBox_rate;
 	private: System::Windows::Forms::Button^  btn_radar_clear;
 	private: System::Windows::Forms::CheckBox^  cb_radar_enable_updates;
 	private: System::Windows::Forms::CheckBox^  cb_radar_use_lines;
@@ -77,7 +79,7 @@ namespace robot_ui {
 	public: void InitializeGraphsTab(void);
 
 	private: System::Void t1_Tick(System::Object^  sender, System::EventArgs^  e); 
-	private: System::Void checkBox1_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void main_checkBox_connect_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void bw1_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e); 
 	private: System::Void f1_Load(System::Object^  sender, System::EventArgs^  e); 
 
@@ -86,19 +88,19 @@ namespace robot_ui {
 	public: void term(char *str)  { this->Invoke( this->Update_textBox1_delegate, gcnew String(str)); }
 	public: void update_ui(void) { this->Invoke( this->UpdateUI_delegate, gcnew String("")); }
 
-	private: System::Void dataGridView1_CellValueChanged(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) ;
-	private: System::Void dataGridView1_CellContentClick(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) ;
+	private: System::Void parameters_dataGridView_CellValueChanged(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) ;
+	private: System::Void parameters_dataGridView_CellContentClick(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) ;
 
 
 			  
-	private: System::Windows::Forms::DataGridView^  dataGridView1;
-	private: System::Windows::Forms::DataVisualization::Charting::Chart^  chart1;
-	private: System::Windows::Forms::CheckBox^  checkBox2;
-	private: System::Windows::Forms::ComboBox^  comboBox2;
-	private: System::Windows::Forms::ComboBox^  comboBox5;
-	private: System::Windows::Forms::ComboBox^  comboBox4;
-	private: System::Windows::Forms::ComboBox^  comboBox3;
-	private: System::Windows::Forms::TabPage^  tabPage3;
+	private: System::Windows::Forms::DataGridView^  parameters_dataGridView;
+	private: System::Windows::Forms::DataVisualization::Charting::Chart^  graphs_chart;
+	private: System::Windows::Forms::CheckBox^  graphs_checkBox_enable;
+	private: System::Windows::Forms::ComboBox^  graphs_comboBox_series_1a;
+	private: System::Windows::Forms::ComboBox^  graphs_comboBox_series_2b;
+	private: System::Windows::Forms::ComboBox^  graphs_comboBox_series_2a;
+	private: System::Windows::Forms::ComboBox^  graphs_comboBox_series_1b;
+	private: System::Windows::Forms::TabPage^  radar_tabPage;
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  Group;
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  id;
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  name;
@@ -106,31 +108,32 @@ namespace robot_ui {
 	private: System::Windows::Forms::DataGridViewTextBoxColumn^  val;
 	private: System::Windows::Forms::DataGridViewButtonColumn^  inc;
 	private: System::Windows::Forms::DataGridViewButtonColumn^  dec;
-	private: System::Windows::Forms::Button^  btn_write_all;
-	private: System::Windows::Forms::Button^  btn_read_all;
-	public: System::Windows::Forms::Panel^  panel1;
+	private: System::Windows::Forms::Button^  parameters_btn_write_all;
+	private: System::Windows::Forms::Button^  parameters_btn_read_all;
+
 	private: 
 
 	private: System::Windows::Forms::CheckBox^  cb_show_ir_far_north;
 	private: System::Windows::Forms::CheckBox^  cb_show_ir_north;
-	private: System::Windows::Forms::Button^  btn_stop_scan;
+	private: System::Windows::Forms::Button^  main_btn_stop_scan;
 	private: System::Windows::Forms::Button^  btn_start_scan;
 	private: System::Windows::Forms::Label^  label2;
 	private: System::Windows::Forms::TextBox^  txt_scan_range;
 	private: System::Windows::Forms::Label^  label3;
 	private: System::Windows::Forms::TextBox^  txt_speed;
-	private: System::Windows::Forms::Button^  btn_estop;
-	private: System::Windows::Forms::Button^  btn_up;
-	private: System::Windows::Forms::Button^  btn_down;
-	private: System::Windows::Forms::Button^  btn_left;
-	private: System::Windows::Forms::Button^  btn_right;
-	private: System::Windows::Forms::Button^  btn_stop;
+	private: System::Windows::Forms::Button^  main_btn_estop;
+	private: System::Windows::Forms::Button^  main_btn_up;
+	private: System::Windows::Forms::Button^  main_btn_down;
+	private: System::Windows::Forms::Button^  main_btn_left;
+	private: System::Windows::Forms::Button^  main_btn_right;
+	private: System::Windows::Forms::Button^  main_btn_stop;
 	private: System::Windows::Forms::Timer^  radar_timer;
-	private: System::Windows::Forms::Label^  label4;
-	private: System::Windows::Forms::ComboBox^  cB_beh;
-	private: System::Windows::Forms::ComboBox^  cb_state;
-	private: System::Windows::Forms::Button^  btn_start_beh;
-	private: System::Windows::Forms::Button^  btn_stop_beh;
+	private: System::Windows::Forms::Label^  main_lbl_behavior_control;
+
+	private: System::Windows::Forms::ComboBox^  main_comboBox_behavior_id;
+	private: System::Windows::Forms::ComboBox^  main_comboBox_behavior_state;
+	private: System::Windows::Forms::Button^  main_btn_start_beh;
+	private: System::Windows::Forms::Button^  main_main_btn_stop_beh;
 
 
 
@@ -151,18 +154,22 @@ namespace robot_ui {
 		}
 	private: System::ComponentModel::BackgroundWorker^  bw1;
 	private: System::Windows::Forms::Timer^  t1;
-	private: System::Windows::Forms::ComboBox^  comboBox1;
-	private: System::Windows::Forms::CheckBox^  checkBox1;
-	private: System::Windows::Forms::Label^  label1;
+	private: System::Windows::Forms::ComboBox^  main_comboBox_port;
+	private: System::Windows::Forms::CheckBox^  main_checkBox_connect;
+private: System::Windows::Forms::Label^  main_lbl_port;
+
+
 	private: System::Windows::Forms::TabControl^  tabControl1;
 	private: System::Windows::Forms::TabPage^  tabPage1;
-	private: System::Windows::Forms::TabPage^  tabPage2;
+	private: System::Windows::Forms::TabPage^  graphs_tab;
 	private: System::Windows::Forms::TextBox^  textBox1;
-	private: System::Windows::Forms::TextBox^  tb_Vbatt;
-	private: System::Windows::Forms::Label^  label9;
-	private: System::Windows::Forms::TabPage^  tabSettings;
-	private: System::Windows::Forms::TextBox^  textBox2;
-	private: System::Windows::Forms::Label^  label5;
+	private: System::Windows::Forms::TextBox^  main_textBox_vbatt;
+private: System::Windows::Forms::Label^  main_lbl_battery;
+
+	private: System::Windows::Forms::TabPage^  parameters_tab;
+	private: System::Windows::Forms::TextBox^  main_textBox_keyb;
+private: System::Windows::Forms::Label^  main_lbl_keyb;
+
 	private: System::Windows::Forms::TabPage^  tabLog;
 	private: System::Windows::Forms::TextBox^  textBoxLog;
 	private: System::ComponentModel::IContainer^  components;
@@ -193,14 +200,14 @@ namespace robot_ui {
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(f1::typeid));
 			this->bw1 = (gcnew System::ComponentModel::BackgroundWorker());
 			this->t1 = (gcnew System::Windows::Forms::Timer(this->components));
-			this->comboBox1 = (gcnew System::Windows::Forms::ComboBox());
-			this->checkBox1 = (gcnew System::Windows::Forms::CheckBox());
-			this->label1 = (gcnew System::Windows::Forms::Label());
+			this->main_comboBox_port = (gcnew System::Windows::Forms::ComboBox());
+			this->main_checkBox_connect = (gcnew System::Windows::Forms::CheckBox());
+			this->main_lbl_port = (gcnew System::Windows::Forms::Label());
 			this->tabControl1 = (gcnew System::Windows::Forms::TabControl());
-			this->tabSettings = (gcnew System::Windows::Forms::TabPage());
-			this->btn_write_all = (gcnew System::Windows::Forms::Button());
-			this->btn_read_all = (gcnew System::Windows::Forms::Button());
-			this->dataGridView1 = (gcnew System::Windows::Forms::DataGridView());
+			this->parameters_tab = (gcnew System::Windows::Forms::TabPage());
+			this->parameters_btn_write_all = (gcnew System::Windows::Forms::Button());
+			this->parameters_btn_read_all = (gcnew System::Windows::Forms::Button());
+			this->parameters_dataGridView = (gcnew System::Windows::Forms::DataGridView());
 			this->Group = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
 			this->id = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
 			this->name = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
@@ -208,15 +215,15 @@ namespace robot_ui {
 			this->val = (gcnew System::Windows::Forms::DataGridViewTextBoxColumn());
 			this->inc = (gcnew System::Windows::Forms::DataGridViewButtonColumn());
 			this->dec = (gcnew System::Windows::Forms::DataGridViewButtonColumn());
-			this->tabPage2 = (gcnew System::Windows::Forms::TabPage());
-			this->comboBox5 = (gcnew System::Windows::Forms::ComboBox());
-			this->comboBox4 = (gcnew System::Windows::Forms::ComboBox());
-			this->comboBox3 = (gcnew System::Windows::Forms::ComboBox());
-			this->comboBox2 = (gcnew System::Windows::Forms::ComboBox());
-			this->checkBox2 = (gcnew System::Windows::Forms::CheckBox());
-			this->chart1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
-			this->tabPage3 = (gcnew System::Windows::Forms::TabPage());
-			this->btn_stop_scan = (gcnew System::Windows::Forms::Button());
+			this->graphs_tab = (gcnew System::Windows::Forms::TabPage());
+			this->graphs_comboBox_series_2b = (gcnew System::Windows::Forms::ComboBox());
+			this->graphs_comboBox_series_2a = (gcnew System::Windows::Forms::ComboBox());
+			this->graphs_comboBox_series_1b = (gcnew System::Windows::Forms::ComboBox());
+			this->graphs_comboBox_series_1a = (gcnew System::Windows::Forms::ComboBox());
+			this->graphs_checkBox_enable = (gcnew System::Windows::Forms::CheckBox());
+			this->graphs_chart = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
+			this->radar_tabPage = (gcnew System::Windows::Forms::TabPage());
+			this->main_btn_stop_scan = (gcnew System::Windows::Forms::Button());
 			this->btn_radar_clear = (gcnew System::Windows::Forms::Button());
 			this->btn_start_scan = (gcnew System::Windows::Forms::Button());
 			this->label3 = (gcnew System::Windows::Forms::Label());
@@ -224,38 +231,37 @@ namespace robot_ui {
 			this->txt_speed = (gcnew System::Windows::Forms::TextBox());
 			this->txt_scan_range = (gcnew System::Windows::Forms::TextBox());
 			this->cb_radar_enable_updates = (gcnew System::Windows::Forms::CheckBox());
+			this->cb_radar_use_lines = (gcnew System::Windows::Forms::CheckBox());
 			this->cb_show_ir_far_north = (gcnew System::Windows::Forms::CheckBox());
 			this->cb_show_ir_north = (gcnew System::Windows::Forms::CheckBox());
-			this->panel1 = (gcnew System::Windows::Forms::Panel());
 			this->tabPage1 = (gcnew System::Windows::Forms::TabPage());
 			this->textBox1 = (gcnew System::Windows::Forms::TextBox());
 			this->tabLog = (gcnew System::Windows::Forms::TabPage());
 			this->textBoxLog = (gcnew System::Windows::Forms::TextBox());
-			this->tb_Vbatt = (gcnew System::Windows::Forms::TextBox());
-			this->label9 = (gcnew System::Windows::Forms::Label());
-			this->textBox2 = (gcnew System::Windows::Forms::TextBox());
-			this->label5 = (gcnew System::Windows::Forms::Label());
-			this->btn_estop = (gcnew System::Windows::Forms::Button());
-			this->btn_up = (gcnew System::Windows::Forms::Button());
-			this->btn_down = (gcnew System::Windows::Forms::Button());
-			this->btn_left = (gcnew System::Windows::Forms::Button());
-			this->btn_right = (gcnew System::Windows::Forms::Button());
-			this->btn_stop = (gcnew System::Windows::Forms::Button());
+			this->main_textBox_vbatt = (gcnew System::Windows::Forms::TextBox());
+			this->main_lbl_battery = (gcnew System::Windows::Forms::Label());
+			this->main_textBox_keyb = (gcnew System::Windows::Forms::TextBox());
+			this->main_lbl_keyb = (gcnew System::Windows::Forms::Label());
+			this->main_btn_estop = (gcnew System::Windows::Forms::Button());
+			this->main_btn_up = (gcnew System::Windows::Forms::Button());
+			this->main_btn_down = (gcnew System::Windows::Forms::Button());
+			this->main_btn_left = (gcnew System::Windows::Forms::Button());
+			this->main_btn_right = (gcnew System::Windows::Forms::Button());
+			this->main_btn_stop = (gcnew System::Windows::Forms::Button());
 			this->radar_timer = (gcnew System::Windows::Forms::Timer(this->components));
-			this->label4 = (gcnew System::Windows::Forms::Label());
-			this->cB_beh = (gcnew System::Windows::Forms::ComboBox());
-			this->cb_state = (gcnew System::Windows::Forms::ComboBox());
-			this->btn_start_beh = (gcnew System::Windows::Forms::Button());
-			this->btn_stop_beh = (gcnew System::Windows::Forms::Button());
-			this->label6 = (gcnew System::Windows::Forms::Label());
-			this->cB_Rate = (gcnew System::Windows::Forms::ComboBox());
-			this->cb_radar_use_lines = (gcnew System::Windows::Forms::CheckBox());
+			this->main_lbl_behavior_control = (gcnew System::Windows::Forms::Label());
+			this->main_comboBox_behavior_id = (gcnew System::Windows::Forms::ComboBox());
+			this->main_comboBox_behavior_state = (gcnew System::Windows::Forms::ComboBox());
+			this->main_btn_start_beh = (gcnew System::Windows::Forms::Button());
+			this->main_main_btn_stop_beh = (gcnew System::Windows::Forms::Button());
+			this->main_lbl_rate = (gcnew System::Windows::Forms::Label());
+			this->main_comboBox_rate = (gcnew System::Windows::Forms::ComboBox());
 			this->tabControl1->SuspendLayout();
-			this->tabSettings->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->dataGridView1))->BeginInit();
-			this->tabPage2->SuspendLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->chart1))->BeginInit();
-			this->tabPage3->SuspendLayout();
+			this->parameters_tab->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->parameters_dataGridView))->BeginInit();
+			this->graphs_tab->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->graphs_chart))->BeginInit();
+			this->radar_tabPage->SuspendLayout();
 			this->tabPage1->SuspendLayout();
 			this->tabLog->SuspendLayout();
 			this->SuspendLayout();
@@ -270,45 +276,45 @@ namespace robot_ui {
 			// 
 			this->t1->Tick += gcnew System::EventHandler(this, &f1::t1_Tick);
 			// 
-			// comboBox1
+			// main_comboBox_port
 			// 
-			this->comboBox1->FormattingEnabled = true;
-			this->comboBox1->Items->AddRange(gcnew cli::array< System::Object^  >(1) {L"11"});
-			this->comboBox1->Location = System::Drawing::Point(67, 10);
-			this->comboBox1->Name = L"comboBox1";
-			this->comboBox1->Size = System::Drawing::Size(36, 21);
-			this->comboBox1->TabIndex = 1;
-			this->comboBox1->Text = L"4";
-			this->comboBox1->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::comboBox1_SelectedIndexChanged);
+			this->main_comboBox_port->FormattingEnabled = true;
+			this->main_comboBox_port->Items->AddRange(gcnew cli::array< System::Object^  >(1) {L"11"});
+			this->main_comboBox_port->Location = System::Drawing::Point(67, 10);
+			this->main_comboBox_port->Name = L"main_comboBox_port";
+			this->main_comboBox_port->Size = System::Drawing::Size(36, 21);
+			this->main_comboBox_port->TabIndex = 1;
+			this->main_comboBox_port->Text = L"4";
+			this->main_comboBox_port->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::main_comboBox_port_SelectedIndexChanged);
 			// 
-			// checkBox1
+			// main_checkBox_connect
 			// 
-			this->checkBox1->AutoSize = true;
-			this->checkBox1->Location = System::Drawing::Point(109, 12);
-			this->checkBox1->Name = L"checkBox1";
-			this->checkBox1->Size = System::Drawing::Size(78, 17);
-			this->checkBox1->TabIndex = 2;
-			this->checkBox1->Text = L"Connected";
-			this->checkBox1->UseVisualStyleBackColor = true;
-			this->checkBox1->CheckedChanged += gcnew System::EventHandler(this, &f1::checkBox1_CheckedChanged);
+			this->main_checkBox_connect->AutoSize = true;
+			this->main_checkBox_connect->Location = System::Drawing::Point(109, 12);
+			this->main_checkBox_connect->Name = L"main_checkBox_connect";
+			this->main_checkBox_connect->Size = System::Drawing::Size(78, 17);
+			this->main_checkBox_connect->TabIndex = 2;
+			this->main_checkBox_connect->Text = L"Connected";
+			this->main_checkBox_connect->UseVisualStyleBackColor = true;
+			this->main_checkBox_connect->CheckedChanged += gcnew System::EventHandler(this, &f1::main_checkBox_connect_CheckedChanged);
 			// 
-			// label1
+			// main_lbl_port
 			// 
-			this->label1->AutoSize = true;
-			this->label1->Location = System::Drawing::Point(5, 13);
-			this->label1->Name = L"label1";
-			this->label1->Size = System::Drawing::Size(56, 13);
-			this->label1->TabIndex = 3;
-			this->label1->Text = L"COM Port:";
+			this->main_lbl_port->AutoSize = true;
+			this->main_lbl_port->Location = System::Drawing::Point(5, 13);
+			this->main_lbl_port->Name = L"main_lbl_port";
+			this->main_lbl_port->Size = System::Drawing::Size(56, 13);
+			this->main_lbl_port->TabIndex = 3;
+			this->main_lbl_port->Text = L"COM Port:";
 			// 
 			// tabControl1
 			// 
 			this->tabControl1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left) 
 				| System::Windows::Forms::AnchorStyles::Right));
-			this->tabControl1->Controls->Add(this->tabSettings);
-			this->tabControl1->Controls->Add(this->tabPage2);
-			this->tabControl1->Controls->Add(this->tabPage3);
+			this->tabControl1->Controls->Add(this->parameters_tab);
+			this->tabControl1->Controls->Add(this->graphs_tab);
+			this->tabControl1->Controls->Add(this->radar_tabPage);
 			this->tabControl1->Controls->Add(this->tabPage1);
 			this->tabControl1->Controls->Add(this->tabLog);
 			this->tabControl1->Location = System::Drawing::Point(0, 51);
@@ -318,43 +324,43 @@ namespace robot_ui {
 			this->tabControl1->Size = System::Drawing::Size(1098, 657);
 			this->tabControl1->TabIndex = 4;
 			// 
-			// tabSettings
+			// parameters_tab
 			// 
-			this->tabSettings->Controls->Add(this->btn_write_all);
-			this->tabSettings->Controls->Add(this->btn_read_all);
-			this->tabSettings->Controls->Add(this->dataGridView1);
-			this->tabSettings->Location = System::Drawing::Point(4, 22);
-			this->tabSettings->Name = L"tabSettings";
-			this->tabSettings->Padding = System::Windows::Forms::Padding(3);
-			this->tabSettings->Size = System::Drawing::Size(1090, 631);
-			this->tabSettings->TabIndex = 2;
-			this->tabSettings->Text = L"Parameters";
-			this->tabSettings->UseVisualStyleBackColor = true;
+			this->parameters_tab->Controls->Add(this->parameters_btn_write_all);
+			this->parameters_tab->Controls->Add(this->parameters_btn_read_all);
+			this->parameters_tab->Controls->Add(this->parameters_dataGridView);
+			this->parameters_tab->Location = System::Drawing::Point(4, 22);
+			this->parameters_tab->Name = L"parameters_tab";
+			this->parameters_tab->Padding = System::Windows::Forms::Padding(3);
+			this->parameters_tab->Size = System::Drawing::Size(1090, 631);
+			this->parameters_tab->TabIndex = 2;
+			this->parameters_tab->Text = L"Parameters";
+			this->parameters_tab->UseVisualStyleBackColor = true;
 			// 
-			// btn_write_all
+			// parameters_btn_write_all
 			// 
-			this->btn_write_all->Location = System::Drawing::Point(801, 16);
-			this->btn_write_all->Name = L"btn_write_all";
-			this->btn_write_all->Size = System::Drawing::Size(114, 26);
-			this->btn_write_all->TabIndex = 4;
-			this->btn_write_all->Text = L"Write All";
-			this->btn_write_all->UseVisualStyleBackColor = true;
-			this->btn_write_all->Click += gcnew System::EventHandler(this, &f1::btn_write_all_Click);
+			this->parameters_btn_write_all->Location = System::Drawing::Point(801, 16);
+			this->parameters_btn_write_all->Name = L"parameters_btn_write_all";
+			this->parameters_btn_write_all->Size = System::Drawing::Size(114, 26);
+			this->parameters_btn_write_all->TabIndex = 4;
+			this->parameters_btn_write_all->Text = L"Write All";
+			this->parameters_btn_write_all->UseVisualStyleBackColor = true;
+			this->parameters_btn_write_all->Click += gcnew System::EventHandler(this, &f1::parameters_btn_write_all_Click);
 			// 
-			// btn_read_all
+			// parameters_btn_read_all
 			// 
-			this->btn_read_all->Location = System::Drawing::Point(649, 16);
-			this->btn_read_all->Name = L"btn_read_all";
-			this->btn_read_all->Size = System::Drawing::Size(114, 26);
-			this->btn_read_all->TabIndex = 4;
-			this->btn_read_all->Text = L"Read All";
-			this->btn_read_all->UseVisualStyleBackColor = true;
+			this->parameters_btn_read_all->Location = System::Drawing::Point(649, 16);
+			this->parameters_btn_read_all->Name = L"parameters_btn_read_all";
+			this->parameters_btn_read_all->Size = System::Drawing::Size(114, 26);
+			this->parameters_btn_read_all->TabIndex = 4;
+			this->parameters_btn_read_all->Text = L"Read All";
+			this->parameters_btn_read_all->UseVisualStyleBackColor = true;
 			// 
-			// dataGridView1
+			// parameters_dataGridView
 			// 
-			this->dataGridView1->AllowUserToAddRows = false;
-			this->dataGridView1->AllowUserToDeleteRows = false;
-			this->dataGridView1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
+			this->parameters_dataGridView->AllowUserToAddRows = false;
+			this->parameters_dataGridView->AllowUserToDeleteRows = false;
+			this->parameters_dataGridView->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left));
 			dataGridViewCellStyle1->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
 			dataGridViewCellStyle1->BackColor = System::Drawing::SystemColors::Control;
@@ -364,9 +370,9 @@ namespace robot_ui {
 			dataGridViewCellStyle1->SelectionBackColor = System::Drawing::SystemColors::Highlight;
 			dataGridViewCellStyle1->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
 			dataGridViewCellStyle1->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
-			this->dataGridView1->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
-			this->dataGridView1->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
-			this->dataGridView1->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(7) {this->Group, 
+			this->parameters_dataGridView->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+			this->parameters_dataGridView->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+			this->parameters_dataGridView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(7) {this->Group, 
 				this->id, this->name, this->Type, this->val, this->inc, this->dec});
 			dataGridViewCellStyle4->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
 			dataGridViewCellStyle4->BackColor = System::Drawing::SystemColors::Window;
@@ -376,15 +382,15 @@ namespace robot_ui {
 			dataGridViewCellStyle4->SelectionBackColor = System::Drawing::SystemColors::Highlight;
 			dataGridViewCellStyle4->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
 			dataGridViewCellStyle4->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
-			this->dataGridView1->DefaultCellStyle = dataGridViewCellStyle4;
-			this->dataGridView1->Location = System::Drawing::Point(0, 0);
-			this->dataGridView1->Name = L"dataGridView1";
-			this->dataGridView1->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
-			this->dataGridView1->Size = System::Drawing::Size(630, 617);
-			this->dataGridView1->TabIndex = 3;
-			this->dataGridView1->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellContentClick);
-			this->dataGridView1->CellContentDoubleClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellContentDoubleClick);
-			this->dataGridView1->CellValueChanged += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellValueChanged);
+			this->parameters_dataGridView->DefaultCellStyle = dataGridViewCellStyle4;
+			this->parameters_dataGridView->Location = System::Drawing::Point(0, 0);
+			this->parameters_dataGridView->Name = L"parameters_dataGridView";
+			this->parameters_dataGridView->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
+			this->parameters_dataGridView->Size = System::Drawing::Size(630, 617);
+			this->parameters_dataGridView->TabIndex = 3;
+			this->parameters_dataGridView->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::parameters_dataGridView_CellContentClick);
+			this->parameters_dataGridView->CellContentDoubleClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::parameters_dataGridView_CellContentDoubleClick);
+			this->parameters_dataGridView->CellValueChanged += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::parameters_dataGridView_CellValueChanged);
 			// 
 			// Group
 			// 
@@ -437,107 +443,107 @@ namespace robot_ui {
 			this->dec->ReadOnly = true;
 			this->dec->Width = 20;
 			// 
-			// tabPage2
+			// graphs_tab
 			// 
-			this->tabPage2->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
-			this->tabPage2->Controls->Add(this->comboBox5);
-			this->tabPage2->Controls->Add(this->comboBox4);
-			this->tabPage2->Controls->Add(this->comboBox3);
-			this->tabPage2->Controls->Add(this->comboBox2);
-			this->tabPage2->Controls->Add(this->checkBox2);
-			this->tabPage2->Controls->Add(this->chart1);
-			this->tabPage2->Location = System::Drawing::Point(4, 22);
-			this->tabPage2->Name = L"tabPage2";
-			this->tabPage2->Padding = System::Windows::Forms::Padding(3);
-			this->tabPage2->Size = System::Drawing::Size(1090, 631);
-			this->tabPage2->TabIndex = 1;
-			this->tabPage2->Text = L"Graphs";
-			this->tabPage2->UseVisualStyleBackColor = true;
-			this->tabPage2->Click += gcnew System::EventHandler(this, &f1::tabPage2_Click);
+			this->graphs_tab->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->graphs_tab->Controls->Add(this->graphs_comboBox_series_2b);
+			this->graphs_tab->Controls->Add(this->graphs_comboBox_series_2a);
+			this->graphs_tab->Controls->Add(this->graphs_comboBox_series_1b);
+			this->graphs_tab->Controls->Add(this->graphs_comboBox_series_1a);
+			this->graphs_tab->Controls->Add(this->graphs_checkBox_enable);
+			this->graphs_tab->Controls->Add(this->graphs_chart);
+			this->graphs_tab->Location = System::Drawing::Point(4, 22);
+			this->graphs_tab->Name = L"graphs_tab";
+			this->graphs_tab->Padding = System::Windows::Forms::Padding(3);
+			this->graphs_tab->Size = System::Drawing::Size(1090, 631);
+			this->graphs_tab->TabIndex = 1;
+			this->graphs_tab->Text = L"Graphs";
+			this->graphs_tab->UseVisualStyleBackColor = true;
+			this->graphs_tab->Click += gcnew System::EventHandler(this, &f1::graphs_tab_Click);
 			// 
-			// comboBox5
+			// graphs_comboBox_series_2b
 			// 
-			this->comboBox5->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->comboBox5->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
-			this->comboBox5->FormattingEnabled = true;
-			this->comboBox5->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+			this->graphs_comboBox_series_2b->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->graphs_comboBox_series_2b->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->graphs_comboBox_series_2b->FormattingEnabled = true;
+			this->graphs_comboBox_series_2b->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
 				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", L"actual_speed[0]", 
 				L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", L"x", L"y", L"theta", L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]"});
-			this->comboBox5->Location = System::Drawing::Point(892, 337);
-			this->comboBox5->Name = L"comboBox5";
-			this->comboBox5->Size = System::Drawing::Size(187, 21);
-			this->comboBox5->TabIndex = 4;
+			this->graphs_comboBox_series_2b->Location = System::Drawing::Point(892, 337);
+			this->graphs_comboBox_series_2b->Name = L"graphs_comboBox_series_2b";
+			this->graphs_comboBox_series_2b->Size = System::Drawing::Size(187, 21);
+			this->graphs_comboBox_series_2b->TabIndex = 4;
 			// 
-			// comboBox4
+			// graphs_comboBox_series_2a
 			// 
-			this->comboBox4->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->comboBox4->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
-			this->comboBox4->FormattingEnabled = true;
-			this->comboBox4->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+			this->graphs_comboBox_series_2a->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->graphs_comboBox_series_2a->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->graphs_comboBox_series_2a->FormattingEnabled = true;
+			this->graphs_comboBox_series_2a->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
 				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", L"actual_speed[0]", 
 				L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", L"x", L"y", L"theta", L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]"});
-			this->comboBox4->Location = System::Drawing::Point(892, 310);
-			this->comboBox4->Name = L"comboBox4";
-			this->comboBox4->Size = System::Drawing::Size(187, 21);
-			this->comboBox4->TabIndex = 4;
+			this->graphs_comboBox_series_2a->Location = System::Drawing::Point(892, 310);
+			this->graphs_comboBox_series_2a->Name = L"graphs_comboBox_series_2a";
+			this->graphs_comboBox_series_2a->Size = System::Drawing::Size(187, 21);
+			this->graphs_comboBox_series_2a->TabIndex = 4;
 			// 
-			// comboBox3
+			// graphs_comboBox_series_1b
 			// 
-			this->comboBox3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->comboBox3->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
-			this->comboBox3->FormattingEnabled = true;
-			this->comboBox3->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+			this->graphs_comboBox_series_1b->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->graphs_comboBox_series_1b->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->graphs_comboBox_series_1b->FormattingEnabled = true;
+			this->graphs_comboBox_series_1b->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
 				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", L"actual_speed[0]", 
 				L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", L"x", L"y", L"theta", L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]"});
-			this->comboBox3->Location = System::Drawing::Point(892, 43);
-			this->comboBox3->Name = L"comboBox3";
-			this->comboBox3->Size = System::Drawing::Size(187, 21);
-			this->comboBox3->TabIndex = 4;
+			this->graphs_comboBox_series_1b->Location = System::Drawing::Point(892, 43);
+			this->graphs_comboBox_series_1b->Name = L"graphs_comboBox_series_1b";
+			this->graphs_comboBox_series_1b->Size = System::Drawing::Size(187, 21);
+			this->graphs_comboBox_series_1b->TabIndex = 4;
 			// 
-			// comboBox2
+			// graphs_comboBox_series_1a
 			// 
-			this->comboBox2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->comboBox2->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
-			this->comboBox2->FormattingEnabled = true;
-			this->comboBox2->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
+			this->graphs_comboBox_series_1a->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->graphs_comboBox_series_1a->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
+			this->graphs_comboBox_series_1a->FormattingEnabled = true;
+			this->graphs_comboBox_series_1a->Items->AddRange(gcnew cli::array< System::Object^  >(24) {L"--NONE--", L"analog[0]", L"analog[1]", L"analog[2]", 
 				L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", L"actual_speed[0]", 
 				L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", L"x", L"y", L"theta", L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]"});
-			this->comboBox2->Location = System::Drawing::Point(892, 16);
-			this->comboBox2->Name = L"comboBox2";
-			this->comboBox2->Size = System::Drawing::Size(187, 21);
-			this->comboBox2->TabIndex = 4;
-			this->comboBox2->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::comboBox2_SelectedIndexChanged);
+			this->graphs_comboBox_series_1a->Location = System::Drawing::Point(892, 16);
+			this->graphs_comboBox_series_1a->Name = L"graphs_comboBox_series_1a";
+			this->graphs_comboBox_series_1a->Size = System::Drawing::Size(187, 21);
+			this->graphs_comboBox_series_1a->TabIndex = 4;
+			this->graphs_comboBox_series_1a->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::graphs_comboBox_series_1a_SelectedIndexChanged);
 			// 
-			// checkBox2
+			// graphs_checkBox_enable
 			// 
-			this->checkBox2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
-			this->checkBox2->AutoSize = true;
-			this->checkBox2->Location = System::Drawing::Point(1023, 592);
-			this->checkBox2->Name = L"checkBox2";
-			this->checkBox2->Size = System::Drawing::Size(59, 17);
-			this->checkBox2->TabIndex = 2;
-			this->checkBox2->Text = L"Enable";
-			this->checkBox2->UseVisualStyleBackColor = true;
-			this->checkBox2->CheckedChanged += gcnew System::EventHandler(this, &f1::checkBox2_CheckedChanged);
+			this->graphs_checkBox_enable->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
+			this->graphs_checkBox_enable->AutoSize = true;
+			this->graphs_checkBox_enable->Location = System::Drawing::Point(1023, 592);
+			this->graphs_checkBox_enable->Name = L"graphs_checkBox_enable";
+			this->graphs_checkBox_enable->Size = System::Drawing::Size(59, 17);
+			this->graphs_checkBox_enable->TabIndex = 2;
+			this->graphs_checkBox_enable->Text = L"Enable";
+			this->graphs_checkBox_enable->UseVisualStyleBackColor = true;
+			this->graphs_checkBox_enable->CheckedChanged += gcnew System::EventHandler(this, &f1::graphs_checkBox_enable_CheckedChanged);
 			// 
-			// chart1
+			// graphs_chart
 			// 
-			this->chart1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
+			this->graphs_chart->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left) 
 				| System::Windows::Forms::AnchorStyles::Right));
-			this->chart1->AntiAliasing = System::Windows::Forms::DataVisualization::Charting::AntiAliasingStyles::None;
-			this->chart1->BorderlineColor = System::Drawing::Color::RoyalBlue;
+			this->graphs_chart->AntiAliasing = System::Windows::Forms::DataVisualization::Charting::AntiAliasingStyles::None;
+			this->graphs_chart->BorderlineColor = System::Drawing::Color::RoyalBlue;
 			chartArea1->AxisX->MajorGrid->Enabled = false;
 			chartArea1->Name = L"ChartArea1";
 			chartArea2->AxisX->MajorGrid->Enabled = false;
 			chartArea2->Name = L"ChartArea2";
-			this->chart1->ChartAreas->Add(chartArea1);
-			this->chart1->ChartAreas->Add(chartArea2);
+			this->graphs_chart->ChartAreas->Add(chartArea1);
+			this->graphs_chart->ChartAreas->Add(chartArea2);
 			legend1->Name = L"Legend1";
-			this->chart1->Legends->Add(legend1);
-			this->chart1->Location = System::Drawing::Point(-5, -1);
-			this->chart1->Margin = System::Windows::Forms::Padding(0);
-			this->chart1->Name = L"chart1";
+			this->graphs_chart->Legends->Add(legend1);
+			this->graphs_chart->Location = System::Drawing::Point(-5, -1);
+			this->graphs_chart->Margin = System::Windows::Forms::Padding(0);
+			this->graphs_chart->Name = L"graphs_chart";
 			series1->ChartArea = L"ChartArea1";
 			series1->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
 			series1->IsXValueIndexed = true;
@@ -550,46 +556,46 @@ namespace robot_ui {
 			series2->IsXValueIndexed = true;
 			series2->Legend = L"Legend1";
 			series2->Name = L"Series 2";
-			this->chart1->Series->Add(series1);
-			this->chart1->Series->Add(series2);
-			this->chart1->Size = System::Drawing::Size(894, 621);
-			this->chart1->TabIndex = 0;
-			this->chart1->Text = L"chart1";
-			this->chart1->AxisViewChanged += gcnew System::EventHandler<System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^ >(this, &f1::chart1_AxisViewChanged);
+			this->graphs_chart->Series->Add(series1);
+			this->graphs_chart->Series->Add(series2);
+			this->graphs_chart->Size = System::Drawing::Size(894, 621);
+			this->graphs_chart->TabIndex = 0;
+			this->graphs_chart->Text = L"graphs_chart";
+			this->graphs_chart->AxisViewChanged += gcnew System::EventHandler<System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^ >(this, &f1::graphs_chart_AxisViewChanged);
 			// 
-			// tabPage3
+			// radar_tabPage
 			// 
-			this->tabPage3->Controls->Add(this->btn_stop_scan);
-			this->tabPage3->Controls->Add(this->btn_radar_clear);
-			this->tabPage3->Controls->Add(this->btn_start_scan);
-			this->tabPage3->Controls->Add(this->label3);
-			this->tabPage3->Controls->Add(this->label2);
-			this->tabPage3->Controls->Add(this->txt_speed);
-			this->tabPage3->Controls->Add(this->txt_scan_range);
-			this->tabPage3->Controls->Add(this->cb_radar_enable_updates);
-			this->tabPage3->Controls->Add(this->cb_radar_use_lines);
-			this->tabPage3->Controls->Add(this->cb_show_ir_far_north);
-			this->tabPage3->Controls->Add(this->cb_show_ir_north);
-			this->tabPage3->Controls->Add(this->panel1);
-			this->tabPage3->Location = System::Drawing::Point(4, 22);
-			this->tabPage3->Name = L"tabPage3";
-			this->tabPage3->Padding = System::Windows::Forms::Padding(3);
-			this->tabPage3->Size = System::Drawing::Size(1090, 631);
-			this->tabPage3->TabIndex = 4;
-			this->tabPage3->Text = L"\"Radar\"";
-			this->tabPage3->UseVisualStyleBackColor = true;
-			this->tabPage3->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &f1::tabPage3_Paint);
+			this->radar_tabPage->Controls->Add(this->main_btn_stop_scan);
+			this->radar_tabPage->Controls->Add(this->btn_radar_clear);
+			this->radar_tabPage->Controls->Add(this->btn_start_scan);
+			this->radar_tabPage->Controls->Add(this->label3);
+			this->radar_tabPage->Controls->Add(this->label2);
+			this->radar_tabPage->Controls->Add(this->txt_speed);
+			this->radar_tabPage->Controls->Add(this->txt_scan_range);
+			this->radar_tabPage->Controls->Add(this->cb_radar_enable_updates);
+			this->radar_tabPage->Controls->Add(this->cb_radar_use_lines);
+			this->radar_tabPage->Controls->Add(this->cb_show_ir_far_north);
+			this->radar_tabPage->Controls->Add(this->cb_show_ir_north);
+			this->radar_tabPage->Location = System::Drawing::Point(4, 22);
+			this->radar_tabPage->Name = L"radar_tabPage";
+			this->radar_tabPage->Padding = System::Windows::Forms::Padding(3);
+			this->radar_tabPage->Size = System::Drawing::Size(1090, 631);
+			this->radar_tabPage->TabIndex = 4;
+			this->radar_tabPage->Text = L"\"Radar\"";
+			this->radar_tabPage->UseVisualStyleBackColor = true;
+			this->radar_tabPage->Click += gcnew System::EventHandler(this, &f1::radar_tabPage_Click);
+			this->radar_tabPage->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &f1::radar_tabPage_Paint);
 			// 
-			// btn_stop_scan
+			// main_btn_stop_scan
 			// 
-			this->btn_stop_scan->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_stop_scan->Location = System::Drawing::Point(1006, 63);
-			this->btn_stop_scan->Name = L"btn_stop_scan";
-			this->btn_stop_scan->Size = System::Drawing::Size(67, 23);
-			this->btn_stop_scan->TabIndex = 4;
-			this->btn_stop_scan->Text = L"Stop";
-			this->btn_stop_scan->UseVisualStyleBackColor = true;
-			this->btn_stop_scan->Click += gcnew System::EventHandler(this, &f1::btn_stop_scan_Click);
+			this->main_btn_stop_scan->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->main_btn_stop_scan->Location = System::Drawing::Point(1006, 63);
+			this->main_btn_stop_scan->Name = L"main_btn_stop_scan";
+			this->main_btn_stop_scan->Size = System::Drawing::Size(67, 23);
+			this->main_btn_stop_scan->TabIndex = 4;
+			this->main_btn_stop_scan->Text = L"Stop";
+			this->main_btn_stop_scan->UseVisualStyleBackColor = true;
+			this->main_btn_stop_scan->Click += gcnew System::EventHandler(this, &f1::main_btn_stop_scan_Click);
 			// 
 			// btn_radar_clear
 			// 
@@ -664,6 +670,17 @@ namespace robot_ui {
 			this->cb_radar_enable_updates->Text = L"Enable updates";
 			this->cb_radar_enable_updates->UseVisualStyleBackColor = true;
 			// 
+			// cb_radar_use_lines
+			// 
+			this->cb_radar_use_lines->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->cb_radar_use_lines->AutoSize = true;
+			this->cb_radar_use_lines->Location = System::Drawing::Point(932, 210);
+			this->cb_radar_use_lines->Name = L"cb_radar_use_lines";
+			this->cb_radar_use_lines->Size = System::Drawing::Size(69, 17);
+			this->cb_radar_use_lines->TabIndex = 1;
+			this->cb_radar_use_lines->Text = L"Use lines";
+			this->cb_radar_use_lines->UseVisualStyleBackColor = true;
+			// 
 			// cb_show_ir_far_north
 			// 
 			this->cb_show_ir_far_north->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
@@ -685,16 +702,6 @@ namespace robot_ui {
 			this->cb_show_ir_north->TabIndex = 1;
 			this->cb_show_ir_north->Text = L"IR North";
 			this->cb_show_ir_north->UseVisualStyleBackColor = true;
-			// 
-			// panel1
-			// 
-			this->panel1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
-				| System::Windows::Forms::AnchorStyles::Left));
-			this->panel1->Location = System::Drawing::Point(-4, 0);
-			this->panel1->Name = L"panel1";
-			this->panel1->Size = System::Drawing::Size(914, 631);
-			this->panel1->TabIndex = 0;
-			this->panel1->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &f1::panel1_Paint);
 			// 
 			// tabPage1
 			// 
@@ -749,109 +756,109 @@ namespace robot_ui {
 			this->textBoxLog->Size = System::Drawing::Size(1090, 617);
 			this->textBoxLog->TabIndex = 0;
 			// 
-			// tb_Vbatt
+			// main_textBox_vbatt
 			// 
-			this->tb_Vbatt->Location = System::Drawing::Point(275, 21);
-			this->tb_Vbatt->Name = L"tb_Vbatt";
-			this->tb_Vbatt->ReadOnly = true;
-			this->tb_Vbatt->Size = System::Drawing::Size(59, 20);
-			this->tb_Vbatt->TabIndex = 0;
-			this->tb_Vbatt->Text = L"0.0V";
+			this->main_textBox_vbatt->Location = System::Drawing::Point(275, 21);
+			this->main_textBox_vbatt->Name = L"main_textBox_vbatt";
+			this->main_textBox_vbatt->ReadOnly = true;
+			this->main_textBox_vbatt->Size = System::Drawing::Size(59, 20);
+			this->main_textBox_vbatt->TabIndex = 0;
+			this->main_textBox_vbatt->Text = L"0.0V";
 			// 
-			// label9
+			// main_lbl_battery
 			// 
-			this->label9->AutoSize = true;
-			this->label9->Location = System::Drawing::Point(272, 5);
-			this->label9->Name = L"label9";
-			this->label9->Size = System::Drawing::Size(43, 13);
-			this->label9->TabIndex = 1;
-			this->label9->Text = L"Battery:";
-			this->label9->Click += gcnew System::EventHandler(this, &f1::label9_Click);
+			this->main_lbl_battery->AutoSize = true;
+			this->main_lbl_battery->Location = System::Drawing::Point(272, 5);
+			this->main_lbl_battery->Name = L"main_lbl_battery";
+			this->main_lbl_battery->Size = System::Drawing::Size(43, 13);
+			this->main_lbl_battery->TabIndex = 1;
+			this->main_lbl_battery->Text = L"Battery:";
+			this->main_lbl_battery->Click += gcnew System::EventHandler(this, &f1::label9_Click);
 			// 
-			// textBox2
+			// main_textBox_keyb
 			// 
-			this->textBox2->Location = System::Drawing::Point(524, 23);
-			this->textBox2->Name = L"textBox2";
-			this->textBox2->Size = System::Drawing::Size(77, 20);
-			this->textBox2->TabIndex = 5;
-			this->textBox2->TextChanged += gcnew System::EventHandler(this, &f1::textBox2_TextChanged);
-			this->textBox2->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &f1::textBox2_KeyDown);
+			this->main_textBox_keyb->Location = System::Drawing::Point(524, 23);
+			this->main_textBox_keyb->Name = L"main_textBox_keyb";
+			this->main_textBox_keyb->Size = System::Drawing::Size(77, 20);
+			this->main_textBox_keyb->TabIndex = 5;
+			this->main_textBox_keyb->TextChanged += gcnew System::EventHandler(this, &f1::main_textBox_keyb_TextChanged);
+			this->main_textBox_keyb->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &f1::main_textBox_keyb_KeyDown);
 			// 
-			// label5
+			// main_lbl_keyb
 			// 
-			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(521, 5);
-			this->label5->Name = L"label5";
-			this->label5->Size = System::Drawing::Size(80, 13);
-			this->label5->TabIndex = 1;
-			this->label5->Text = L"Keyb. Shortcut:";
-			this->label5->Click += gcnew System::EventHandler(this, &f1::label9_Click);
+			this->main_lbl_keyb->AutoSize = true;
+			this->main_lbl_keyb->Location = System::Drawing::Point(521, 5);
+			this->main_lbl_keyb->Name = L"main_lbl_keyb";
+			this->main_lbl_keyb->Size = System::Drawing::Size(80, 13);
+			this->main_lbl_keyb->TabIndex = 1;
+			this->main_lbl_keyb->Text = L"Keyb. Shortcut:";
+			this->main_lbl_keyb->Click += gcnew System::EventHandler(this, &f1::label9_Click);
 			// 
-			// btn_estop
+			// main_btn_estop
 			// 
-			this->btn_estop->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_estop->BackColor = System::Drawing::Color::Red;
-			this->btn_estop->BackgroundImage = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"btn_estop.BackgroundImage")));
-			this->btn_estop->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
-			this->btn_estop->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point, 
+			this->main_btn_estop->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->main_btn_estop->BackColor = System::Drawing::Color::Red;
+			this->main_btn_estop->BackgroundImage = (cli::safe_cast<System::Drawing::Image^  >(resources->GetObject(L"main_btn_estop.BackgroundImage")));
+			this->main_btn_estop->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+			this->main_btn_estop->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(0)));
-			this->btn_estop->Location = System::Drawing::Point(1024, 5);
-			this->btn_estop->Name = L"btn_estop";
-			this->btn_estop->Size = System::Drawing::Size(67, 61);
-			this->btn_estop->TabIndex = 6;
-			this->btn_estop->UseVisualStyleBackColor = false;
-			this->btn_estop->Click += gcnew System::EventHandler(this, &f1::btn_estop_Click);
+			this->main_btn_estop->Location = System::Drawing::Point(1024, 5);
+			this->main_btn_estop->Name = L"main_btn_estop";
+			this->main_btn_estop->Size = System::Drawing::Size(67, 61);
+			this->main_btn_estop->TabIndex = 6;
+			this->main_btn_estop->UseVisualStyleBackColor = false;
+			this->main_btn_estop->Click += gcnew System::EventHandler(this, &f1::main_btn_estop_Click);
 			// 
-			// btn_up
+			// main_btn_up
 			// 
-			this->btn_up->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_up->Location = System::Drawing::Point(948, 1);
-			this->btn_up->Name = L"btn_up";
-			this->btn_up->Size = System::Drawing::Size(25, 21);
-			this->btn_up->TabIndex = 7;
-			this->btn_up->Text = L"u";
-			this->btn_up->UseVisualStyleBackColor = true;
+			this->main_btn_up->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->main_btn_up->Location = System::Drawing::Point(948, 1);
+			this->main_btn_up->Name = L"main_btn_up";
+			this->main_btn_up->Size = System::Drawing::Size(25, 21);
+			this->main_btn_up->TabIndex = 7;
+			this->main_btn_up->Text = L"u";
+			this->main_btn_up->UseVisualStyleBackColor = true;
 			// 
-			// btn_down
+			// main_btn_down
 			// 
-			this->btn_down->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_down->Location = System::Drawing::Point(948, 47);
-			this->btn_down->Name = L"btn_down";
-			this->btn_down->Size = System::Drawing::Size(25, 21);
-			this->btn_down->TabIndex = 7;
-			this->btn_down->Text = L"d";
-			this->btn_down->UseVisualStyleBackColor = true;
+			this->main_btn_down->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->main_btn_down->Location = System::Drawing::Point(948, 47);
+			this->main_btn_down->Name = L"main_btn_down";
+			this->main_btn_down->Size = System::Drawing::Size(25, 21);
+			this->main_btn_down->TabIndex = 7;
+			this->main_btn_down->Text = L"d";
+			this->main_btn_down->UseVisualStyleBackColor = true;
 			// 
-			// btn_left
+			// main_btn_left
 			// 
-			this->btn_left->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_left->Location = System::Drawing::Point(920, 24);
-			this->btn_left->Name = L"btn_left";
-			this->btn_left->Size = System::Drawing::Size(25, 21);
-			this->btn_left->TabIndex = 7;
-			this->btn_left->Text = L"<";
-			this->btn_left->UseVisualStyleBackColor = true;
+			this->main_btn_left->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->main_btn_left->Location = System::Drawing::Point(920, 24);
+			this->main_btn_left->Name = L"main_btn_left";
+			this->main_btn_left->Size = System::Drawing::Size(25, 21);
+			this->main_btn_left->TabIndex = 7;
+			this->main_btn_left->Text = L"<";
+			this->main_btn_left->UseVisualStyleBackColor = true;
 			// 
-			// btn_right
+			// main_btn_right
 			// 
-			this->btn_right->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_right->Location = System::Drawing::Point(976, 24);
-			this->btn_right->Name = L"btn_right";
-			this->btn_right->Size = System::Drawing::Size(25, 21);
-			this->btn_right->TabIndex = 7;
-			this->btn_right->Text = L">";
-			this->btn_right->UseVisualStyleBackColor = true;
+			this->main_btn_right->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->main_btn_right->Location = System::Drawing::Point(976, 24);
+			this->main_btn_right->Name = L"main_btn_right";
+			this->main_btn_right->Size = System::Drawing::Size(25, 21);
+			this->main_btn_right->TabIndex = 7;
+			this->main_btn_right->Text = L">";
+			this->main_btn_right->UseVisualStyleBackColor = true;
 			// 
-			// btn_stop
+			// main_btn_stop
 			// 
-			this->btn_stop->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_stop->Location = System::Drawing::Point(948, 24);
-			this->btn_stop->Name = L"btn_stop";
-			this->btn_stop->Size = System::Drawing::Size(25, 21);
-			this->btn_stop->TabIndex = 7;
-			this->btn_stop->Text = L"s";
-			this->btn_stop->UseVisualStyleBackColor = true;
-			this->btn_stop->Click += gcnew System::EventHandler(this, &f1::btn_stop_Click);
+			this->main_btn_stop->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->main_btn_stop->Location = System::Drawing::Point(948, 24);
+			this->main_btn_stop->Name = L"main_btn_stop";
+			this->main_btn_stop->Size = System::Drawing::Size(25, 21);
+			this->main_btn_stop->TabIndex = 7;
+			this->main_btn_stop->Text = L"s";
+			this->main_btn_stop->UseVisualStyleBackColor = true;
+			this->main_btn_stop->Click += gcnew System::EventHandler(this, &f1::main_btn_stop_Click);
 			// 
 			// radar_timer
 			// 
@@ -859,127 +866,116 @@ namespace robot_ui {
 			this->radar_timer->Interval = 30;
 			this->radar_timer->Tick += gcnew System::EventHandler(this, &f1::radar_timer_Tick);
 			// 
-			// label4
+			// main_lbl_behavior_control
 			// 
-			this->label4->AutoSize = true;
-			this->label4->Location = System::Drawing::Point(624, 5);
-			this->label4->Name = L"label4";
-			this->label4->Size = System::Drawing::Size(229, 13);
-			this->label4->TabIndex = 8;
-			this->label4->Text = L"Behavior:              Initial State:          Command:";
+			this->main_lbl_behavior_control->AutoSize = true;
+			this->main_lbl_behavior_control->Location = System::Drawing::Point(624, 5);
+			this->main_lbl_behavior_control->Name = L"main_lbl_behavior_control";
+			this->main_lbl_behavior_control->Size = System::Drawing::Size(229, 13);
+			this->main_lbl_behavior_control->TabIndex = 8;
+			this->main_lbl_behavior_control->Text = L"Behavior:              Initial State:          Command:";
 			// 
-			// cB_beh
+			// main_comboBox_behavior_id
 			// 
-			this->cB_beh->FormattingEnabled = true;
-			this->cB_beh->Items->AddRange(gcnew cli::array< System::Object^  >(16) {L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", L"9", 
+			this->main_comboBox_behavior_id->FormattingEnabled = true;
+			this->main_comboBox_behavior_id->Items->AddRange(gcnew cli::array< System::Object^  >(16) {L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", L"9", 
 				L"10", L"11", L"12", L"13", L"14", L"15", L"16"});
-			this->cB_beh->Location = System::Drawing::Point(625, 24);
-			this->cB_beh->Name = L"cB_beh";
-			this->cB_beh->Size = System::Drawing::Size(61, 21);
-			this->cB_beh->TabIndex = 9;
-			this->cB_beh->Text = L"1";
-			this->cB_beh->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::cB_beh_SelectedIndexChanged);
+			this->main_comboBox_behavior_id->Location = System::Drawing::Point(625, 24);
+			this->main_comboBox_behavior_id->Name = L"main_comboBox_behavior_id";
+			this->main_comboBox_behavior_id->Size = System::Drawing::Size(61, 21);
+			this->main_comboBox_behavior_id->TabIndex = 9;
+			this->main_comboBox_behavior_id->Text = L"1";
+			this->main_comboBox_behavior_id->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::main_comboBox_behavior_id_SelectedIndexChanged);
 			// 
-			// cb_state
+			// main_comboBox_behavior_state
 			// 
-			this->cb_state->FormattingEnabled = true;
-			this->cb_state->Items->AddRange(gcnew cli::array< System::Object^  >(16) {L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", 
+			this->main_comboBox_behavior_state->FormattingEnabled = true;
+			this->main_comboBox_behavior_state->Items->AddRange(gcnew cli::array< System::Object^  >(16) {L"1", L"2", L"3", L"4", L"5", L"6", L"7", L"8", 
 				L"9", L"10", L"11", L"12", L"13", L"14", L"15", L"16"});
-			this->cb_state->Location = System::Drawing::Point(712, 24);
-			this->cb_state->Name = L"cb_state";
-			this->cb_state->Size = System::Drawing::Size(61, 21);
-			this->cb_state->TabIndex = 9;
-			this->cb_state->Text = L"1";
+			this->main_comboBox_behavior_state->Location = System::Drawing::Point(712, 24);
+			this->main_comboBox_behavior_state->Name = L"main_comboBox_behavior_state";
+			this->main_comboBox_behavior_state->Size = System::Drawing::Size(61, 21);
+			this->main_comboBox_behavior_state->TabIndex = 9;
+			this->main_comboBox_behavior_state->Text = L"1";
 			// 
-			// btn_start_beh
+			// main_btn_start_beh
 			// 
-			this->btn_start_beh->Location = System::Drawing::Point(798, 21);
-			this->btn_start_beh->Name = L"btn_start_beh";
-			this->btn_start_beh->Size = System::Drawing::Size(42, 23);
-			this->btn_start_beh->TabIndex = 10;
-			this->btn_start_beh->Text = L"Start";
-			this->btn_start_beh->UseVisualStyleBackColor = true;
-			this->btn_start_beh->Click += gcnew System::EventHandler(this, &f1::btn_start_beh_Click);
+			this->main_btn_start_beh->Location = System::Drawing::Point(798, 21);
+			this->main_btn_start_beh->Name = L"main_btn_start_beh";
+			this->main_btn_start_beh->Size = System::Drawing::Size(42, 23);
+			this->main_btn_start_beh->TabIndex = 10;
+			this->main_btn_start_beh->Text = L"Start";
+			this->main_btn_start_beh->UseVisualStyleBackColor = true;
+			this->main_btn_start_beh->Click += gcnew System::EventHandler(this, &f1::main_btn_start_beh_Click);
 			// 
-			// btn_stop_beh
+			// main_main_btn_stop_beh
 			// 
-			this->btn_stop_beh->Location = System::Drawing::Point(846, 21);
-			this->btn_stop_beh->Name = L"btn_stop_beh";
-			this->btn_stop_beh->Size = System::Drawing::Size(42, 23);
-			this->btn_stop_beh->TabIndex = 10;
-			this->btn_stop_beh->Text = L"Stop";
-			this->btn_stop_beh->UseVisualStyleBackColor = true;
-			this->btn_stop_beh->Click += gcnew System::EventHandler(this, &f1::btn_stop_beh_Click);
+			this->main_main_btn_stop_beh->Location = System::Drawing::Point(846, 21);
+			this->main_main_btn_stop_beh->Name = L"main_main_btn_stop_beh";
+			this->main_main_btn_stop_beh->Size = System::Drawing::Size(42, 23);
+			this->main_main_btn_stop_beh->TabIndex = 10;
+			this->main_main_btn_stop_beh->Text = L"Stop";
+			this->main_main_btn_stop_beh->UseVisualStyleBackColor = true;
+			this->main_main_btn_stop_beh->Click += gcnew System::EventHandler(this, &f1::main_main_btn_stop_beh_Click);
 			// 
-			// label6
+			// main_lbl_rate
 			// 
-			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(361, 5);
-			this->label6->Name = L"label6";
-			this->label6->Size = System::Drawing::Size(33, 13);
-			this->label6->TabIndex = 1;
-			this->label6->Text = L"Rate:";
-			this->label6->Click += gcnew System::EventHandler(this, &f1::label9_Click);
+			this->main_lbl_rate->AutoSize = true;
+			this->main_lbl_rate->Location = System::Drawing::Point(361, 5);
+			this->main_lbl_rate->Name = L"main_lbl_rate";
+			this->main_lbl_rate->Size = System::Drawing::Size(33, 13);
+			this->main_lbl_rate->TabIndex = 1;
+			this->main_lbl_rate->Text = L"Rate:";
+			this->main_lbl_rate->Click += gcnew System::EventHandler(this, &f1::label9_Click);
 			// 
-			// cB_Rate
+			// main_comboBox_rate
 			// 
-			this->cB_Rate->FormattingEnabled = true;
-			this->cB_Rate->Items->AddRange(gcnew cli::array< System::Object^  >(5) {L"0", L"10", L"100", L"1000", L"2000"});
-			this->cB_Rate->Location = System::Drawing::Point(364, 22);
-			this->cB_Rate->Name = L"cB_Rate";
-			this->cB_Rate->Size = System::Drawing::Size(61, 21);
-			this->cB_Rate->TabIndex = 9;
-			this->cB_Rate->Text = L"1";
-			this->cB_Rate->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::cB_beh_SelectedIndexChanged);
-			// 
-			// cb_radar_use_lines
-			// 
-			this->cb_radar_use_lines->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->cb_radar_use_lines->AutoSize = true;
-			this->cb_radar_use_lines->Location = System::Drawing::Point(932, 210);
-			this->cb_radar_use_lines->Name = L"cb_radar_use_lines";
-			this->cb_radar_use_lines->Size = System::Drawing::Size(69, 17);
-			this->cb_radar_use_lines->TabIndex = 1;
-			this->cb_radar_use_lines->Text = L"Use lines";
-			this->cb_radar_use_lines->UseVisualStyleBackColor = true;
+			this->main_comboBox_rate->FormattingEnabled = true;
+			this->main_comboBox_rate->Items->AddRange(gcnew cli::array< System::Object^  >(5) {L"0", L"10", L"100", L"1000", L"2000"});
+			this->main_comboBox_rate->Location = System::Drawing::Point(364, 22);
+			this->main_comboBox_rate->Name = L"main_comboBox_rate";
+			this->main_comboBox_rate->Size = System::Drawing::Size(61, 21);
+			this->main_comboBox_rate->TabIndex = 9;
+			this->main_comboBox_rate->Text = L"1";
+			this->main_comboBox_rate->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::main_comboBox_behavior_id_SelectedIndexChanged);
 			// 
 			// f1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
 			this->ClientSize = System::Drawing::Size(1096, 707);
-			this->Controls->Add(this->btn_stop_beh);
-			this->Controls->Add(this->btn_start_beh);
-			this->Controls->Add(this->cb_state);
-			this->Controls->Add(this->cB_Rate);
-			this->Controls->Add(this->cB_beh);
-			this->Controls->Add(this->label4);
-			this->Controls->Add(this->btn_right);
-			this->Controls->Add(this->btn_left);
-			this->Controls->Add(this->btn_down);
-			this->Controls->Add(this->btn_stop);
-			this->Controls->Add(this->btn_up);
-			this->Controls->Add(this->btn_estop);
-			this->Controls->Add(this->textBox2);
+			this->Controls->Add(this->main_main_btn_stop_beh);
+			this->Controls->Add(this->main_btn_start_beh);
+			this->Controls->Add(this->main_comboBox_behavior_state);
+			this->Controls->Add(this->main_comboBox_rate);
+			this->Controls->Add(this->main_comboBox_behavior_id);
+			this->Controls->Add(this->main_lbl_behavior_control);
+			this->Controls->Add(this->main_btn_right);
+			this->Controls->Add(this->main_btn_left);
+			this->Controls->Add(this->main_btn_down);
+			this->Controls->Add(this->main_btn_stop);
+			this->Controls->Add(this->main_btn_up);
+			this->Controls->Add(this->main_btn_estop);
+			this->Controls->Add(this->main_textBox_keyb);
 			this->Controls->Add(this->tabControl1);
-			this->Controls->Add(this->label1);
-			this->Controls->Add(this->checkBox1);
-			this->Controls->Add(this->comboBox1);
-			this->Controls->Add(this->label5);
-			this->Controls->Add(this->label6);
-			this->Controls->Add(this->label9);
-			this->Controls->Add(this->tb_Vbatt);
+			this->Controls->Add(this->main_lbl_port);
+			this->Controls->Add(this->main_checkBox_connect);
+			this->Controls->Add(this->main_comboBox_port);
+			this->Controls->Add(this->main_lbl_keyb);
+			this->Controls->Add(this->main_lbl_rate);
+			this->Controls->Add(this->main_lbl_battery);
+			this->Controls->Add(this->main_textBox_vbatt);
 			this->Name = L"f1";
 			this->Text = L"Robot UI";
 			this->Load += gcnew System::EventHandler(this, &f1::f1_Load);
 			this->tabControl1->ResumeLayout(false);
-			this->tabSettings->ResumeLayout(false);
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->dataGridView1))->EndInit();
-			this->tabPage2->ResumeLayout(false);
-			this->tabPage2->PerformLayout();
-			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->chart1))->EndInit();
-			this->tabPage3->ResumeLayout(false);
-			this->tabPage3->PerformLayout();
+			this->parameters_tab->ResumeLayout(false);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->parameters_dataGridView))->EndInit();
+			this->graphs_tab->ResumeLayout(false);
+			this->graphs_tab->PerformLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->graphs_chart))->EndInit();
+			this->radar_tabPage->ResumeLayout(false);
+			this->radar_tabPage->PerformLayout();
 			this->tabPage1->ResumeLayout(false);
 			this->tabPage1->PerformLayout();
 			this->tabLog->ResumeLayout(false);
@@ -995,13 +991,13 @@ namespace robot_ui {
 
 private: System::Void tB_NW_TextChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
-private: System::Void tabPage2_Click(System::Object^  sender, System::EventArgs^  e) {
+private: System::Void graphs_tab_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
-private: System::Void tabPage2_Paint(System::Object^  sender, System::EventArgs^  e) {
+private: System::Void graphs_tab_Paint(System::Object^  sender, System::EventArgs^  e) {
 		 }
 private: System::Void tb_SE_TextChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
-private: System::Void comboBox1_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
+private: System::Void main_comboBox_port_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 private: System::Void textBox1_TextChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
@@ -1009,61 +1005,59 @@ private: System::Void textBox1_KeyDown(System::Object^  sender, System::Windows:
 		 }
 private: System::Void label9_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
-private: System::Void textBox2_TextChanged(System::Object^  sender, System::EventArgs^  e) {
+private: System::Void main_textBox_keyb_TextChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 
-private: System::Void textBox2_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) ;
+private: System::Void main_textBox_keyb_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) ;
 
 private: System::Void checkedListBox1_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 private: System::Void checkedListBox1_SelectedValueChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
-private: System::Void dataGridView1_CellContentDoubleClick(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) {
+private: System::Void parameters_dataGridView_CellContentDoubleClick(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) {
 		 }
-private: System::Void tabPage3_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) 
-	{
-	}
-private: System::Void chart1_AxisViewChanged(System::Object^  sender, System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^  e) ;
-private: System::Void checkBox2_CheckedChanged(System::Object^  sender, System::EventArgs^  e) ;
-private: System::Void panel1_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) ;
+private: System::Void radar_tabPage_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e); 
+
+private: System::Void graphs_chart_AxisViewChanged(System::Object^  sender, System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^  e) ;
+private: System::Void graphs_checkBox_enable_CheckedChanged(System::Object^  sender, System::EventArgs^  e) ;
 private: System::Void label3_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
 private: System::Void textBox3_TextChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 private: System::Void btn_start_scan_Click(System::Object^  sender, System::EventArgs^  e) {
-			 panel1->Invalidate();
+			 radar_tabPage->Invalidate();
 		 }
-private: System::Void btn_stop_scan_Click(System::Object^  sender, System::EventArgs^  e) {
+private: System::Void main_btn_stop_scan_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
 
 private: System::Void radar_timer_Tick(System::Object^  sender, System::EventArgs^  e); 
 
-private: System::Void btn_stop_Click(System::Object^  sender, System::EventArgs^  e) 
+private: System::Void main_btn_stop_Click(System::Object^  sender, System::EventArgs^  e) 
 		{
 
 		}
-private: System::Void comboBox2_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
+private: System::Void graphs_comboBox_series_1a_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 
-private: System::Void cB_beh_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) 
+private: System::Void main_comboBox_behavior_id_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) 
 		 {
-			 update_interval = Convert::ToInt32(cB_Rate->Text);
+			 update_interval = Convert::ToInt32(main_comboBox_rate->Text);
 		 }
 
-private: System::Void btn_start_beh_Click(System::Object^  sender, System::EventArgs^  e) 
+private: System::Void main_btn_start_beh_Click(System::Object^  sender, System::EventArgs^  e) 
 		 {
-			 CMD_set_behavior_state(Convert::ToByte(cB_beh->Text), Convert::ToByte(cb_state->Text));
+			 CMD_set_behavior_state(Convert::ToByte(main_comboBox_behavior_id->Text), Convert::ToByte(main_comboBox_behavior_state->Text));
 			 CMD_send();
 		 }
 
-private: System::Void btn_stop_beh_Click(System::Object^  sender, System::EventArgs^  e) 
+private: System::Void main_main_btn_stop_beh_Click(System::Object^  sender, System::EventArgs^  e) 
 		 {
-			 CMD_set_behavior_state(Convert::ToByte(cB_beh->Text), 0);
+			 CMD_set_behavior_state(Convert::ToByte(main_comboBox_behavior_id->Text), 0);
 			 CMD_send();
 		 }
-private: System::Void btn_estop_Click(System::Object^  sender, System::EventArgs^  e);
+private: System::Void main_btn_estop_Click(System::Object^  sender, System::EventArgs^  e);
 
-private: System::Void btn_write_all_Click(System::Object^  sender, System::EventArgs^  e) 
+private: System::Void parameters_btn_write_all_Click(System::Object^  sender, System::EventArgs^  e) 
 		 {
 			 int i;
 
@@ -1081,6 +1075,8 @@ private: System::Void btn_write_all_Click(System::Object^  sender, System::Event
 				 i++;
 			 }
 			 Application::UseWaitCursor = 0;
+		 }
+private: System::Void radar_tabPage_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
 };
 

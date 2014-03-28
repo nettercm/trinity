@@ -125,7 +125,7 @@ namespace robot_ui
 
 
 
-		System::Void f1::panel1_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) 
+		System::Void f1::radar_tabPage_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) 
 		{
 			Brush^ b3 =  gcnew SolidBrush(Color::Red);
 			Brush^ b1 =  gcnew SolidBrush(Color::White);
@@ -146,7 +146,7 @@ namespace robot_ui
 				if(i>=0)
 				{
 					theta = inputs_history[i].theta;
-					printf("panel1_Paint(): theta = %04.1f\n",theta);
+					printf("radar_tabPage_Paint(): theta = %04.1f\n",theta);
 					y=310.0f + 300.0f * sinf( theta * 3.14f / 180.0f);
 					x=310.0f + 300.0f * cosf( theta * 3.14f / 180.0f);
 					//g->FillEllipse(b2,(int) x, (int) y, 4, 4);
