@@ -26,8 +26,9 @@ t_inputs inputs;
 t_outputs outputs;
 char *serial_port=NULL;
 
-t_inputs inputs_history[200000]; //1 hour @ 50Hz
-int history_index=0;
+volatile t_inputs inputs_history[200000]; //1 hour @ 50Hz
+volatile int history_index=0;
+int update_interval=1000;
 
 extern void print1(char *str);
 
@@ -36,7 +37,7 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 {
 	int result,size;
 
-	size = serial_read(p,buffer,300);  
+	size = serial_read(p,(char*)buffer,300);  
 	result = size >= sizeof(t_frame_to_pc) ? 1 : 0; 
 
 	if(result == 1)
@@ -96,7 +97,6 @@ void display_inputs_and_state(t_inputs *inputs)
 	static u08 watch[4] = {0,0,0,0};
 
 	if(t_last==0) t_last=GetTickCount();
-
 	t_now = GetTickCount();
 	t_delta = t_now-t_last;
 	t_delta_avg = (t_delta_avg*19.0f + t_delta)/20.0f;
@@ -128,7 +128,7 @@ void display_inputs_and_state(t_inputs *inputs)
 				inputs->watch[0], inputs->watch[1], inputs->watch[2], inputs->watch[3]
 			);
 
-	//if( (t_delta >= 1000) || (memcmp(watch,inputs->watch,4)!=0) )
+	if( (t_delta >= update_interval) || (memcmp(watch,inputs->watch,4)!=0) )
 	{
 		printf(s.msg);
 		memcpy(watch,inputs->watch,4);

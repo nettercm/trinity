@@ -50,6 +50,8 @@ namespace robot_ui
 		float f;
 		String ^s;
 
+		//this->SetStyle(ControlStyles::DoubleBuffer, true);
+
 		timeBeginPeriod(1);
 
 		DWORD t1 = timeGetTime();
@@ -73,6 +75,7 @@ namespace robot_ui
 
 		printf("Sleep(1) = %lu\n",t2-t1);
 
+		g = panel1->CreateGraphics();
 		//
 		//TODO: Add the constructor code here
 		//
@@ -115,6 +118,7 @@ namespace robot_ui
 	System::Void f1::bw1_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) 
 	{
 		int result = 0;
+		static int theta = 0;
 
 		data_init();
 
@@ -124,7 +128,17 @@ namespace robot_ui
 			{
 				Sleep(20);
 				inputs_history[history_index].analog[0] = history_index;
+				inputs_history[history_index].theta = theta;
+				inputs_history[history_index].ir[0] = 100;
+				inputs_history[history_index].ir[1] = 200;
+				inputs_history[history_index].ir[2] = 300;
+				inputs_history[history_index].ir[3] = 400;
 				history_index++;
+				theta++;
+				if(theta >= 360) 
+				{
+					theta = 0;
+				}
 				//log(".");
 			}
 			else
@@ -236,7 +250,19 @@ namespace robot_ui
 		log(s + "\n");
 		textBox2->Clear();
 		key=0;
-		if(s=="F1") key=0xe13b;
+
+		if(s == "Left"	) key=0xe13b;
+		if(s == "Right"	) key=0xe13b;
+		if(s == "Up"	) key=0xe13b;
+		if(s == "Down"	) key=0xe13b;
+
+		if(s == "F1"	) key=0xe13b;
+		if(s == "F2"	) key=0xe13b;
+		if(s == "F3"	) key=0xe13b;
+		if(s == "F10"	) key=0xe13b;
+		if(s == "F11"	) key=0xe13b;
+		if(s == "F12"	) key=0xe13b;
+
 		printf("Key = 0x%04x\n",key);
 	}
 }

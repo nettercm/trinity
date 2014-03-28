@@ -47,27 +47,73 @@ namespace robot_ui
 	}
 
 
+	void f1::UpdateRadar(float a, int b)
+	{
+			Brush^ b1 =  gcnew SolidBrush(Color::White);
+			Brush^ b2 =  gcnew SolidBrush(Color::Black);
+			Brush^ b3 =  gcnew SolidBrush(Color::Red);
+			Pen^ p = gcnew Pen(Color::Gray, 1.0);
+			static int i=0;
+			float theta;
+			float x,y;
+			//DrawGrid(e->Graphics);
+			if(history_index - i > 2000) i=history_index-2000;
+
+			//for(i=history_index-360; i<=history_index;i++)
+			while(i<history_index)
+			{
+				if(i>=0)
+				{
+					theta = inputs_history[i].theta;
+					//printf("UpdateRadar(): theta = %04.1f\n",theta);
+					y=310.0f + 300.0f * sinf( theta * 3.14f / 180.0f);
+					x=310.0f + 300.0f * cosf( theta * 3.14f / 180.0f);
+					//g->FillEllipse(b2,(int) x, (int) y, 4, 4);
+					g->DrawEllipse(p,(int) x, (int) y, 4, 4);
+					//g->FillEllipse(b3,(int) x, (int) y, 6, 6);
+				}
+				i++;
+			}
+	}
 
 		System::Void f1::radar_timer_Tick(System::Object^  sender, System::EventArgs^  e) 
 		{
-			static int x=0;
-			static int y=0;
-
-			if(history_index - x > 2000) x=history_index-2000;
-
-			while(x<history_index)
-			{
-				UpdateRadar( inputs_history[x].theta, inputs_history[x].ir[1]);
-				x++;
-			}
+			if(cb_radar_enable_updates->Checked) UpdateRadar(0,0);
 		}
 
 
 
 
 		System::Void f1::panel1_Paint(System::Object^  sender, System::Windows::Forms::PaintEventArgs^  e) 
-		 {
-			DrawGrid(e->Graphics);
-		 }
+		{
+			Brush^ b3 =  gcnew SolidBrush(Color::Red);
+			Brush^ b1 =  gcnew SolidBrush(Color::White);
+			Brush^ b2 =  gcnew SolidBrush(Color::Black);
+			Pen^ p = gcnew Pen(Color::Gray, 1.0);
+			static int i=0;
+			float theta;
+			float x,y;
 
+			log("Paint\n");
+
+#if 0
+
+			if(history_index - i > 2000) i=history_index-2000;
+
+			for(i=history_index-360; i<=history_index;i++)
+			{
+				if(i>=0)
+				{
+					theta = inputs_history[i].theta;
+					printf("panel1_Paint(): theta = %04.1f\n",theta);
+					y=310.0f + 300.0f * sinf( theta * 3.14f / 180.0f);
+					x=310.0f + 300.0f * cosf( theta * 3.14f / 180.0f);
+					//g->FillEllipse(b2,(int) x, (int) y, 4, 4);
+					g->DrawEllipse(p,(int) x, (int) y, 4, 4);
+				}
+				//i++;
+			}
+			//g->FillEllipse(b3,(int) x, (int) y, 3, 3);
+#endif
+		}
 }

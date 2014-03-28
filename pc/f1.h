@@ -9,15 +9,16 @@
 
 #include <io.h>
 #include <fcntl.h>     /* for _O_TEXT and _O_BINARY */
-
+#include <math.h>
 
 extern "C" 
 { 
-extern volatile unsigned int key; 
-extern int loop(void);
-extern void show_last_error(char *s);
-extern t_inputs inputs_history[200000];
-extern int history_index;
+	extern volatile unsigned int key; 
+	extern int loop(void);
+	extern void show_last_error(char *s);
+	extern volatile t_inputs inputs_history[200000];
+	extern volatile int history_index;
+	extern int update_interval;
 }
 
 
@@ -47,12 +48,19 @@ namespace robot_ui {
 	public: f1(void);
 
 	private: int ignore_parameter_changes;
+	public: Graphics^ g;
 
 	public: delegate void UpdateUI(String ^str);
 	public: delegate void UpdateChart(String^ series, double x, double y);
 	public: UpdateUI^ UpdateUI_delegate;
 	public: UpdateChart^ UpdateChart_delegate; 
 	public: UpdateUI^ Update_textBox1_delegate;
+	private: System::Windows::Forms::Label^  label6;
+	private: System::Windows::Forms::ComboBox^  cB_Rate;
+	private: System::Windows::Forms::Button^  btn_radar_clear;
+	private: System::Windows::Forms::CheckBox^  cb_radar_enable_updates;
+	public: 
+
 	public: UpdateUI^ Update_textBoxLog_delegate;
 
 	public: void UpdateChart_method(String^ series, double x, double y);
@@ -61,7 +69,7 @@ namespace robot_ui {
 	public: void f1::Update_textBox1_method(String ^str);
 
 	public: void InitializeParametersTab(void);
-	public: void UpdateRadar(float theta, int measurement)	{	}
+	public: void UpdateRadar(float theta, int measurement);
 	public: void DrawGrid(Graphics ^g);
 	public: void InitializeGraphsTab(void);
 
@@ -97,7 +105,9 @@ namespace robot_ui {
 	private: System::Windows::Forms::DataGridViewButtonColumn^  dec;
 	private: System::Windows::Forms::Button^  btn_write_all;
 	private: System::Windows::Forms::Button^  btn_read_all;
-	private: System::Windows::Forms::Panel^  panel1;
+	public: System::Windows::Forms::Panel^  panel1;
+	private: 
+
 	private: System::Windows::Forms::CheckBox^  cb_show_ir_far_north;
 	private: System::Windows::Forms::CheckBox^  cb_show_ir_north;
 	private: System::Windows::Forms::Button^  btn_stop_scan;
@@ -232,6 +242,10 @@ namespace robot_ui {
 			this->cb_state = (gcnew System::Windows::Forms::ComboBox());
 			this->btn_start_beh = (gcnew System::Windows::Forms::Button());
 			this->btn_stop_beh = (gcnew System::Windows::Forms::Button());
+			this->label6 = (gcnew System::Windows::Forms::Label());
+			this->cB_Rate = (gcnew System::Windows::Forms::ComboBox());
+			this->cb_radar_enable_updates = (gcnew System::Windows::Forms::CheckBox());
+			this->btn_radar_clear = (gcnew System::Windows::Forms::Button());
 			this->tabControl1->SuspendLayout();
 			this->tabSettings->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->dataGridView1))->BeginInit();
@@ -297,7 +311,7 @@ namespace robot_ui {
 			this->tabControl1->Margin = System::Windows::Forms::Padding(0);
 			this->tabControl1->Name = L"tabControl1";
 			this->tabControl1->SelectedIndex = 0;
-			this->tabControl1->Size = System::Drawing::Size(1098, 622);
+			this->tabControl1->Size = System::Drawing::Size(1098, 657);
 			this->tabControl1->TabIndex = 4;
 			// 
 			// tabSettings
@@ -308,7 +322,7 @@ namespace robot_ui {
 			this->tabSettings->Location = System::Drawing::Point(4, 22);
 			this->tabSettings->Name = L"tabSettings";
 			this->tabSettings->Padding = System::Windows::Forms::Padding(3);
-			this->tabSettings->Size = System::Drawing::Size(1090, 596);
+			this->tabSettings->Size = System::Drawing::Size(1090, 617);
 			this->tabSettings->TabIndex = 2;
 			this->tabSettings->Text = L"Parameters";
 			this->tabSettings->UseVisualStyleBackColor = true;
@@ -362,7 +376,7 @@ namespace robot_ui {
 			this->dataGridView1->Location = System::Drawing::Point(0, 0);
 			this->dataGridView1->Name = L"dataGridView1";
 			this->dataGridView1->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
-			this->dataGridView1->Size = System::Drawing::Size(630, 596);
+			this->dataGridView1->Size = System::Drawing::Size(630, 617);
 			this->dataGridView1->TabIndex = 3;
 			this->dataGridView1->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellContentClick);
 			this->dataGridView1->CellContentDoubleClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::dataGridView1_CellContentDoubleClick);
@@ -431,7 +445,7 @@ namespace robot_ui {
 			this->tabPage2->Location = System::Drawing::Point(4, 22);
 			this->tabPage2->Name = L"tabPage2";
 			this->tabPage2->Padding = System::Windows::Forms::Padding(3);
-			this->tabPage2->Size = System::Drawing::Size(1090, 596);
+			this->tabPage2->Size = System::Drawing::Size(1090, 617);
 			this->tabPage2->TabIndex = 1;
 			this->tabPage2->Text = L"Graphs";
 			this->tabPage2->UseVisualStyleBackColor = true;
@@ -494,7 +508,7 @@ namespace robot_ui {
 			// 
 			this->checkBox2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->checkBox2->AutoSize = true;
-			this->checkBox2->Location = System::Drawing::Point(1023, 571);
+			this->checkBox2->Location = System::Drawing::Point(1023, 592);
 			this->checkBox2->Name = L"checkBox2";
 			this->checkBox2->Size = System::Drawing::Size(59, 17);
 			this->checkBox2->TabIndex = 2;
@@ -534,7 +548,7 @@ namespace robot_ui {
 			series2->Name = L"Series 2";
 			this->chart1->Series->Add(series1);
 			this->chart1->Series->Add(series2);
-			this->chart1->Size = System::Drawing::Size(894, 600);
+			this->chart1->Size = System::Drawing::Size(894, 621);
 			this->chart1->TabIndex = 0;
 			this->chart1->Text = L"chart1";
 			this->chart1->AxisViewChanged += gcnew System::EventHandler<System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^ >(this, &f1::chart1_AxisViewChanged);
@@ -542,18 +556,20 @@ namespace robot_ui {
 			// tabPage3
 			// 
 			this->tabPage3->Controls->Add(this->btn_stop_scan);
+			this->tabPage3->Controls->Add(this->btn_radar_clear);
 			this->tabPage3->Controls->Add(this->btn_start_scan);
 			this->tabPage3->Controls->Add(this->label3);
 			this->tabPage3->Controls->Add(this->label2);
 			this->tabPage3->Controls->Add(this->txt_speed);
 			this->tabPage3->Controls->Add(this->txt_scan_range);
+			this->tabPage3->Controls->Add(this->cb_radar_enable_updates);
 			this->tabPage3->Controls->Add(this->cb_show_ir_far_north);
 			this->tabPage3->Controls->Add(this->cb_show_ir_north);
 			this->tabPage3->Controls->Add(this->panel1);
 			this->tabPage3->Location = System::Drawing::Point(4, 22);
 			this->tabPage3->Name = L"tabPage3";
 			this->tabPage3->Padding = System::Windows::Forms::Padding(3);
-			this->tabPage3->Size = System::Drawing::Size(1090, 596);
+			this->tabPage3->Size = System::Drawing::Size(1090, 631);
 			this->tabPage3->TabIndex = 4;
 			this->tabPage3->Text = L"\"Radar\"";
 			this->tabPage3->UseVisualStyleBackColor = true;
@@ -645,12 +661,11 @@ namespace robot_ui {
 			// 
 			// panel1
 			// 
-			this->panel1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
-				| System::Windows::Forms::AnchorStyles::Left) 
-				| System::Windows::Forms::AnchorStyles::Right));
+			this->panel1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
+				| System::Windows::Forms::AnchorStyles::Left));
 			this->panel1->Location = System::Drawing::Point(-4, 0);
 			this->panel1->Name = L"panel1";
-			this->panel1->Size = System::Drawing::Size(914, 596);
+			this->panel1->Size = System::Drawing::Size(914, 631);
 			this->panel1->TabIndex = 0;
 			this->panel1->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &f1::panel1_Paint);
 			// 
@@ -688,7 +703,7 @@ namespace robot_ui {
 			this->tabLog->Location = System::Drawing::Point(4, 22);
 			this->tabLog->Name = L"tabLog";
 			this->tabLog->Padding = System::Windows::Forms::Padding(3);
-			this->tabLog->Size = System::Drawing::Size(1090, 596);
+			this->tabLog->Size = System::Drawing::Size(1090, 617);
 			this->tabLog->TabIndex = 3;
 			this->tabLog->Text = L"Log";
 			this->tabLog->UseVisualStyleBackColor = true;
@@ -704,12 +719,12 @@ namespace robot_ui {
 			this->textBoxLog->Multiline = true;
 			this->textBoxLog->Name = L"textBoxLog";
 			this->textBoxLog->ScrollBars = System::Windows::Forms::ScrollBars::Both;
-			this->textBoxLog->Size = System::Drawing::Size(1090, 596);
+			this->textBoxLog->Size = System::Drawing::Size(1090, 617);
 			this->textBoxLog->TabIndex = 0;
 			// 
 			// tb_Vbatt
 			// 
-			this->tb_Vbatt->Location = System::Drawing::Point(259, 9);
+			this->tb_Vbatt->Location = System::Drawing::Point(275, 21);
 			this->tb_Vbatt->Name = L"tb_Vbatt";
 			this->tb_Vbatt->ReadOnly = true;
 			this->tb_Vbatt->Size = System::Drawing::Size(59, 20);
@@ -719,18 +734,18 @@ namespace robot_ui {
 			// label9
 			// 
 			this->label9->AutoSize = true;
-			this->label9->Location = System::Drawing::Point(221, 13);
+			this->label9->Location = System::Drawing::Point(272, 5);
 			this->label9->Name = L"label9";
-			this->label9->Size = System::Drawing::Size(32, 13);
+			this->label9->Size = System::Drawing::Size(43, 13);
 			this->label9->TabIndex = 1;
-			this->label9->Text = L"Vbatt";
+			this->label9->Text = L"Battery:";
 			this->label9->Click += gcnew System::EventHandler(this, &f1::label9_Click);
 			// 
 			// textBox2
 			// 
-			this->textBox2->Location = System::Drawing::Point(394, 9);
+			this->textBox2->Location = System::Drawing::Point(524, 23);
 			this->textBox2->Name = L"textBox2";
-			this->textBox2->Size = System::Drawing::Size(42, 20);
+			this->textBox2->Size = System::Drawing::Size(77, 20);
 			this->textBox2->TabIndex = 5;
 			this->textBox2->TextChanged += gcnew System::EventHandler(this, &f1::textBox2_TextChanged);
 			this->textBox2->KeyDown += gcnew System::Windows::Forms::KeyEventHandler(this, &f1::textBox2_KeyDown);
@@ -738,11 +753,11 @@ namespace robot_ui {
 			// label5
 			// 
 			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(361, 13);
+			this->label5->Location = System::Drawing::Point(521, 5);
 			this->label5->Name = L"label5";
-			this->label5->Size = System::Drawing::Size(28, 13);
+			this->label5->Size = System::Drawing::Size(80, 13);
 			this->label5->TabIndex = 1;
-			this->label5->Text = L"Cmd";
+			this->label5->Text = L"Keyb. Shortcut:";
 			this->label5->Click += gcnew System::EventHandler(this, &f1::label9_Click);
 			// 
 			// btn_estop
@@ -814,6 +829,7 @@ namespace robot_ui {
 			// radar_timer
 			// 
 			this->radar_timer->Enabled = true;
+			this->radar_timer->Interval = 30;
 			this->radar_timer->Tick += gcnew System::EventHandler(this, &f1::radar_timer_Tick);
 			// 
 			// label4
@@ -868,14 +884,58 @@ namespace robot_ui {
 			this->btn_stop_beh->UseVisualStyleBackColor = true;
 			this->btn_stop_beh->Click += gcnew System::EventHandler(this, &f1::btn_stop_beh_Click);
 			// 
+			// label6
+			// 
+			this->label6->AutoSize = true;
+			this->label6->Location = System::Drawing::Point(361, 5);
+			this->label6->Name = L"label6";
+			this->label6->Size = System::Drawing::Size(33, 13);
+			this->label6->TabIndex = 1;
+			this->label6->Text = L"Rate:";
+			this->label6->Click += gcnew System::EventHandler(this, &f1::label9_Click);
+			// 
+			// cB_Rate
+			// 
+			this->cB_Rate->FormattingEnabled = true;
+			this->cB_Rate->Items->AddRange(gcnew cli::array< System::Object^  >(5) {L"0", L"10", L"100", L"1000", L"2000"});
+			this->cB_Rate->Location = System::Drawing::Point(364, 22);
+			this->cB_Rate->Name = L"cB_Rate";
+			this->cB_Rate->Size = System::Drawing::Size(61, 21);
+			this->cB_Rate->TabIndex = 9;
+			this->cB_Rate->Text = L"1";
+			this->cB_Rate->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::cB_beh_SelectedIndexChanged);
+			// 
+			// cb_radar_enable_updates
+			// 
+			this->cb_radar_enable_updates->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->cb_radar_enable_updates->AutoSize = true;
+			this->cb_radar_enable_updates->Location = System::Drawing::Point(932, 255);
+			this->cb_radar_enable_updates->Name = L"cb_radar_enable_updates";
+			this->cb_radar_enable_updates->Size = System::Drawing::Size(100, 17);
+			this->cb_radar_enable_updates->TabIndex = 1;
+			this->cb_radar_enable_updates->Text = L"Enable updates";
+			this->cb_radar_enable_updates->UseVisualStyleBackColor = true;
+			// 
+			// btn_radar_clear
+			// 
+			this->btn_radar_clear->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->btn_radar_clear->Location = System::Drawing::Point(932, 278);
+			this->btn_radar_clear->Name = L"btn_radar_clear";
+			this->btn_radar_clear->Size = System::Drawing::Size(100, 23);
+			this->btn_radar_clear->TabIndex = 4;
+			this->btn_radar_clear->Text = L"Clear";
+			this->btn_radar_clear->UseVisualStyleBackColor = true;
+			this->btn_radar_clear->Click += gcnew System::EventHandler(this, &f1::btn_start_scan_Click);
+			// 
 			// f1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(1096, 672);
+			this->ClientSize = System::Drawing::Size(1096, 707);
 			this->Controls->Add(this->btn_stop_beh);
 			this->Controls->Add(this->btn_start_beh);
 			this->Controls->Add(this->cb_state);
+			this->Controls->Add(this->cB_Rate);
 			this->Controls->Add(this->cB_beh);
 			this->Controls->Add(this->label4);
 			this->Controls->Add(this->btn_right);
@@ -890,6 +950,7 @@ namespace robot_ui {
 			this->Controls->Add(this->checkBox1);
 			this->Controls->Add(this->comboBox1);
 			this->Controls->Add(this->label5);
+			this->Controls->Add(this->label6);
 			this->Controls->Add(this->label9);
 			this->Controls->Add(this->tb_Vbatt);
 			this->Name = L"f1";
@@ -954,6 +1015,7 @@ private: System::Void label3_Click(System::Object^  sender, System::EventArgs^  
 private: System::Void textBox3_TextChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 private: System::Void btn_start_scan_Click(System::Object^  sender, System::EventArgs^  e) {
+			 panel1->Invalidate();
 		 }
 private: System::Void btn_stop_scan_Click(System::Object^  sender, System::EventArgs^  e) {
 		 }
@@ -967,7 +1029,9 @@ private: System::Void btn_stop_Click(System::Object^  sender, System::EventArgs^
 private: System::Void comboBox2_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 
-private: System::Void cB_beh_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {
+private: System::Void cB_beh_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) 
+		 {
+			 update_interval = Convert::ToInt32(cB_Rate->Text);
 		 }
 
 private: System::Void btn_start_beh_Click(System::Object^  sender, System::EventArgs^  e) 

@@ -58,6 +58,7 @@ namespace robot_ui
 			else if(comboBox2->Text == "ir[1]") y = inputs_history[x].ir[1];
 			else if(comboBox2->Text == "ir[2]") y = inputs_history[x].ir[2];
 			else if(comboBox2->Text == "ir[3]") y = inputs_history[x].ir[3];
+			else if(comboBox2->Text == "theta") y = inputs_history[x].theta;
 			else y = x % 500;
 			chart1->Series[0]->Points->AddXY(x, y);
 
@@ -73,6 +74,7 @@ namespace robot_ui
 			else if(comboBox4->Text == "ir[1]") y = inputs_history[x].ir[1];
 			else if(comboBox4->Text == "ir[2]") y = inputs_history[x].ir[2];
 			else if(comboBox4->Text == "ir[3]") y = inputs_history[x].ir[3];
+			else if(comboBox4->Text == "theta") y = inputs_history[x].theta;
 			else y = x % 500;
 			chart1->Series[1]->Points->AddXY(x, y);
 			x++;
