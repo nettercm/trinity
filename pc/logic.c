@@ -93,7 +93,7 @@ void test_wall_tracking(void)
 
 
 
-volatile unsigned char key=0;
+volatile unsigned int key=0;
 
 void process_user_input(void)
 {
@@ -117,6 +117,7 @@ void process_user_input(void)
 	{
 		c=key; 
 		key=0;
+		printf("c = '%c' = 0x%04x\n",c,c);
 	}
 #endif
 

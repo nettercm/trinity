@@ -171,7 +171,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 		//display_inputs_and_state(s.inputs);
 		
 		display_inputs_and_state(&inputs);
-		//detect_packet_loss();
+		detect_packet_loss();
 
 		inputs_history[history_index] = inputs;
 		history_index++;

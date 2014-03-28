@@ -11,8 +11,10 @@
 #include <fcntl.h>     /* for _O_TEXT and _O_BINARY */
 #include <math.h>
 
+
 extern "C" 
 { 
+	extern float PI;;
 	extern volatile unsigned int key; 
 	extern int loop(void);
 	extern void show_last_error(char *s);
@@ -59,6 +61,7 @@ namespace robot_ui {
 	private: System::Windows::Forms::ComboBox^  cB_Rate;
 	private: System::Windows::Forms::Button^  btn_radar_clear;
 	private: System::Windows::Forms::CheckBox^  cb_radar_enable_updates;
+	private: System::Windows::Forms::CheckBox^  cb_radar_use_lines;
 	public: 
 
 	public: UpdateUI^ Update_textBoxLog_delegate;
@@ -214,11 +217,13 @@ namespace robot_ui {
 			this->chart1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
 			this->tabPage3 = (gcnew System::Windows::Forms::TabPage());
 			this->btn_stop_scan = (gcnew System::Windows::Forms::Button());
+			this->btn_radar_clear = (gcnew System::Windows::Forms::Button());
 			this->btn_start_scan = (gcnew System::Windows::Forms::Button());
 			this->label3 = (gcnew System::Windows::Forms::Label());
 			this->label2 = (gcnew System::Windows::Forms::Label());
 			this->txt_speed = (gcnew System::Windows::Forms::TextBox());
 			this->txt_scan_range = (gcnew System::Windows::Forms::TextBox());
+			this->cb_radar_enable_updates = (gcnew System::Windows::Forms::CheckBox());
 			this->cb_show_ir_far_north = (gcnew System::Windows::Forms::CheckBox());
 			this->cb_show_ir_north = (gcnew System::Windows::Forms::CheckBox());
 			this->panel1 = (gcnew System::Windows::Forms::Panel());
@@ -244,8 +249,7 @@ namespace robot_ui {
 			this->btn_stop_beh = (gcnew System::Windows::Forms::Button());
 			this->label6 = (gcnew System::Windows::Forms::Label());
 			this->cB_Rate = (gcnew System::Windows::Forms::ComboBox());
-			this->cb_radar_enable_updates = (gcnew System::Windows::Forms::CheckBox());
-			this->btn_radar_clear = (gcnew System::Windows::Forms::Button());
+			this->cb_radar_use_lines = (gcnew System::Windows::Forms::CheckBox());
 			this->tabControl1->SuspendLayout();
 			this->tabSettings->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->dataGridView1))->BeginInit();
@@ -322,7 +326,7 @@ namespace robot_ui {
 			this->tabSettings->Location = System::Drawing::Point(4, 22);
 			this->tabSettings->Name = L"tabSettings";
 			this->tabSettings->Padding = System::Windows::Forms::Padding(3);
-			this->tabSettings->Size = System::Drawing::Size(1090, 617);
+			this->tabSettings->Size = System::Drawing::Size(1090, 631);
 			this->tabSettings->TabIndex = 2;
 			this->tabSettings->Text = L"Parameters";
 			this->tabSettings->UseVisualStyleBackColor = true;
@@ -445,7 +449,7 @@ namespace robot_ui {
 			this->tabPage2->Location = System::Drawing::Point(4, 22);
 			this->tabPage2->Name = L"tabPage2";
 			this->tabPage2->Padding = System::Windows::Forms::Padding(3);
-			this->tabPage2->Size = System::Drawing::Size(1090, 617);
+			this->tabPage2->Size = System::Drawing::Size(1090, 631);
 			this->tabPage2->TabIndex = 1;
 			this->tabPage2->Text = L"Graphs";
 			this->tabPage2->UseVisualStyleBackColor = true;
@@ -563,6 +567,7 @@ namespace robot_ui {
 			this->tabPage3->Controls->Add(this->txt_speed);
 			this->tabPage3->Controls->Add(this->txt_scan_range);
 			this->tabPage3->Controls->Add(this->cb_radar_enable_updates);
+			this->tabPage3->Controls->Add(this->cb_radar_use_lines);
 			this->tabPage3->Controls->Add(this->cb_show_ir_far_north);
 			this->tabPage3->Controls->Add(this->cb_show_ir_north);
 			this->tabPage3->Controls->Add(this->panel1);
@@ -585,6 +590,17 @@ namespace robot_ui {
 			this->btn_stop_scan->Text = L"Stop";
 			this->btn_stop_scan->UseVisualStyleBackColor = true;
 			this->btn_stop_scan->Click += gcnew System::EventHandler(this, &f1::btn_stop_scan_Click);
+			// 
+			// btn_radar_clear
+			// 
+			this->btn_radar_clear->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->btn_radar_clear->Location = System::Drawing::Point(932, 278);
+			this->btn_radar_clear->Name = L"btn_radar_clear";
+			this->btn_radar_clear->Size = System::Drawing::Size(100, 23);
+			this->btn_radar_clear->TabIndex = 4;
+			this->btn_radar_clear->Text = L"Clear";
+			this->btn_radar_clear->UseVisualStyleBackColor = true;
+			this->btn_radar_clear->Click += gcnew System::EventHandler(this, &f1::btn_start_scan_Click);
 			// 
 			// btn_start_scan
 			// 
@@ -637,6 +653,17 @@ namespace robot_ui {
 			this->txt_scan_range->TabIndex = 2;
 			this->txt_scan_range->Text = L"90";
 			// 
+			// cb_radar_enable_updates
+			// 
+			this->cb_radar_enable_updates->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->cb_radar_enable_updates->AutoSize = true;
+			this->cb_radar_enable_updates->Location = System::Drawing::Point(932, 255);
+			this->cb_radar_enable_updates->Name = L"cb_radar_enable_updates";
+			this->cb_radar_enable_updates->Size = System::Drawing::Size(100, 17);
+			this->cb_radar_enable_updates->TabIndex = 1;
+			this->cb_radar_enable_updates->Text = L"Enable updates";
+			this->cb_radar_enable_updates->UseVisualStyleBackColor = true;
+			// 
 			// cb_show_ir_far_north
 			// 
 			this->cb_show_ir_far_north->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
@@ -675,7 +702,7 @@ namespace robot_ui {
 			this->tabPage1->Location = System::Drawing::Point(4, 22);
 			this->tabPage1->Name = L"tabPage1";
 			this->tabPage1->Padding = System::Windows::Forms::Padding(3);
-			this->tabPage1->Size = System::Drawing::Size(1090, 596);
+			this->tabPage1->Size = System::Drawing::Size(1090, 631);
 			this->tabPage1->TabIndex = 0;
 			this->tabPage1->Text = L"Terminal";
 			this->tabPage1->UseVisualStyleBackColor = true;
@@ -703,7 +730,7 @@ namespace robot_ui {
 			this->tabLog->Location = System::Drawing::Point(4, 22);
 			this->tabLog->Name = L"tabLog";
 			this->tabLog->Padding = System::Windows::Forms::Padding(3);
-			this->tabLog->Size = System::Drawing::Size(1090, 617);
+			this->tabLog->Size = System::Drawing::Size(1090, 631);
 			this->tabLog->TabIndex = 3;
 			this->tabLog->Text = L"Log";
 			this->tabLog->UseVisualStyleBackColor = true;
@@ -905,27 +932,16 @@ namespace robot_ui {
 			this->cB_Rate->Text = L"1";
 			this->cB_Rate->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::cB_beh_SelectedIndexChanged);
 			// 
-			// cb_radar_enable_updates
+			// cb_radar_use_lines
 			// 
-			this->cb_radar_enable_updates->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->cb_radar_enable_updates->AutoSize = true;
-			this->cb_radar_enable_updates->Location = System::Drawing::Point(932, 255);
-			this->cb_radar_enable_updates->Name = L"cb_radar_enable_updates";
-			this->cb_radar_enable_updates->Size = System::Drawing::Size(100, 17);
-			this->cb_radar_enable_updates->TabIndex = 1;
-			this->cb_radar_enable_updates->Text = L"Enable updates";
-			this->cb_radar_enable_updates->UseVisualStyleBackColor = true;
-			// 
-			// btn_radar_clear
-			// 
-			this->btn_radar_clear->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->btn_radar_clear->Location = System::Drawing::Point(932, 278);
-			this->btn_radar_clear->Name = L"btn_radar_clear";
-			this->btn_radar_clear->Size = System::Drawing::Size(100, 23);
-			this->btn_radar_clear->TabIndex = 4;
-			this->btn_radar_clear->Text = L"Clear";
-			this->btn_radar_clear->UseVisualStyleBackColor = true;
-			this->btn_radar_clear->Click += gcnew System::EventHandler(this, &f1::btn_start_scan_Click);
+			this->cb_radar_use_lines->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->cb_radar_use_lines->AutoSize = true;
+			this->cb_radar_use_lines->Location = System::Drawing::Point(932, 210);
+			this->cb_radar_use_lines->Name = L"cb_radar_use_lines";
+			this->cb_radar_use_lines->Size = System::Drawing::Size(69, 17);
+			this->cb_radar_use_lines->TabIndex = 1;
+			this->cb_radar_use_lines->Text = L"Use lines";
+			this->cb_radar_use_lines->UseVisualStyleBackColor = true;
 			// 
 			// f1
 			// 

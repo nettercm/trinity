@@ -118,7 +118,7 @@ namespace robot_ui
 	System::Void f1::bw1_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) 
 	{
 		int result = 0;
-		static int theta = 0;
+		static float theta = 0.0f;
 
 		data_init();
 
@@ -134,10 +134,10 @@ namespace robot_ui
 				inputs_history[history_index].ir[2] = 300;
 				inputs_history[history_index].ir[3] = 400;
 				history_index++;
-				theta++;
-				if(theta >= 360) 
+				theta += (PI/180.0f);
+				if(theta >= 2.0f*PI) 
 				{
-					theta = 0;
+					theta = 0.0f;
 				}
 				//log(".");
 			}
@@ -251,17 +251,19 @@ namespace robot_ui
 		textBox2->Clear();
 		key=0;
 
-		if(s == "Left"	) key=0xe13b;
-		if(s == "Right"	) key=0xe13b;
-		if(s == "Up"	) key=0xe13b;
-		if(s == "Down"	) key=0xe13b;
+		if(s == "Left"	) key=KEY_LEFT;
+		if(s == "Right"	) key=KEY_RIGHT;
+		if(s == "Up"	) key=KEY_UP;
+		if(s == "Down"	) key=KEY_DOWN;
 
-		if(s == "F1"	) key=0xe13b;
-		if(s == "F2"	) key=0xe13b;
-		if(s == "F3"	) key=0xe13b;
-		if(s == "F10"	) key=0xe13b;
-		if(s == "F11"	) key=0xe13b;
-		if(s == "F12"	) key=0xe13b;
+		if(s == "Space" ) key=0x0020;
+
+		if(s == "F1"	) key=KEY_F1;
+		if(s == "F2"	) key=KEY_F2;
+		if(s == "F3"	) key=KEY_F3;
+		if(s == "F10"	) key=KEY_F10;
+		if(s == "F11"	) key=KEY_F11;
+		if(s == "F12"	) key=KEY_F12;
 
 		printf("Key = 0x%04x\n",key);
 	}
