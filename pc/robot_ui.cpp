@@ -35,7 +35,7 @@ namespace robot_ui
 	******************************************************************************************************************************************/
 	System::Void f1::f1_Load(System::Object^  sender, System::EventArgs^  e) 
 	{
-		bw1->RunWorkerAsync();
+		main_serial_thread->RunWorkerAsync();
 	}
 
 
@@ -63,8 +63,8 @@ namespace robot_ui
 		random = gcnew Random();
 
 		UpdateUI_delegate = gcnew UpdateUI( this, &f1::UpdateUI_method );
-		Update_textBox1_delegate =   gcnew UpdateUI( this, &f1::Update_textBox1_method );
-		Update_textBoxLog_delegate = gcnew UpdateUI( this, &f1::Update_textBoxLog_method );
+		Update_terminal_txt_delegate =   gcnew UpdateUI( this, &f1::Update_terminal_txt_method );
+		Update_log_txt_delegate = gcnew UpdateUI( this, &f1::Update_log_txt_method );
 		UpdateChart_delegate = gcnew UpdateChart( this, &f1::UpdateChart_method );
 
 		InitializeComponent();
@@ -115,7 +115,7 @@ namespace robot_ui
 	/******************************************************************************************************************************************
 	*
 	******************************************************************************************************************************************/
-	System::Void f1::bw1_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) 
+	System::Void f1::main_serial_thread_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e) 
 	{
 		int result = 0;
 		static float theta = 0.0f;
@@ -206,7 +206,7 @@ namespace robot_ui
 				log("Closing the serial port\r\n");
 				result = CloseHandle(h); if(!result) show_last_error("CloseHandle()");
 				printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
-				t1->Enabled = FALSE;
+				graphs_timer->Enabled = FALSE;
 				graphs_checkBox_enable->Checked = false;
 			}
 		}
@@ -220,9 +220,9 @@ namespace robot_ui
 	/******************************************************************************************************************************************
 	*
 	******************************************************************************************************************************************/
-	void f1::Update_textBox1_method(String ^str)
+	void f1::Update_terminal_txt_method(String ^str)
 	{
-		textBox1->AppendText(str);
+		terminal_txt->AppendText(str);
 	}
 
 
@@ -231,9 +231,9 @@ namespace robot_ui
 	/******************************************************************************************************************************************
 	*
 	******************************************************************************************************************************************/
-	void f1::Update_textBoxLog_method(String ^str)
+	void f1::Update_log_txt_method(String ^str)
 	{
-		textBoxLog->AppendText(str);
+		log_txt->AppendText(str);
 	}
 
 
@@ -266,5 +266,23 @@ namespace robot_ui
 		if(s == "F12"	) key=KEY_F12;
 
 		printf("Key = 0x%04x\n",key);
+	}
+
+
+	System::Void f1::main_comboBox_behavior_id_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) 
+	{
+		update_interval = Convert::ToInt32(main_comboBox_rate->Text);
+	}
+
+	System::Void f1::main_btn_start_beh_Click(System::Object^  sender, System::EventArgs^  e) 
+	{
+		CMD_set_behavior_state(Convert::ToByte(main_comboBox_behavior_id->Text), Convert::ToByte(main_comboBox_behavior_state->Text));
+		CMD_send();
+	}
+
+	System::Void f1::main_main_btn_stop_beh_Click(System::Object^  sender, System::EventArgs^  e) 
+	{
+		CMD_set_behavior_state(Convert::ToByte(main_comboBox_behavior_id->Text), 0);
+		CMD_send();
 	}
 }

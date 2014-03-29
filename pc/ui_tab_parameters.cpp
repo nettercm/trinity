@@ -10,83 +10,83 @@ namespace robot_ui
 	/******************************************************************************************************************************************
 	*
 	******************************************************************************************************************************************/
-		System::Void f1::parameters_dataGridView_CellContentClick(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) 
-		 {
-			 int r,c;
-			 float f;
-			 c = e->ColumnIndex;
-			 r = e->RowIndex;
+	System::Void f1::parameters_dataGridView_CellContentClick(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) 
+	{
+		int r,c;
+		float f;
+		c = e->ColumnIndex;
+		r = e->RowIndex;
 
-			 //log("parameters_dataGridView_CellContentClick\n");
+		//log("parameters_dataGridView_CellContentClick\n");
 
-			 //don't allow a change if this is a group name definition only
-			 if(Convert::ToInt16(parameters_dataGridView->Rows[r]->Cells[1]->Value)==0) return;
+		//don't allow a change if this is a group name definition only
+		if(Convert::ToInt16(parameters_dataGridView->Rows[r]->Cells[1]->Value)==0) return;
 
-			 if(r>=0 && c==5)
-			 {
-				 f = (float)(Convert::ToSingle(parameters_dataGridView->Rows[r]->Cells[4]->Value));
-				 f+=1;
-				 parameters_dataGridView->Rows[r]->Cells[4]->Value = Convert::ToString(f);
-			 }
-			 if(r>=0 && c==6)
-			 {
-				 f = (float)(Convert::ToSingle(parameters_dataGridView->Rows[r]->Cells[4]->Value));
-				 f-=1;
-				 parameters_dataGridView->Rows[r]->Cells[4]->Value = Convert::ToString(f);
-			 }
-		 }
+		if(r>=0 && c==5)
+		{
+			f = (float)(Convert::ToSingle(parameters_dataGridView->Rows[r]->Cells[4]->Value));
+			f+=1;
+			parameters_dataGridView->Rows[r]->Cells[4]->Value = Convert::ToString(f);
+		}
+		if(r>=0 && c==6)
+		{
+			f = (float)(Convert::ToSingle(parameters_dataGridView->Rows[r]->Cells[4]->Value));
+			f-=1;
+			parameters_dataGridView->Rows[r]->Cells[4]->Value = Convert::ToString(f);
+		}
+	}
 
 
 	/******************************************************************************************************************************************
 	*
 	******************************************************************************************************************************************/
-		System::Void f1::parameters_dataGridView_CellValueChanged(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) 
-		 {
-			 t_config_value v;
-			 int r,c,grp,id,i;
+	System::Void f1::parameters_dataGridView_CellValueChanged(System::Object^  sender, System::Windows::Forms::DataGridViewCellEventArgs^  e) 
+	{
+		t_config_value v;
+		int r,c,grp,id,i;
 
-			 if(!ignore_parameter_changes)
-			 {
-				c = e->ColumnIndex;
-				r = e->RowIndex;
-				grp = Convert::ToInt32(parameters_dataGridView->Rows[r]->Cells[0]->Value);
-				id	= Convert::ToInt32(parameters_dataGridView->Rows[r]->Cells[1]->Value);
-				i = cfg_get_index_by_grp_and_id(grp,id);
-				log("parameters_dataGridView_CellValueChanged(): ");
-				log(Convert::ToString(e->RowIndex) + "," + Convert::ToString(e->ColumnIndex) + " = ");
-				switch(config[i].type)
-				{
-				case U08_VALUE:
-					v.u08 = (uint8) Convert::ToUInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
-					log(Convert::ToString(v.u08) + "\n");
-					break;
-				case S08_VALUE:
-					v.s08 = (sint8) Convert::ToInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
-					break;
-				case U16_VALUE:
-					v.u16 = Convert::ToUInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
-					break;
-				case S16_VALUE:
-					v.s16 = Convert::ToInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
-					log(Convert::ToString(v.s16));
-					break;
-				case U32_VALUE:
-					v.u32 = Convert::ToUInt32(parameters_dataGridView->Rows[r]->Cells[4]->Value);
-					break; 
-				case S32_VALUE:
-					v.s32 = Convert::ToInt32(parameters_dataGridView->Rows[r]->Cells[4]->Value);
-					break;
-				case FLT_VALUE:
-					v.f = Convert::ToSingle(parameters_dataGridView->Rows[r]->Cells[4]->Value);
-					break;
+		if(!ignore_parameter_changes)
+		{
+			c = e->ColumnIndex;
+			r = e->RowIndex;
+			grp = Convert::ToInt32(parameters_dataGridView->Rows[r]->Cells[0]->Value);
+			id	= Convert::ToInt32(parameters_dataGridView->Rows[r]->Cells[1]->Value);
+			i = cfg_get_index_by_grp_and_id(grp,id);
+			log("parameters_dataGridView_CellValueChanged(): ");
+			log(Convert::ToString(e->RowIndex) + "," + Convert::ToString(e->ColumnIndex) + " = ");
+			switch(config[i].type)
+			{
+			case U08_VALUE:
+				v.u08 = (uint8) Convert::ToUInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				log(Convert::ToString(v.u08) + "\n");
+				break;
+			case S08_VALUE:
+				v.s08 = (sint8) Convert::ToInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				break;
+			case U16_VALUE:
+				v.u16 = Convert::ToUInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				break;
+			case S16_VALUE:
+				v.s16 = Convert::ToInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				log(Convert::ToString(v.s16));
+				break;
+			case U32_VALUE:
+				v.u32 = Convert::ToUInt32(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				break; 
+			case S32_VALUE:
+				v.s32 = Convert::ToInt32(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				break;
+			case FLT_VALUE:
+				v.f = Convert::ToSingle(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				break;
 
-				}
-				log("\n");
-				//for some reasone,  issuing commands from here results in some seq # skipping 
-				CMD_set_config_value(grp,id, (uint8*)&v);
-				CMD_send();
 			}
-		 }
+			log("\n");
+			//for some reasone,  issuing commands from here results in some seq # skipping 
+			CMD_set_config_value(grp,id, (uint8*)&v);
+			CMD_send();
+		}
+	}
 
 
 
@@ -163,5 +163,23 @@ namespace robot_ui
 	} //function
 
 
+	System::Void f1::parameters_btn_write_all_Click(System::Object^  sender, System::EventArgs^  e) 
+	{
+		int i;
 
+		i=0;
+		Application::UseWaitCursor = 1;
+		while(config[i].grp != 255)
+		{
+			if(config[i].id != 0)
+			{
+				CMD_set_config_value(config[i].grp, config[i].id, (uint8*)&(config[i].v));
+				CMD_send();
+				Sleep(50);
+				Application::DoEvents();
+			}
+			i++;
+		}
+		Application::UseWaitCursor = 0;
+	}
 }

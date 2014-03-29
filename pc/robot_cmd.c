@@ -102,7 +102,7 @@ void display_inputs_and_state(t_inputs *inputs)
 	t_delta_avg = (t_delta_avg*19.0f + t_delta)/20.0f;
 
 	//sprintf(s.msg, "%03u, %03u, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,    FSM,%1d,%1d,%1d,%1d,%1d,%1d,%1d,%1d  E,%4d,%4d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",				
-	sprintf(s.msg, "D_( %03u, %03u, %06ld,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,     E,%05d,%05d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%04d,%04d,%04d,%04d,  I,%04d,%04d,%04d,%04d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d )\n",				
+	sprintf(s.msg, "D_ ( %3u, %3u, %6ld,   V,%3.1f,  0x%04x,  A,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,     E,%5d,%5d,   O,%4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d,  M,%3d,%3d, %3d,%3d, %3d,%3d,   W,%3d,%3d,%3d,%3d )\n",				
 				rx_buffer->seq,
 				rx_buffer->ack,
 				inputs->timestamp,
@@ -123,6 +123,7 @@ void display_inputs_and_state(t_inputs *inputs)
 				inputs->ir[0],inputs->ir[1], inputs->ir[2], inputs->ir[3], //inputs->sonar[6],inputs->sonar[7],
 				
 				inputs->target_speed[0], inputs->target_speed[1],
+				inputs->actual_speed[0], inputs->actual_speed[1],
 				inputs->motors[0], inputs->motors[1],
 
 				inputs->watch[0], inputs->watch[1], inputs->watch[2], inputs->watch[3]

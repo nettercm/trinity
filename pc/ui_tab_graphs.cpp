@@ -13,8 +13,8 @@ namespace robot_ui
 	******************************************************************************************************************************************/
 		System::Void f1::graphs_checkBox_enable_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
 		 {
-			 if(graphs_checkBox_enable->Checked) t1->Enabled = TRUE;
-			 else t1->Enabled = FALSE;
+			 if(graphs_checkBox_enable->Checked) graphs_timer->Enabled = TRUE;
+			 else graphs_timer->Enabled = FALSE;
 		 }
 
 
@@ -37,7 +37,7 @@ namespace robot_ui
 	/******************************************************************************************************************************************
 	*
 	******************************************************************************************************************************************/
-	System::Void f1::t1_Tick(System::Object^  sender, System::EventArgs^  e) 
+	System::Void f1::graphs_timer_Tick(System::Object^  sender, System::EventArgs^  e) 
 	{
 		static int x=0;
 		static int y=0;
