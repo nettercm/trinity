@@ -1046,31 +1046,39 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//TODO: make a note how far away we are from the wall on the right, because it affects a manneuver further down. (but watch out for mirrors!)
 
 			//completely exit from room 1 until we have reached the center of the intersection
-			MOVE(turn_speed, 240); //TODO: make this a parameter
+			MOVE(turn_speed, 260); //TODO: make this a parameter
 
 			//TODO:  add a scan for a possible dog to the east side of room #4, before we look for the dog & door on the south side
 			TURN_IN_PLACE(turn_speed, -45); //let's start from a north-east facing position
 			TURN_IN_PLACE_AND_SCAN( 40, 90 ); //scan until we reach a south west facing position
-			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
-			if(scan_result.opening <= 30) //TODO: fix this angle
+			//scan_result = find_path_in_scan(scan_data, 100, 280, 0, 0); //TODO: adjust this range - is 30" to far?
+			//scan_result = find_path_in_scan(scan_data, 100, 300, 0, 0); //TODO: adjust this range - is 30" to far?
+			scan_result = find_path_in_scan(scan_data, 100, 280, 0, 1); //TODO: adjust this range - is 30" to far?
+			//scan_result = find_path_in_scan(scan_data, 100, 400, 0, 1); //TODO: adjust this range - is 30" to far?
+			//scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
+			if(scan_result.opening < 30) //TODO: fix this angle
 			{
 				//OK so there is a dog blocking this hallway. let's take note of that. 
 				//if this is 100% reliable, we basically know that we'll have to take the outher route
 				dog_position=2;
 			}
 
-			if(dog_position==0) //if we didn't alrady see the dog, scan for it...
+			if(dog_position==0) //if we didn't alrady see the dog, scan the other hallway for it ...
 			{
 				//now scan for another 90 degrees, i.e. from NW to SW - this covers the west facing hallway
 				TURN_IN_PLACE_AND_SCAN( 40, 90 );
-				scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
+				//scan_result = find_path_in_scan(scan_data, 100, 280, 0, 0); //TODO: adjust this range - is 30" to far?
+				//scan_result = find_path_in_scan(scan_data, 100, 300, 0, 0); //TODO: adjust this range - is 30" to far?
+				scan_result = find_path_in_scan(scan_data, 100, 280, 0, 1); //TODO: adjust this range - is 30" to far?
+				//scan_result = find_path_in_scan(scan_data, 100, 400, 0, 1); //TODO: adjust this range - is 30" to far?
+				//scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
 			}
 			else
 			{
 				TURN_IN_PLACE(turn_speed, 45);	//now we are facing West again
 			}
 
-			if( (dog_position == 0) && (scan_result.opening <= 30) ) //TODO: fix this angle
+			if( (dog_position == 0) && (scan_result.opening < 30) ) //TODO: fix this angle
 			{
 				dog_position=3;
 				//if there is a dog / obstacle right in front, then there won't be a 2nd dog to worry about...
@@ -1232,6 +1240,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 
 		s.inputs.watch[2]=state;
+		if(state!=last_state) dbg_printf("ML:state: %d->%d\n", last_state,state);
+
 		task_wait(25);
 	}
 

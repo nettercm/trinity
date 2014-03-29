@@ -6,6 +6,7 @@ Issues:
 * when the candle is near the wall, we might bump into the wall before we get close enough to the candle
 * when moving towards the south entrance of room 4, sometimes we come short
 * when tranitioning to left wall following to pass room 4 on the east side, we should first get closer to the wall
+* IR Far North is interfering w/ the NE facing IR (but noth anymore with IR N, after pointing IR Far N to the rigth)
 
 
 Todo:

@@ -88,7 +88,9 @@ t_scan_result find_path_in_scan(t_scan *data, u16 number_of_points, u16 threasho
 			}
 		}
 	}
-	NOP();
+	dbg_printf("find_path_in_scan(t=%d,h=%d,fn=%d): %d,%d,%d,%d\n", 
+		threashold,hysteresis,use_far_north,
+		result.opening, result.center_angle, result.rising_edge_angle, result.falling_edge_angle);
 	return result;
 }
 

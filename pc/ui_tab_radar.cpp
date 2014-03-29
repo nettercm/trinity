@@ -51,9 +51,12 @@ namespace robot_ui
 	{
 		Brush^ b1 =  gcnew SolidBrush(Color::Black);
 		Brush^ b2 =  gcnew SolidBrush(Color::Red);
-		Brush^ b3 =  gcnew SolidBrush(Color::White);
+		Brush^ b3 =  gcnew SolidBrush(Color::Yellow);
+		Brush^ b4 =  gcnew SolidBrush(Color::Blue);
 		Pen^ p1 = gcnew Pen(Color::Black, 5.0);
 		Pen^ p2 = gcnew Pen(Color::Red, 5.0);
+		Pen^ p3 = gcnew Pen(Color::Yellow, 5.0);
+		Pen^ p4 = gcnew Pen(Color::Blue, 5.0);
 		static int i=1;
 		float theta;
 		float x1,y1,x2,y2;
@@ -111,6 +114,56 @@ namespace robot_ui
 				else
 				{
 					g->DrawLine(p2,x1,y1,x2,y2);
+				}
+			}
+			if(radar_checkBox_show_ir_nw->Checked)
+			{
+				theta = inputs_history[i-1].theta;
+				theta += Convert::ToSingle(radar_txt_calib_nw_theta->Text) * (PI/180.0f);
+				y1=310.0f - Convert::ToSingle(radar_txt_calib_nw_y->Text) * sinf( theta );
+				x1=310.0f + Convert::ToSingle(radar_txt_calib_nw_x->Text) * cosf( theta ); //theta * 3.14f / 180.0f);
+				y1=y1 - (float)inputs_history[i-1].ir[0] * sinf( theta ); //theta * 3.14f / 180.0f);
+				x1=x1 + (float)inputs_history[i-1].ir[0] * cosf( theta ); //theta * 3.14f / 180.0f);
+
+				theta = inputs_history[i].theta;
+				theta += Convert::ToSingle(radar_txt_calib_nw_theta->Text) * (PI/180.0f);
+				y2=310.0f - Convert::ToSingle(radar_txt_calib_nw_y->Text) * sinf( theta );
+				x2=310.0f + Convert::ToSingle(radar_txt_calib_nw_x->Text) * cosf( theta ); //theta * 3.14f / 180.0f);
+				y2=y2 - (float)inputs_history[i].ir[0] * sinf( theta ); //theta * 3.14f / 180.0f);
+				x2=x2 + (float)inputs_history[i].ir[0] * cosf( theta ); //theta * 3.14f / 180.0f);
+				if( !(radar_checkBox_use_lines->Checked) ||  (abs(inputs_history[i].ir[0] - inputs_history[i-1].ir[0]) > 40) )
+				{
+					g->FillEllipse(b3,(int) x2, (int) y2, 6, 6);
+					//g->DrawEllipse(p1,(int) x2, (int) y2, 4, 4);
+				}
+				else
+				{
+					g->DrawLine(p3,x1,y1,x2,y2);
+				}
+			}
+			if(radar_checkBox_show_ir_ne->Checked)
+			{
+				theta = inputs_history[i-1].theta;
+				theta += Convert::ToSingle(radar_txt_calib_ne_theta->Text) * (PI/180.0f);
+				y1=310.0f - Convert::ToSingle(radar_txt_calib_ne_y->Text) * sinf( theta );
+				x1=310.0f + Convert::ToSingle(radar_txt_calib_ne_x->Text) * cosf( theta ); //theta * 3.14f / 180.0f);
+				y1=y1 - (float)inputs_history[i-1].ir[2] * sinf( theta ); //theta * 3.14f / 180.0f);
+				x1=x1 + (float)inputs_history[i-1].ir[2] * cosf( theta ); //theta * 3.14f / 180.0f);
+
+				theta = inputs_history[i].theta;
+				theta += Convert::ToSingle(radar_txt_calib_ne_theta->Text) * (PI/180.0f);
+				y2=310.0f - Convert::ToSingle(radar_txt_calib_ne_y->Text) * sinf( theta );
+				x2=310.0f + Convert::ToSingle(radar_txt_calib_ne_x->Text) * cosf( theta ); //theta * 3.14f / 180.0f);
+				y2=y2 - (float)inputs_history[i].ir[2] * sinf( theta ); //theta * 3.14f / 180.0f);
+				x2=x2 + (float)inputs_history[i].ir[2] * cosf( theta ); //theta * 3.14f / 180.0f);
+				if( !(radar_checkBox_use_lines->Checked) ||  (abs(inputs_history[i].ir[2] - inputs_history[i-1].ir[2]) > 40) )
+				{
+					g->FillEllipse(b4,(int) x2, (int) y2, 6, 6);
+					//g->DrawEllipse(p1,(int) x2, (int) y2, 4, 4);
+				}
+				else
+				{
+					g->DrawLine(p4,x1,y1,x2,y2);
 				}
 			}
 			i++;

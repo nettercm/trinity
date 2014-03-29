@@ -116,7 +116,7 @@ void display_inputs_and_state(t_inputs *inputs)
 				//inputs->fsm_states[4],inputs->fsm_states[5],inputs->fsm_states[6],inputs->fsm_states[7],
 
 				inputs->encoders[0], inputs->encoders[1], 
-				odo_x, odo_y, (odo_theta/(2*PI))*360.0f,
+				//odo_x, odo_y, (odo_theta/(2*PI))*360.0f,
 				inputs->x, inputs->y, (inputs->theta/(2*PI))*360.0f,
 
 				inputs->sonar[0],inputs->sonar[1],inputs->sonar[2],inputs->sonar[3],
