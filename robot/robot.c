@@ -107,7 +107,7 @@ int hardware_init(void)
 
 	motors_hardware_init();
 	
-	pulse_in_start(pulseInPins, 2);		// start measuring pulses (1 per each sonar;  uvtorn not used right now)
+	//pulse_in_start(pulseInPins, 2);		// start measuring pulses (1 per each sonar;  uvtorn not used right now)
 	
 	return 0;
 }
@@ -685,6 +685,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static u08 still_inside_room=0;
 	static u32 context_switch_counter=0;
 	static u32 t_last=0;
+	static u08 dog_position=0; //1=N side of Rm#4,  2=E side,    3=S side
 
 	DEFINE_CFG2(s16,turn_speed,			9,1);
 	DEFINE_CFG2(s16,room3_enter,		9,2);
@@ -703,7 +704,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	
 	task_open_1();
 
-	//initialize the parmater logic onely the first time through
+	//initialize the parameter logic only the first time through
 	if( context_switch_counter==0 )
 	{
 		PREPARE_CFG2(turn_speed);
@@ -811,7 +812,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(s_finding_room_3)
 			{
 				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
-				//TODO: need to take into account the fact that initiall we'll be on the home circle
+				//TODO: need to take into account the fact that initially we'll be on the home circle
 				RESET_LINE_DETECTION();
 			}
 
@@ -829,7 +830,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		}
 
 		//-------------------------------------------------------------------------------------------------------
-		//  We are standing at the entrace to room 3 - let's see if there is a candle in this room
+		//  We are standing at the entrance to room 3 - let's see if there is a candle in this room
 		//-------------------------------------------------------------------------------------------------------
 		next_(s_searching_room_3)
 		{
@@ -1042,31 +1043,40 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//now we are on the line that marks the north-side door of Room #1 - let's align ourselves to that line so that we are facing North
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
+			//TODO: make a note how far away we are from the wall on the right, because it affects a manneuver further down. (but watch out for mirrors!)
 
 			//completely exit from room 1 until we have reached the center of the intersection
 			MOVE(turn_speed, 240); //TODO: make this a parameter
 
 			//TODO:  add a scan for a possible dog to the east side of room #4, before we look for the dog & door on the south side
-			TURN_IN_PLACE(turn_speed, 45);
-			TURN_IN_PLACE_AND_SCAN( 40, -90 );
+			TURN_IN_PLACE(turn_speed, -45); //let's start from a north-east facing position
+			TURN_IN_PLACE_AND_SCAN( 40, 90 ); //scan until we reach a south west facing position
 			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
 			if(scan_result.opening <= 30) //TODO: fix this angle
 			{
+				//OK so there is a dog blocking this hallway. let's take note of that. 
+				//if this is 100% reliable, we basically know that we'll have to take the outher route
+				dog_position=2;
 			}
 
-			//turn left and check for dog on the south side of room #4
-			TURN_IN_PLACE(turn_speed, 90);
-
-			TURN_IN_PLACE_AND_SCAN( 40, 90 );
-			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
-
-			if(scan_result.opening <= 30) //TODO: fix this angle
+			if(dog_position==0) //if we didn't alrady see the dog, scan for it...
 			{
-				//if there is a dog / obstacle right in front, then 
-				//turn right 90deg and start following the left wall
-				//there won't be a 2nd dog to worry about...
-				//eventually we'll wind up inside room 4, either via door on North side or on South side
-				TURN_IN_PLACE(turn_speed, -(90+45));
+				//now scan for another 90 degrees, i.e. from NW to SW - this covers the west facing hallway
+				TURN_IN_PLACE_AND_SCAN( 40, 90 );
+				scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
+			}
+			else
+			{
+				TURN_IN_PLACE(turn_speed, 45);	//now we are facing West again
+			}
+
+			if( (dog_position == 0) && (scan_result.opening <= 30) ) //TODO: fix this angle
+			{
+				dog_position=3;
+				//if there is a dog / obstacle right in front, then there won't be a 2nd dog to worry about...
+				//just fallow the left wall...//eventually we'll wind up inside room 4, either via door on North side or on South side
+				//so this takes care of 2 of 6 possible cases
+				TURN_IN_PLACE(turn_speed, -(90+45)); //now we are facing north again
 				MOVE(turn_speed, 240);
 				RESET_LINE_DETECTION();
 				START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL); //start  following the LEFT wall
@@ -1081,18 +1091,36 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			}
 
 
-			//there was no dog at the exit of room 1, blocking our way into room 4 from the south side, so....
-			//...check for a door on the South side of room 4
-
-			TURN_IN_PLACE(turn_speed, -45);	//now we are facing West again
-			MOVE(turn_speed, 30*25);		//move forward about 30inches so that we are in the position where the door could be
-			TURN_IN_PLACE(turn_speed, -90);	//now we would be facing the door
-			if(s.ir[AI_IR_N] < 160)	//is there an opening right in front of us?
+			//there is no dog at south side of room #4
+			//...check for a door on the South side of room #4
+			if(dog_position==0)//if we still have not yet seen the dog yet, then it means we did a bunch of looking around so we need to re-align ourselves...
 			{
-				//if there is no door on Rm4-south, then turn around (to face E)
-				TURN_IN_PLACE(turn_speed, -90);
+				TURN_IN_PLACE(turn_speed, -45);	//now we are facing West again
+			}
 
-				//keep following the left wall until we have passed through the door
+			MOVE(turn_speed, 32*25);		//move forward about 30inches so that we are in the position where the door could be
+			TURN_IN_PLACE(turn_speed, -90);	//now we would be facing the door
+
+			if(s.ir[AI_IR_N] > 160)	//is there an opening right in front of us?
+			{
+				//yes...
+				//at this point we are facing north and a door into room #4 is right in front of us
+				//this takes care of another 2 of the 6 possbile cases
+				RESET_LINE_DETECTION();
+				GO(turn_speed);
+				WAIT_FOR_LINE_DETECTION();
+				HARD_STOP();
+				switch_(s_finding_room_4, s_searching_room_4);
+			}
+
+
+			//nope...there's no door here....we are looking at the south side wall of room #4
+
+			if(dog_position==0) /*..if there was no dog on the east side of room 4 when we checked earlier, then just go around that side....*/
+			{
+				TURN_IN_PLACE(turn_speed, -90);  //turn rigth to face East
+
+				//keep following the left wall until we have passed through the door;  i.e. going counter-clockwise around Rm #4
 				RESET_LINE_DETECTION();
 				START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL);
 				WAIT_FOR_LINE_DETECTION();
@@ -1105,13 +1133,20 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				switch_(s_finding_room_4, s_searching_room_4);
 			}
 
-			//at this point we are facing north and a door into room #4 is right in front of us
+			//at this point, we can conclude that the only way to get into Room #4 is to follow the right wall clock-wise around Rom #4
+			
+			TURN_IN_PLACE(turn_speed, 90);  //turn left to face West
+			//keep following the left wall until we have passed through the door;  i.e. going counter-clockwise around Rm #4
 			RESET_LINE_DETECTION();
-			GO(turn_speed);
+			START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL);
 			WAIT_FOR_LINE_DETECTION();
+
+			//we reached room 4 - so proceed to the appropriate state
+			play_note(C(3), 50, 10);
+			STOP_BEHAVIOR(FOLLOW_WALL);
 			HARD_STOP();
+			RESET_LINE_DETECTION();
 			switch_(s_finding_room_4, s_searching_room_4);
-		
 
 			exit_(s_finding_room_4) {}
 		}

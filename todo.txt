@@ -1,20 +1,31 @@
 
-High-priority:
+Issues:
+* when turning into room #4 w/ door on the south side - turning too sharp
+* might scrape agains the wall when exiting from room 3 or 2 (turn more before exiting)
+* sometimes missing the line/door when entering room 1 w/ door on the south side
+* when the candle is near the wall, we might bump into the wall before we get close enough to the candle
+* when moving towards the south entrance of room 4, sometimes we come short
+* when tranitioning to left wall following to pass room 4 on the east side, we should first get closer to the wall
+
+
+Todo:
+* finish the "find room 4" logic
 * add start button
-* create proper dog detection logic
 * create proper "move to candle" logic
 * add sound activation
+* add more IR detectors (without light shielding) so we don't have to scan to determine if there is a flame in room x
 
+Nice to haves:
 
 Wall following:
 •	Add logic to "follow wall" behavior so that it first finds the wall or create a separate "find wall" behavior
 •	Limit the amount by which the integrator is increased/decreased (new parameter!)
 •	Add special logic to better handle inside corners
 
+
 General Motor control / locomotion:
 •	Add slew-rate limiting to the motor command (to avoid reset due to over-current; don’t apply to slowing down, just for speeding up and changing direction)  
 	o	(10 per interval @ 50hz/20ms => 0.5s for full 0-255 PWM range)
-
 
 General:
 * add an API to start/stop a behavior & to wait for it to complete.
@@ -26,13 +37,10 @@ get_behavior_state(b)
 
 
 
-
-Issues:
+Resolved (for now) issues:
 * IR_N and IR_FAR_N interfere with each other - need to mount at an offset AND need to point IR_FAR_N off-axis 
   (but this doesn't seem to interfere w/ dog detection)
-* when turning into room #4 w/ door on the south side - turning too sharp
-* sometimes missing the line/door when entering room 1 w/ door on the south side
-* when the candle is near the wall, we might bump into the wall before we get close enough to the candle
+
 
 Checklist
 * sensor alignment.   If the NW / NE sensors are misaligned, cornering gets messed up

@@ -87,6 +87,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <Text Include="..\..\data1.txt" />
+    <Text Include="..\..\data2.txt" />
     <Text Include="..\..\run1.txt" />
     <Text Include="..\..\todo.txt" />
     <Text Include="port\avr\pgmspace.h" />
