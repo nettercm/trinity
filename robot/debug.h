@@ -13,7 +13,7 @@ extern int	usb_printf(const char *__fmt, ...);
 extern int	dbg_printf(const char *__fmt, ...);
 extern char _b[];
 
-#define DBG_BUFFER_SIZE 2048
+#define DBG_BUFFER_SIZE 1024
 
 extern u08 dbg_buffer[DBG_BUFFER_SIZE];
 extern s16 dbg_buffer_write;

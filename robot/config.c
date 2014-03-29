@@ -91,12 +91,13 @@ const t_config_flash config_flash[MAX_CFG_ITEMS] PROGMEM =
 #define U32(grp, id, name, min, max, value) { grp, id , .v.u32= value },
 #define S32(grp, id, name, min, max, value) { grp, id , .v.s32= value },
 
-t_config config[128] =
+t_config config[MAX_CFG_ITEMS]; /* =
 {
 	//{0,0,-1},
 	#include "parameters.h"
 	{255,255,-1}
 };
+*/
 
 /*
 				Program Memory Usage 	:	46588 bytes   35.5 % Full
@@ -119,6 +120,8 @@ void cfg_init(void)
 			config_flash[i].v.f = config_float_only[i].f;
 		}
 #else
+		config[i].grp =   pgm_read_byte(&(config_flash[i].grp));
+		config[i].id =    pgm_read_byte(&(config_flash[i].id));
 		config[i].v.u32 = pgm_read_dword(&(config_flash[i].v));
 #endif
 	}

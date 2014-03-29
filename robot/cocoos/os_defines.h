@@ -64,17 +64,17 @@
 
 /** Max number of used message queues
 * @remarks Must be defined. @n Allowed range: 0-254. Value must not be exceeded */
-#define N_QUEUES            1
+#define N_QUEUES            0
 
 
 /** Max number of used semaphores
 * @remarks Must be defined. @n Allowed range: 0-254. Value must not be exceeded */
-#define N_SEMAPHORES        1
+#define N_SEMAPHORES        0
 
 
 /** Max number of used events
 * @remarks Must be defined. @n Allowed range: 0-254. Value must not be exceeded */
-#define N_EVENTS            1
+#define N_EVENTS            2
 
 
 /** Round Robin scheduling

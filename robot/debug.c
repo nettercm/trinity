@@ -12,7 +12,7 @@
 #include <stdarg.h>
 #include <pololu/orangutan.h>
 
-char _b[200];
+char _b[128];
 
 u08 dbg_buffer[DBG_BUFFER_SIZE];
 s16 dbg_buffer_write=0;
