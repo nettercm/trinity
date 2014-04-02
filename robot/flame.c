@@ -34,7 +34,7 @@ void test_flame(void)
 	}
 	{
 		t_scan d[] = { {-90,1,2},{-80,1,4},{-75,1,6},{-60,1,8},{-40,1,8},{-25,1,8},{-22,1,8},{-20,1,6},{-10,1,2},{-00,1,2},{10,1,2},{20,1,0} };
-		scan_result = find_peak_in_scan(d,12,3);
+		scan_result = find_flame_in_scan(d,12,3);
 		NOP();
 	}
 	{
@@ -95,7 +95,7 @@ t_scan_result find_path_in_scan(t_scan *data, u16 number_of_points, u16 threasho
 }
 
 
-t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threashold)
+t_scan_result find_flame_in_scan(t_scan *data, u16 number_of_points, uint8 threashold)
 {
 	uint8 min,max;
 	uint16 i;
@@ -146,6 +146,10 @@ t_scan_result find_peak_in_scan(t_scan *data, u16 number_of_points, uint8 threas
 	result.center_position		= (position1+position2)/2;
 	result.center_angle			= (result.rising_edge_angle + result.falling_edge_angle)/2;
 	result.flame_center_value	= max;
+
+	dbg_printf("find_flame_in_scan(np=%d, t=%d):  %d,%d,%d,%d\n", 
+		number_of_points, threashold,
+		result.flame_center_value,  result.center_angle,  result.rising_edge_angle,  result.falling_edge_angle);
 
 	return result;
 }

@@ -1,22 +1,26 @@
 
 Issues:
 * when turning into room #4 w/ door on the south side - turning too sharp
-* might scrape agains the wall when exiting from room 3 or 2 (turn more before exiting)
-* sometimes missing the line/door when entering room 1 w/ door on the south side
 * when the candle is near the wall, we might bump into the wall before we get close enough to the candle
+* when we found the flame, we need to confirm to rule out false positive caused by other IR sources (video cameras etc)
+* after extinguising, need to confirm that the flame is really out by dying a 360 degree scan; if not out, repeat.
+
+Resolved Issues (for now):
+* might scrape agains the wall when exiting from room 3 or 2 (turn more before exiting)
 * when moving towards the south entrance of room 4, sometimes we come short
 * when tranitioning to left wall following to pass room 4 on the east side, we should first get closer to the wall
 * IR Far North is interfering w/ the NE facing IR (but noth anymore with IR N, after pointing IR Far N to the rigth)
+* sometimes missing the line/door when entering room 1 w/ door on the south side
 
 
 Todo:
-* finish the "find room 4" logic
 * add start button
-* create proper "move to candle" logic
 * add sound activation
-* add more IR detectors (without light shielding) so we don't have to scan to determine if there is a flame in room x
+
 
 Nice to haves:
+* add more IR detectors (without light shielding) so we don't have to scan to determine if there is a flame in room x
+
 
 Wall following:
 •	Add logic to "follow wall" behavior so that it first finds the wall or create a separate "find wall" behavior

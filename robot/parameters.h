@@ -57,21 +57,47 @@ U08(6, 2, "white",							0, 0, 10)
 //----------------------------------------------------------
 GRP(9, "MASTER LOGIC")
 
-S16(9, 1, "turn speed",						0, 0, 50)
-S16(9, 2, "room 3 entry distance",			0, 0, 180)
-S16(9, 3, "room 3 entry turn angle",		0, 0, -140)
-S16(9, 4, "room 3 entry scan angle",		0, 0, 300)
-S16(9, 5, "room 2 entry distance",			0, 0, 180)
-S16(9, 6, "room 2 entry turn angle",		0, 0, -140)
-S16(9, 7, "room 2 entry scan angle",		0, 0, 300)
-S16(9, 8, "room 1 entry distance",			0, 0, 180)
-S16(9, 9, "room 1 turn angle #1",			0, 0, 120)
-S16(9,10, "room 1 turn angle #2",			0, 0, -240)
+S16(9,10, "turn speed",						0, 0, 50)
 S16(9,11, "motor command",					0, 0, 7)		//which motor command to use for certain mannouvers
 S16(9,12, "acceleration",					0, 0, 1)		//
 S16(9,13, "deceleration",					0, 0, 1)
 S16(9,14, "flame_scan_edge_threashold ",	0, 0, 30)
 S16(9,15, "flame_found_threashold ",		0, 0, 200)
+U16(9,16, "flame scan filter ",				0, 0, 4)
+
+S16(9,20, "search Rm #3: enter distance",	0, 0, 180)		//distance is in mm here
+S16(9,21, "search Rm #3: turn #1",			0, 0,-120)
+S16(9,22, "search Rm #3: turn #2",			0, 0, 210)		//basically we'll face west after this turn; turn another 90 left to face the door
+S16(9,23, "search Rm #3: turn #3",			0, 0, 90)		//basically we'll face sount (the door)
+
+S16(9,30, "search Rm #2: enter distance",	0, 0, 180)
+S16(9,31, "search Rm #2: turn #1",			0, 0,-140)
+S16(9,32, "search Rm #2: turn #2",			0, 0, 230)		//we'll face south at the end - need to turn another 90deg left to face the door
+S16(9,33, "search Rm #2: turn #3",			0, 0, 90)		//we'll face south at the end - need to turn another 90deg left to face the door
+
+S16(9,40, "search Rm #1: etner distance",	0, 0, 180)
+S16(9,41, "search Rm #1: turn #1",			0, 0, 120)
+S16(9,42, "search Rm #1: turn #2",			0, 0,-240)
+S16(9,43, "search Rm #1: turn #3",			0, 0, 60)
+
+S16(9,51, "find Rm #4:   dog scan distance",0, 0, 280)
+S16(9,52, "find Rm #4:   dog scan sensor",  0, 0, 1)
+S16(9,53, "find Rm #4:   dog scan angle ",  0, 0, 20)
+U16(9,54, "find Rm #4:   dog scan m. avg.", 0, 0, 2)
+
+S16(9,60, "find Rm #4:   distance #1",		0, 0, 260)		//how far to move into the intersection after exitinig from Rm #1
+S16(9,61, "find Rm #4:   turn #1",			0, 0, 15)		//how far to turn left before starting to follow the left wall 
+S16(9,62, "find Rm #4:   distance #2",		0, 0, 240)		//how far to move into the hallway before starting to follow the left wall
+S16(9,63, "find Rm #4:   left margin 1",	0, 0, 110)		//margin
+S16(9,64, "find Rm #4:   riggt margin 1",	0, 0, 150)		//margin while moving into the hallway
+S16(9,65, "find Rm #4:   distance #3",		0, 0, 800)		//how far to move into the hallway before starting to follow the left wall
+S16(9,66, "find Rm #4:   left margin 2",	0, 0, 135)
+S16(9,67, "find Rm #4:   riggt margin 2",	0, 0, 135)
+
+S16(9,71, "search Rm #4: distance #1",		0, 0, 100)
+S16(9,72, "search Rm #4: turn #1",			0, 0,-100)
+S16(9,73, "search Rm #4: turn #2",			0, 0, 200)
+
 
 //----------------------------------------------------------
 

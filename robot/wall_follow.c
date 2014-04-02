@@ -11,7 +11,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 	enum states { s_disabled=0, s_tracking_wall=1, s_lost_wall=2, s_turning_corner=3, s_turning_sharp_corner=4 };
 	static enum states state=s_disabled;
 	static enum states last_state=s_disabled;
-	//static u08 state=1, last_state=0;
+	static u32 t_entry=0;
 	
 	s16 error=0, e1=0, e2=0, correction=0;
 	u08 at_limit_flag=0;

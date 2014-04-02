@@ -8,7 +8,7 @@ extern "C" {
 	
 #include "typedefs.h"
 
-#define MAX_CFG_ITEMS 70
+#define MAX_CFG_ITEMS 90
 
 #define DEFINE_CFG(type,name,grp,id) static type name = 0; static u08 name##_cfg_idx = 0; const u08 name##_grp = grp; const u08 name##_id= id
 #define PREPARE_CFG(type,name) name##_cfg_idx = cfg_get_index_by_grp_and_id(name##_grp,name##_id)

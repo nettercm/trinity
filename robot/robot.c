@@ -416,6 +416,7 @@ void line_detection_fsm(u08 cmd, u08 *param)
 	enum states { s_none=0, s_disabled=1, s_not_crossed, s_l_crossed, s_r_crossed, s_crossed_line };
 	static enum states state=s_disabled;
 	static enum states last_state=s_none;
+	static u32 t_entry=0;
 	static u32 t_crossed=0;
 	static u08 loop_counter=0;
 	//NOTE: parameters black and white are defined as globals, but the updating happens in this task
@@ -495,10 +496,10 @@ void line_alignment_fsm(u08 cmd, u08 *param)
 	for(;;)
 	{
 		event_wait(line_alignment_start_evt);
-		while(s.line[0] <= white) { motor_command(7,0,0,0,20); task_wait(10); } motor_command(7,0,0,0,0);
-		while(s.line[0] > white) { motor_command(7,0,0,0,-20); task_wait(10); } motor_command(7,0,0,0,0);
-		while(s.line[1] <= white) { motor_command(7,0,0,20,0); task_wait(10); } motor_command(7,0,0,0,0);
-		while(s.line[1] > white) { motor_command(7,0,0,-20,0); task_wait(10); } motor_command(7,0,0,0,0);
+		while(s.line[0] <= white) { motor_command(7,0,0,0,20); task_wait(10); } motor_command(7,0,0,0,0); //move right wheel fwd until off the line
+		while(s.line[0] > white) { motor_command(7,0,0,0,-20); task_wait(10); } motor_command(7,0,0,0,0); //now move right whell backwards until back on the line
+		while(s.line[1] <= white) { motor_command(7,0,0,20,0); task_wait(10); } motor_command(7,0,0,0,0); //move left wheel fwd until off the line
+		while(s.line[1] > white) { motor_command(7,0,0,-20,0); task_wait(10); } motor_command(7,0,0,0,0); //now move left whell backwards until back on the line
 		task_wait(100);
 		event_signal(line_alignment_done_evt);
 	}
@@ -625,42 +626,64 @@ u08 turn_in_place_manneuver(u08 cmd, s16 speed, float angle)
 
 t_scan scan_data[360];
 
-void scan(u08 cmd)
+void scan(u08 cmd, u16 moving_avg)
 {
 	static s16 last_angle;
 	s16 angle;
 	static u16 i=0;
+	static u16 flame_avg;
+	static u16 ir_n_avg;
+	static u16 ir_fn_avg;
+	u16 ir_n;
+	u16 ir_fn;
 
-	if(i>=360)
-	{
-		NOP();
-	}
+	if(moving_avg == 0 ) moving_avg = 1;
+	if(moving_avg >= 16) moving_avg = 16;
 
 	angle = (s16) (odometry_get_rotation_since_checkpoint()+0.5);
 
-	if(cmd==1) //initialize the state
+	//currently our sharp IR lookup table doesn't clamp the readings at the sensors max range, so there could be some large values; need to clamp here
+	ir_n = s.ir[AI_IR_N];	  if(ir_n >  300) ir_n =  300;
+	ir_fn= s.ir[AI_IR_FAR_N]; if(ir_fn > 600) ir_fn = 600;
+
+
+	if(cmd==1) //initialize the state and our moving average
 	{
 		last_angle = angle;
 		memset(scan_data,0,sizeof(scan_data));
+		flame_avg = 255 - s.inputs.analog[AI_FLAME_N];
+		ir_n_avg  = ir_n;
+		ir_fn_avg = ir_fn;
 		i=0;
+		dbg_printf("scan(%d,%d): f=%d, ir_n=%d, ir_fn=%d\n", cmd, moving_avg, flame_avg,ir_n_avg,ir_fn_avg);
 	}
 	else //update
 	{
+		//use a moving average to filter out any noise spikes; prevent noise spikes from showing up as "peak" values later
+		flame_avg = ((flame_avg * (moving_avg-1)) + ((u16)(255 - s.inputs.analog[AI_FLAME_N])) ) / moving_avg;
+		ir_n_avg  = ((ir_n_avg  * (moving_avg-1)) + ((u16)(ir_n)) ) / moving_avg;
+		ir_fn_avg = ((ir_fn_avg * (moving_avg-1)) + ((u16)(ir_fn)) ) / moving_avg;
 		if(angle != last_angle) 
 		{
 			scan_data[i].angle = angle;
-			scan_data[i].flame			= 255- s.inputs.analog[AI_FLAME_N];
-			scan_data[i].ir_north		= s.ir[AI_IR_N];
-			scan_data[i].ir_far_north	= s.ir[AI_IR_FAR_N];
+			scan_data[i].flame			= (u08) flame_avg; //255 - s.inputs.analog[AI_FLAME_N];
+			scan_data[i].ir_north		= ir_n_avg; //s.ir[AI_IR_N];
+			scan_data[i].ir_far_north	= ir_fn_avg; //s.ir[AI_IR_FAR_N];
 			last_angle = angle;
 			i++;
+			if(i>=360)
+			{
+				NOP(); //for debugging, i.e. to set a break point
+				i=0;
+				dbg_printf("scan(): wrapped around, i.e. turned > 360 degrees!\n");
+			}
 		}
 	}
 }
 
 
 #define TURN_IN_PLACE(speed,angle) turn_in_place_manneuver(1,(speed),(angle)); while(turn_in_place_manneuver(0,(speed),(angle))) {OS_SCHEDULE;}
-#define TURN_IN_PLACE_AND_SCAN(speed,angle) turn_in_place_manneuver(1,(speed),(angle)); scan(1); while(turn_in_place_manneuver(0,(speed),(angle))) {scan(0); OS_SCHEDULE;}
+#define TURN_IN_PLACE_AND_SCAN(speed,angle,filter) turn_in_place_manneuver(1,(speed),(angle)); scan(1,filter); while(turn_in_place_manneuver(0,(speed),(angle))) {scan(0,filter); OS_SCHEDULE;}
 
 #define MOVE(speed,distance)		move_manneuver(1,(speed),(distance)); while(move_manneuver(0,(speed),(distance))) {OS_SCHEDULE;}
 #define MOVE2(speed,distance,sl,sr)	move_manneuver2(1,(speed),(distance),(sl),(sr)); while(move_manneuver2(0,(speed),(distance),(sl),(sr))) {OS_SCHEDULE;}
@@ -718,62 +741,133 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static u32 t_last=0;
 	static u08 dog_position=0; //1=N side of Rm#4,  2=E side,    3=S side
 
-	DEFINE_CFG2(s16,turn_speed,						9,1);
-	DEFINE_CFG2(s16,room3_enter,					9,2);
-	DEFINE_CFG2(s16,room3_turn_1,					9,3);
-	DEFINE_CFG2(s16,room3_turn_2,					9,4);
-	DEFINE_CFG2(s16,room2_enter,					9,5);
-	DEFINE_CFG2(s16,room2_turn_1,					9,6);
-	DEFINE_CFG2(s16,room2_turn_2,					9,7);
-	DEFINE_CFG2(s16,room1_enter,					9,8);
-	DEFINE_CFG2(s16,room1_turn_1,					9,9);
-	DEFINE_CFG2(s16,room1_turn_2,					9,10);
+	DEFINE_CFG2(s16,turn_speed,						9,10);
 	DEFINE_CFG2(s16,cmd,							9,11);
 	DEFINE_CFG2(s16,accel,							9,12);
 	DEFINE_CFG2(s16,decel,							9,13);
 	DEFINE_CFG2(s16,flame_scan_edge_threashold,		9,14);
 	DEFINE_CFG2(s16,flame_found_threashold ,		9,15);
-	
+	DEFINE_CFG2(u16,flame_scan_filter ,				9,16);
+
+	DEFINE_CFG2(s16,room3_enter,					9,20);
+	DEFINE_CFG2(s16,room3_turn_1,					9,21);
+	DEFINE_CFG2(s16,room3_turn_2,					9,22);
+	DEFINE_CFG2(s16,room3_turn_3,					9,23);
+
+	DEFINE_CFG2(s16,room2_enter,					9,30);
+	DEFINE_CFG2(s16,room2_turn_1,					9,31);
+	DEFINE_CFG2(s16,room2_turn_2,					9,32);
+	DEFINE_CFG2(s16,room2_turn_3,					9,33);
+
+	DEFINE_CFG2(s16,room1_enter,					9,40);
+	DEFINE_CFG2(s16,room1_turn_1,					9,41);
+	DEFINE_CFG2(s16,room1_turn_2,					9,42);
+	DEFINE_CFG2(s16,room1_turn_3,					9,43);
+
+	DEFINE_CFG2(s16,dog_scan_distance,				9,51);
+	DEFINE_CFG2(s16,dog_scan_sensor,				9,52);
+	DEFINE_CFG2(s16,dog_scan_angle,					9,53);
+	DEFINE_CFG2(u16,dog_scan_filter ,				9,54);
+
+	DEFINE_CFG2(s16,find4_distance_1,				9,60);
+	DEFINE_CFG2(s16,find4_turn_1,					9,61);
+	DEFINE_CFG2(s16,find4_distance_2,				9,62);
+	DEFINE_CFG2(s16,find4_left_margin_1,			9,63);
+	DEFINE_CFG2(s16,find4_right_margin_1,			9,64);
+	DEFINE_CFG2(s16,find4_distance_3,				9,65);
+	DEFINE_CFG2(s16,find4_left_margin_2,			9,66);
+	DEFINE_CFG2(s16,find4_right_margin_2,			9,67);
+
+	DEFINE_CFG2(s16,search4_distance_1,				9,71);
+	DEFINE_CFG2(s16,search4_turn_1,					9,72);
+	DEFINE_CFG2(s16,search4_turn_2,					9,73);
+
 	task_open_1();
 
 	//initialize the parameter logic only the first time through
 	if( context_switch_counter==0 )
 	{
 		PREPARE_CFG2(turn_speed);
-		PREPARE_CFG2(room3_enter);
-		PREPARE_CFG2(room3_turn_1);
-		PREPARE_CFG2(room3_turn_2);
-		PREPARE_CFG2(room2_enter);
-		PREPARE_CFG2(room2_turn_1);
-		PREPARE_CFG2(room2_turn_2);
-		PREPARE_CFG2(room1_enter);
-		PREPARE_CFG2(room1_turn_1);
-		PREPARE_CFG2(room1_turn_2);
 		PREPARE_CFG2(cmd);
 		PREPARE_CFG2(accel);
 		PREPARE_CFG2(decel);
 		PREPARE_CFG2(flame_scan_edge_threashold);
 		PREPARE_CFG2(flame_found_threashold);
+
+		PREPARE_CFG2(room3_enter			);
+		PREPARE_CFG2(room3_turn_1			);
+		PREPARE_CFG2(room3_turn_2			);
+		PREPARE_CFG2(room3_turn_3			);
+
+		PREPARE_CFG2(room2_enter			);
+		PREPARE_CFG2(room2_turn_1			);
+		PREPARE_CFG2(room2_turn_2			);
+		PREPARE_CFG2(room2_turn_3			);
+
+		PREPARE_CFG2(room1_enter			);
+		PREPARE_CFG2(room1_turn_1			);
+		PREPARE_CFG2(room1_turn_2			);
+		PREPARE_CFG2(room1_turn_3			);
+
+		PREPARE_CFG2(dog_scan_distance		);
+		PREPARE_CFG2(dog_scan_sensor		);
+		PREPARE_CFG2(dog_scan_angle			);
+
+		PREPARE_CFG2(find4_distance_1		);
+		PREPARE_CFG2(find4_turn_1			);
+		PREPARE_CFG2(find4_distance_2		);
+		PREPARE_CFG2(find4_left_margin_1	);
+		PREPARE_CFG2(find4_right_margin_1	);
+		PREPARE_CFG2(find4_distance_3		);
+		PREPARE_CFG2(find4_left_margin_2	);
+		PREPARE_CFG2(find4_right_margin_2	);
+
+		PREPARE_CFG2(search4_distance_1);
+		PREPARE_CFG2(search4_turn_1	);
+		PREPARE_CFG2(search4_turn_2	);	
 	}
 
 	//update the parameter values the first time through and then everyh 500ms
 	if( (context_switch_counter==0) || (get_ms()-t_last) > 500 )  
 	{
 		UPDATE_CFG2(turn_speed);
-		UPDATE_CFG2(room3_enter);
-		UPDATE_CFG2(room3_turn_1);
-		UPDATE_CFG2(room3_turn_2);
-		UPDATE_CFG2(room2_enter);
-		UPDATE_CFG2(room2_turn_1);
-		UPDATE_CFG2(room2_turn_2);
-		UPDATE_CFG2(room1_enter);
-		UPDATE_CFG2(room1_turn_1);
-		UPDATE_CFG2(room1_turn_2);
 		UPDATE_CFG2(cmd);
 		UPDATE_CFG2(accel);
 		UPDATE_CFG2(decel);
 		UPDATE_CFG2(flame_scan_edge_threashold);
 		UPDATE_CFG2(flame_found_threashold);
+
+		UPDATE_CFG2(room3_enter				);
+		UPDATE_CFG2(room3_turn_1			);
+		UPDATE_CFG2(room3_turn_2			);
+		UPDATE_CFG2(room3_turn_3			);
+
+		UPDATE_CFG2(room2_enter				);
+		UPDATE_CFG2(room2_turn_1			);
+		UPDATE_CFG2(room2_turn_2			);
+		UPDATE_CFG2(room2_turn_3			);
+
+		UPDATE_CFG2(room1_enter				);
+		UPDATE_CFG2(room1_turn_1			);
+		UPDATE_CFG2(room1_turn_2			);
+		UPDATE_CFG2(room1_turn_3			);
+
+		UPDATE_CFG2(dog_scan_distance		);
+		UPDATE_CFG2(dog_scan_sensor		);
+		UPDATE_CFG2(dog_scan_angle			);
+
+		UPDATE_CFG2(find4_distance_1		);
+		UPDATE_CFG2(find4_turn_1			);
+		UPDATE_CFG2(find4_distance_2		);
+		UPDATE_CFG2(find4_left_margin_1	);
+		UPDATE_CFG2(find4_right_margin_1	);
+		UPDATE_CFG2(find4_distance_3		);
+		UPDATE_CFG2(find4_left_margin_2	);
+		UPDATE_CFG2(find4_right_margin_2	);
+
+		UPDATE_CFG2(search4_distance_1);
+		UPDATE_CFG2(search4_turn_1	);
+		UPDATE_CFG2(search4_turn_2	);	
 		t_last = get_ms();
 	}
 
@@ -846,8 +940,14 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_finding_room_3)
 			{
+				//MOVE2(turn_speed,200,120,120); //need to take into account the fact that initially we'll be on the home circle
 				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
-				//TODO: need to take into account the fact that initially we'll be on the home circle
+				RESET_LINE_DETECTION();
+			}
+
+			//take into account the fact that initially we'll be on the home circle
+			if( LINE_WAS_DETECTED() && (time_since_entry_()<2000) )
+			{
 				RESET_LINE_DETECTION();
 			}
 
@@ -869,7 +969,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		//-------------------------------------------------------------------------------------------------------
 		next_(s_searching_room_3)
 		{
-			enter_(s_searching_room_3) { s.current_room = 3;}
+			enter_(s_searching_room_3)
+			{
+				s.current_room = 3;
+			}
 
 			event_signal(line_alignment_start_evt); 
 			event_wait(line_alignment_done_evt);
@@ -882,15 +985,16 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//now start to scan for the flame by turning left about 250 degrees
 			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			TURN_IN_PLACE_AND_SCAN(turn_speed, room3_turn_2);
+			TURN_IN_PLACE_AND_SCAN(turn_speed, room3_turn_2, flame_scan_filter);
 
 			//now analyze the data...
-			scan_result = find_peak_in_scan(scan_data,360,flame_scan_edge_threashold);
+			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) //TODO: make the minimum flame value a parameter
 			{
 				//turn into the direction where we saw the peak
-				//TODO: move the "turn into the direction of the flame" logic into the "move to candle" state
+				//TODO: (low priority) move the "turn into the direction of the flame" logic into the "move to candle" state
 				TURN_IN_PLACE( turn_speed, -(room3_turn_2-scan_result.center_angle) );
+				//TODO: now confirm that we are still seeing the flame
 				switch_(s_searching_room_3, s_move_to_candle);
 			}
 
@@ -898,6 +1002,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//we should be facing the wall more or less SW, so we just need to start following the right wall
 			still_inside_room = 1;
 			RESET_LINE_DETECTION();
+
+			TURN_IN_PLACE(turn_speed, room3_turn_3);
 
 			//TODO:  implement a more general "find wall" logic and make it part of the "follow wall" state machine
 			motor_command(cmd,accel,decel,turn_speed+5,turn_speed);
@@ -963,9 +1069,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//now start to scan for the flame by turning left about 250 degrees
 			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			TURN_IN_PLACE_AND_SCAN(turn_speed, room2_turn_2);
-			scan_result = find_peak_in_scan(scan_data,360,30);
-			if(scan_result.flame_center_value > 200) 
+			TURN_IN_PLACE_AND_SCAN(turn_speed, room2_turn_2, flame_scan_filter);
+			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
 				//turn into the direction where we saw the peak
 				TURN_IN_PLACE( turn_speed, -(room2_turn_2-scan_result.center_angle) );
@@ -976,9 +1082,12 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//if there was no candle, go on to the next room.
 			//we should be facing the wall more or less SE, we just need to start following the right wall
 			still_inside_room = 1;
-			last_lines_crossed = lines_crossed;
+			RESET_LINE_DETECTION();
+
+			TURN_IN_PLACE(turn_speed, room2_turn_3);
+
 			motor_command(6,accel,decel,turn_speed+5,turn_speed);
-			while( (s.ir[AI_IR_NE] > 100) && (s.ir[AI_IR_N] > 80) ) task_wait(10);
+			while( (s.ir[AI_IR_NE] > 120) && (s.ir[AI_IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
 			motor_command(cmd,accel,decel,0,0);
 			state = s_finding_room_1;
 
@@ -1033,24 +1142,26 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//now start to scan for the flame by turning right about 250 degrees
 			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			TURN_IN_PLACE_AND_SCAN(turn_speed, room1_turn_2);
-			scan_result = find_peak_in_scan(scan_data,360,30);
-			if(scan_result.flame_center_value > 200) 
+			TURN_IN_PLACE_AND_SCAN(turn_speed, room1_turn_2, flame_scan_filter);
+			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
 				//turn into the direction where we saw the peak
 				TURN_IN_PLACE( turn_speed, -(room1_turn_2-scan_result.center_angle) );
 				switch_(s_searching_room_1, s_move_to_candle);
 			}
 
+
+			still_inside_room = 1;
+			RESET_LINE_DETECTION();
+
 			//if there was no candle, go on to the next room.
 			//we should be facing more or less SW, but too far away from the wall depending on door location
 			//we first need to find the wall before we can follow it; let's turn left to face SE, then go straight towards the wall
-			TURN_IN_PLACE(turn_speed, 60);
+			TURN_IN_PLACE(turn_speed, room1_turn_3);
 
-			still_inside_room = 1;
-			last_lines_crossed = lines_crossed;
 			motor_command(6,accel,decel,turn_speed,turn_speed);
-			while( (s.ir[AI_IR_NE] > 100) && (s.ir[AI_IR_N] > 80) ) task_wait(10);
+			while( (s.ir[AI_IR_NE] > 120) && (s.ir[AI_IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
 			motor_command(cmd,accel,decel,0,0);
 
 			state = s_finding_room_4;
@@ -1078,50 +1189,42 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//now we are on the line that marks the north-side door of Room #1 - let's align ourselves to that line so that we are facing North
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
-			//TODO: make a note how far away we are from the wall on the right, because it affects a manneuver further down. (but watch out for mirrors!)
+			//TODO: make a note how far away we are from the wall on the right, because it affects a maneuver further down. (but watch out for mirrors!)
 
 			//completely exit from room 1 until we have reached the center of the intersection
-			MOVE(turn_speed, 260); //TODO: make this a parameter
+			MOVE(turn_speed, find4_distance_1); //260); //TODO: make this a parameter
 
 			//TODO:  add a scan for a possible dog to the east side of room #4, before we look for the dog & door on the south side
 			TURN_IN_PLACE(turn_speed, -45); //let's start from a north-east facing position
-			TURN_IN_PLACE_AND_SCAN( 40, 90 ); //scan until we reach a south west facing position
-			//scan_result = find_path_in_scan(scan_data, 100, 280, 0, 0); //TODO: adjust this range - is 30" to far?
-			//scan_result = find_path_in_scan(scan_data, 100, 300, 0, 0); //TODO: adjust this range - is 30" to far?
-			scan_result = find_path_in_scan(scan_data, 100, 280, 0, 1); //TODO: adjust this range - is 30" to far?
-			//scan_result = find_path_in_scan(scan_data, 100, 400, 0, 1); //TODO: adjust this range - is 30" to far?
-			//scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
-			if(scan_result.opening < 20) //TODO: fix this angle
+			TURN_IN_PLACE_AND_SCAN( 40, 90 , dog_scan_filter); //scan until we reach a south west facing position
+			scan_result = find_path_in_scan(scan_data, 100, dog_scan_distance, 0, dog_scan_sensor); //TODO: adjust this range - is 30" to far?
+			if(scan_result.opening < dog_scan_angle) //TODO: fix this angle
 			{
 				//OK so there is a dog blocking this hallway. let's take note of that. 
-				//if this is 100% reliable, we basically know that we'll have to take the outher route
+				//if this is 100% reliable, we basically know that we'll have to take the other route
 				dog_position=2;
 			}
 
-			if(dog_position==0) //if we didn't alrady see the dog, scan the other hallway for it ...
+			if(dog_position==0) //if we didn't already see the dog, scan the other hallway for it ...
 			{
 				//now scan for another 90 degrees, i.e. from NW to SW - this covers the west facing hallway
-				TURN_IN_PLACE_AND_SCAN( 40, 90 );
-				//scan_result = find_path_in_scan(scan_data, 100, 280, 0, 0); //TODO: adjust this range - is 30" to far?
-				//scan_result = find_path_in_scan(scan_data, 100, 300, 0, 0); //TODO: adjust this range - is 30" to far?
-				scan_result = find_path_in_scan(scan_data, 100, 280, 0, 1); //TODO: adjust this range - is 30" to far?
-				//scan_result = find_path_in_scan(scan_data, 100, 400, 0, 1); //TODO: adjust this range - is 30" to far?
-				//scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1); //TODO: adjust this range - is 30" to far?
+				TURN_IN_PLACE_AND_SCAN( 40, 90 , dog_scan_filter);
+				scan_result = find_path_in_scan(scan_data, 100, dog_scan_distance, 0, dog_scan_sensor); //TODO: adjust this range - is 30" to far?
 			}
 			else
 			{
 				TURN_IN_PLACE(turn_speed, 45);	//now we are facing West again
 			}
 
-			if( (dog_position == 0) && (scan_result.opening < 20) ) //TODO: fix this angle
+			if( (dog_position == 0) && (scan_result.opening < dog_scan_angle) ) //TODO: fix this angle
 			{
 				dog_position=3;
 				//if there is a dog / obstacle right in front, then there won't be a 2nd dog to worry about...
 				//just fallow the left wall...//eventually we'll wind up inside room 4, either via door on North side or on South side
 				//so this takes care of 2 of 6 possible cases
 				TURN_IN_PLACE(turn_speed, -(90+45)); //now we are facing north again
-				TURN_IN_PLACE(turn_speed,15);
-				MOVE2(turn_speed, 240,110,150);
+				TURN_IN_PLACE(turn_speed, find4_turn_1); //15);
+				MOVE2(turn_speed, find4_distance_2,find4_left_margin_1,find4_right_margin_1);
 				RESET_LINE_DETECTION();
 				START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL); //start  following the LEFT wall
 
@@ -1143,7 +1246,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			}
 
 			//MOVE(turn_speed, 32*25);		//move forward about 30inches so that we are in the position where the door could be
-			MOVE2(turn_speed, 32*25,135,135);		//move forward about 30inches so that we are in the position where the door could be
+			//MOVE2(turn_speed, 32*25,135,135);		//move forward about 30inches so that we are in the position where the door could be
+			MOVE2(turn_speed, find4_distance_3, find4_left_margin_2, find4_right_margin_2);
 			TURN_IN_PLACE(turn_speed, -90);	//now we would be facing the door
 
 			if(s.ir[AI_IR_N] > 160)	//is there an opening right in front of us?
@@ -1209,21 +1313,21 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_wait(line_alignment_done_evt);
 
 			//move a little bit into the room
-			MOVE(turn_speed, 100);
+			MOVE(turn_speed, search4_distance_1); //100);
 
 			//we are facing either North or South, but it doesn't really matter...
 
 			//turn right
-			TURN_IN_PLACE(turn_speed, -100);
+			TURN_IN_PLACE(turn_speed, search4_turn_1); //-100);
 
 			//now start to scan for the flame by turning left about 200 degrees
 			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			TURN_IN_PLACE_AND_SCAN(turn_speed, 200);
-			scan_result = find_peak_in_scan(scan_data,360,30);
-			if(scan_result.flame_center_value > 200) 
+			TURN_IN_PLACE_AND_SCAN(turn_speed, search4_turn_2, flame_scan_filter); //200);
+			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
 				//turn into the direction where we saw the peak
-				TURN_IN_PLACE( turn_speed, -(200-scan_result.center_angle) );
+				TURN_IN_PLACE( turn_speed, -(search4_turn_2-scan_result.center_angle) );
 				//we are looging straight at the candle - proceed with extinguishing
 				switch_(s_searching_room_4, s_move_to_candle);
 			}
@@ -1254,18 +1358,33 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//if we reach the candle circle, stop - at this point we are withing 30cm / 12" of the candle
 			WAIT_FOR_LINE_DETECTION();
 			HARD_STOP();
-			task_wait(1000);
-
-			//now get a little closer
-			//MOVE(turn_speed,100);
 
 			//now turn on the fan and sweep left and right for some time
 			FAN_ON(); 
 			task_wait(1000);
-			TURN_IN_PLACE(5,-20);
-			TURN_IN_PLACE(5, 40);
-			TURN_IN_PLACE(5,-40);
-			TURN_IN_PLACE(5, 20);
+			TURN_IN_PLACE(5,-10); 
+			task_wait(1000);
+			TURN_IN_PLACE(5,-10);
+			task_wait(1000);
+			TURN_IN_PLACE(5, 10);
+			task_wait(1000);
+			TURN_IN_PLACE(5, 10);
+			task_wait(1000);
+			TURN_IN_PLACE(5, 10);
+			task_wait(1000);
+			TURN_IN_PLACE(5, 10);
+			task_wait(1000);
+			TURN_IN_PLACE(5,-10);
+			task_wait(1000);
+			TURN_IN_PLACE(5,-10);
+			task_wait(1000);
+			TURN_IN_PLACE(5,-10);
+			task_wait(1000);
+			TURN_IN_PLACE(5,-10);
+			task_wait(1000);
+			TURN_IN_PLACE(5, 10);
+			task_wait(1000);
+			TURN_IN_PLACE(5, 10);
 			task_wait(1000);
 			FAN_OFF(); 
 
@@ -1401,7 +1520,7 @@ void test(u08 cmd, u08 *param)
 			TURN_IN_PLACE( 40, -(220-scan_result.center_angle) );
 			#endif
 
-			TURN_IN_PLACE_AND_SCAN( 40, 90 );
+			TURN_IN_PLACE_AND_SCAN( 40, 90, 1);
 			scan_result = find_path_in_scan(scan_data, 100, 300, 0, 1);
 			dbg_printf("scan_result: %d,%d,%d,%d\n", scan_result.opening, scan_result.center_angle, scan_result.rising_edge_angle, scan_result.falling_edge_angle);
 			//for(i=0;i<100;i++) {dbg_printf("scan_data[%03d]=%03d,%03d\n",i, scan_data[i].angle, scan_data[i].ir_north);task_wait(10);}
@@ -1463,6 +1582,7 @@ void test(u08 cmd, u08 *param)
 
 int main(void)
 {
+	T0(1,1);
 	//initialize hardware & pololu libraries
 	hardware_init();
 	//i2c_init();
@@ -1491,8 +1611,15 @@ int main(void)
 
 	//initialize our state
 	memset(&s,0,sizeof(t_state));
-	s.inputs.vbatt=10000;
+	s.inputs.vbatt=read_battery_millivolts_svp();
 	//LOOKUP_initialize_table(line_sensor_table);  //only needed if we need to normalize left & right line sensor for some reason
+
+	T0(1,2);
+	dbg_printf("0123456789 %d",0);
+	//T1(2,3);
+	//T2(4);
+	//T3(5,6);
+
 
 
 	//initialize the cooperative multitasking subsystem and start all tasks
@@ -1523,7 +1650,7 @@ int main(void)
 
 
 	#else
-	task_create( fsm_test_task, 1, NULL, 0, 0 );
+	task_create( fsm_test_task,				1,   NULL, 0, 0 );
 	#endif
 	os_start();
 	
