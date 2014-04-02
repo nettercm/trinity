@@ -5,7 +5,7 @@
 extern void fsm_test_task(void);
 
 
-#define STATE_HAS_CHANGED ( last_state != state ? ((last_state=state)+1) : 0) /*need to make sure this always returns >0 even if new state is '0'*/
+#define STATE_HAS_CHANGED ( last_state != state ? (t_entry=get_ms()),((last_state=state)+1) : 0) /*need to make sure this always returns >0 even if new state is '0'*/
 #define ENTER(s) if(STATE_HAS_CHANGED)
 #define EXIT(s) _label ## s: if(state!=last_state)
 #define FIRST_STATE(s) if(state==s)
@@ -19,6 +19,7 @@ extern void fsm_test_task(void);
 #define next_(s) NEXT_STATE(s)
 #define switch_(cs,ns) SWITCH_STATE(cs,ns)
 #define leave_(cs) LEAVE_STATE(cs)
+#define time_since_entry_()  (get_ms()-t_entry)
 
 volatile char _dummy_;
 #define NOP() _dummy_++;

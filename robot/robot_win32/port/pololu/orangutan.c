@@ -6,6 +6,7 @@
 
 #include "sim.h"
 
+unsigned long msCounter=0;
 
 
 //int on the SVP-1284 / Atmega is 16bits.

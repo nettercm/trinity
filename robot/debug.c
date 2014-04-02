@@ -12,6 +12,10 @@
 #include <stdarg.h>
 #include <pololu/orangutan.h>
 
+unsigned char trace_buffer[256];
+unsigned char *tbptr = trace_buffer;
+unsigned char *msptr = ((unsigned char*)(&msCounter))+0;
+
 char _b[128];
 
 u08 dbg_buffer[DBG_BUFFER_SIZE];
@@ -36,7 +40,7 @@ int	usb_printf(const char *__fmt, ...)
 	return 0;
 }
 
-
+//typically around 100us
 int	dbg_printf(const char *__fmt, ...)
 {
 	int size,i;
@@ -44,7 +48,6 @@ int	dbg_printf(const char *__fmt, ...)
 	va_start(ap, __fmt);
 	size = vsprintf(_b, __fmt, ap);
 	va_end(ap);
-	//serial_send_blocking(USB_COMM,_b,size);
 	for(i=0;i<size;i++)
 	{
 		dbg_buffer[dbg_buffer_write] = _b[i];
@@ -72,7 +75,7 @@ uint8 SIM_serial_get_received_bytes(void)
 	}	
 	else
 	{
-		i += 2;
+		i += 1;
 		if(i>128) i=128;
 	}
 	return i;
