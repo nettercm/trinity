@@ -32,6 +32,35 @@ int update_interval=1000;
 
 extern void print1(char *str);
 
+char log_buffer[LOG_BUFFER_SIZE];
+volatile int log_write_index=0;
+volatile int log_read_index=0;
+
+
+int	log_printf(const char *__fmt, ...)
+{
+	int size,i;
+	va_list ap;
+	char _b[500];
+
+	va_start(ap, __fmt);
+	size = vsprintf(_b, __fmt, ap);
+	va_end(ap);
+	for(i=0;i<size;i++)
+	{
+		log_buffer[log_write_index] = _b[i];
+		log_write_index++;
+		if(log_write_index>=LOG_BUFFER_SIZE) log_write_index=0;
+		if(log_write_index==log_read_index)
+		{
+			log_write_index--;
+			if(log_write_index<0) log_write_index=LOG_BUFFER_SIZE-1;
+			return i+1;
+		}
+	}
+	return i;
+}
+
 
 int serial_receive(HANDLE p, unsigned char *buffer)
 {
@@ -47,7 +76,7 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 
 		if(rx_buffer->payload[1]==2)
 		{
-			printf("%s",&(rx_buffer->payload[2]));
+			log_printf("%s",&(rx_buffer->payload[2]));
 		}
 		else
 		{
@@ -61,9 +90,9 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 			(rx_buffer->magic2[1] != 0xba) )
 		{
 			int i;
-			printf("%02x %02x %02x %02x\n",rx_buffer->magic1[0],rx_buffer->magic1[1],rx_buffer->magic2[0],rx_buffer->magic2[1]);
-			for(i=0; i<200; i++) printf("%02x",(unsigned int)buffer[i]);
-			printf("\n");
+			log_printf("%02x %02x %02x %02x\n",rx_buffer->magic1[0],rx_buffer->magic1[1],rx_buffer->magic2[0],rx_buffer->magic2[1]);
+			for(i=0; i<200; i++) log_printf("%02x",(unsigned int)buffer[i]);
+			log_printf("\n");
 			result = -1;
 		}
 	}
@@ -74,18 +103,18 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 
 void detect_packet_loss(void)
 {
-				static u08 previous_seq=0,previous_ack=0;
-				if(rx_buffer->seq != (u08)(previous_seq+1))     printf("\n=============  PC missed a packet ==============\n\n");
-				/* this detection does not work reliably
-				if(rx_buffer->ack != previous_ack)
-				{
-					if(rx_buffer->ack != (u08)(previous_ack+1)) printf("\n-------------  R. missed a packet --------------\n\n");
-				}
-				*/
-				//if(inputs->timestamp_rx != previous_rx_seq+1) printf("TX ERROR (Robot missed a packet)\n");
-				previous_seq=rx_buffer->seq;
-				previous_ack=rx_buffer->ack;
-				//previous_rx_seq=inputs->timestamp_rx;
+	static u08 previous_seq=0,previous_ack=0;
+	if(rx_buffer->seq != (u08)(previous_seq+1))     log_printf("\n=============  PC missed a packet ==============\n\n");
+	/* this detection does not work reliably
+	if(rx_buffer->ack != previous_ack)
+	{
+	if(rx_buffer->ack != (u08)(previous_ack+1)) printf("\n-------------  R. missed a packet --------------\n\n");
+	}
+	*/
+	//if(inputs->timestamp_rx != previous_rx_seq+1) printf("TX ERROR (Robot missed a packet)\n");
+	previous_seq=rx_buffer->seq;
+	previous_ack=rx_buffer->ack;
+	//previous_rx_seq=inputs->timestamp_rx;
 }
 
 
@@ -132,6 +161,7 @@ void display_inputs_and_state(t_inputs *inputs)
 	if( (t_delta >= update_interval) || (memcmp(watch,inputs->watch,4)!=0) )
 	{
 		printf(s.msg);
+		//log_printf(s.msg);
 		memcpy(watch,inputs->watch,4);
 		t_last=t_now;
 	}
@@ -150,7 +180,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 	result = serial_receive(s.p,buffer);
 
 	//if(result == 1)
-	if(1)
+	if(1) //let's do this regardless....
 	{
 		//ir_sensor_update(&s.ir_NN_state,inputs->analog[3]);
 
@@ -160,7 +190,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 		{
 			do_user_input = 2;
 			process_user_input();
-			CMD_send();
+			//CMD_send(); //this was moved into process_user_input() and is now done only if required;
 		}
 
 		//kalman_update(&ks,inputs->analog[0]);
@@ -172,7 +202,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 		//display_inputs_and_state(s.inputs);
 		
 		display_inputs_and_state(&inputs);
-		detect_packet_loss();
+		if(result) detect_packet_loss();
 
 		inputs_history[history_index] = inputs;
 		history_index++;
@@ -180,10 +210,17 @@ int loop(void) //return 0 if we did not actually go throught the loop
 	}
 	else 
 	{
-		printf("\nError.  serial_receive() failed with result=%d\n",result);
+		log_printf("\nError.  serial_receive() failed with result=%d\n",result);
 		s.p = serial_reopen(s.p,s.port);
 		Sleep(2000);
 	}
+
+	if(!result) 
+	{
+		Sleep(20); //in case the port is open but no data is coming in....
+		//log_printf("No data received!\r\n");
+	}
+
 	return result;
 }
 

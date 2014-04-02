@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "debug.h"
 
+
 /*
 
 current distance from the wall
@@ -28,14 +29,12 @@ int serial_write(HANDLE p,char *message,DWORD size)
 	BOOL result;
 	DWORD written=0;
 
-	if(0)
+	if(1)
 	{
 		int i;
-		for(i=0;i<size;i++)
-		{
-			printf("%02X,",(unsigned char)message[i]);
-		}
-		printf("00\n");
+		log_printf("%7lu: ",GetTickCount());
+		for(i=0;i<size;i++)	log_printf("%02X,",(unsigned char)message[i]);
+		log_printf(" \n");
 	}
 
 	result = WriteFile(p,message,size,&written,NULL);
@@ -329,7 +328,7 @@ HANDLE serial_open(char *port)
 		ClearCommError(p,NULL,NULL);
 		if(p==INVALID_HANDLE_VALUE)
 		{
-			printf("can't open port '%s'\n",port);
+			log_printf("can't open port '%s'\n",port);
 			Sleep(1000);
 		}
 	}
@@ -356,7 +355,7 @@ HANDLE serial_reopen(HANDLE p, char *port)
 		p=serial_init(port, 115200,ONESTOPBIT); //BT2 is COM26;  BT1 on small USB transceiver is COM27; BT1 on new USB is COM28
 		if(p==INVALID_HANDLE_VALUE)
 		{
-			printf("can't open port\n");
+			log_printf("can't open port\n");
 		}
 		else
 		{

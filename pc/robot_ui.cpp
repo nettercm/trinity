@@ -13,9 +13,9 @@ int main(array<System::String ^> ^args)
 {
 	AllocConsole();
 	freopen("CON","wb",stdout);
-	printf("PC <-> Robot Interface v1.0  (UI version)\n\n");
-	printf("sizeof(t_inputs)      = %3d\n",sizeof(t_inputs));
-	printf("sizeof(t_frame_to_pc) = %3d\n",sizeof(t_frame_to_pc));
+	log_printf("PC <-> Robot Interface v1.0  (UI version)\n\n");
+	log_printf("sizeof(t_inputs)      = %3d\n",sizeof(t_inputs));
+	log_printf("sizeof(t_frame_to_pc) = %3d\n",sizeof(t_frame_to_pc));
 
 	// Enabling Windows XP visual effects before any controls are created
 	Application::EnableVisualStyles();
@@ -50,7 +50,7 @@ namespace robot_ui
 		float f;
 		String ^s;
 
-		//this->SetStyle(ControlStyles::DoubleBuffer, true);
+		log_printf("++ f1::f1(void)\n");
 
 		timeBeginPeriod(1);
 
@@ -73,13 +73,15 @@ namespace robot_ui
 
 		InitializeParametersTab();
 
-		printf("Sleep(1) = %lu\n",t2-t1);
+		log_printf("Timing test:  Sleep(1) = %lu\n",t2-t1);
 
 		g = radar_tabPage->CreateGraphics();
 		//
 		//TODO: Add the constructor code here
 		//
 		ignore_parameter_changes = 0;
+
+		log_printf("-- f1::f1(void)\n");
 	}
 
 
@@ -120,7 +122,9 @@ namespace robot_ui
 		int result = 0;
 		static float theta = 0.0f;
 
-		data_init();
+		//data_init();
+
+		#if 1
 
 		while(1)
 		{
@@ -146,18 +150,59 @@ namespace robot_ui
 				result = loop();
 				if(result)
 				{
-					/*  the following is already done inside loop()
-					inputs = s.inputs;
-					inputs_history[history_index] = *inputs;
-					history_index++;
-					*/
-
 					update_ui();
 				}
-
-				//skip--; if(skip==0) { term(s.msg); skip=5;}
 			}
 		}
+
+	#else
+		while(1)
+		{
+			Sleep(100);
+		}
+	#endif
+	}
+
+
+
+
+	/******************************************************************************************************************************************
+	*
+	******************************************************************************************************************************************/
+	System::Void f1::serial_timer_Tick(System::Object^  sender, System::EventArgs^  e) 
+	{
+		int result = 0;
+		static float theta = 0.0f;
+		
+		#if 0
+
+		if(s.p == INVALID_HANDLE_VALUE)
+		{
+			//Sleep(20);
+			inputs_history[history_index].analog[0] = history_index;
+			inputs_history[history_index].theta = theta;
+			inputs_history[history_index].ir[0] = 100;
+			inputs_history[history_index].ir[1] = 200;
+			inputs_history[history_index].ir[2] = 300;
+			inputs_history[history_index].ir[3] = 400;
+			history_index++;
+			theta += (PI/180.0f);
+			if(theta >= 2.0f*PI) 
+			{
+				theta = 0.0f;
+			}
+			//log(".");
+		}
+		else
+		{
+			result = loop();
+			if(result)
+			{
+				main_textBox_vbatt->Text = Convert::ToString(((float)s.inputs->vbatt)/1000.0f)+"V";
+			}
+		}
+
+		#endif
 	}
 
 
@@ -184,7 +229,7 @@ namespace robot_ui
 			log("Opening serial port COM" + str + "\r\n" );
 			s.p = serial_init(port,115200,ONESTOPBIT);
 			h = s.p;
-			printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
+			log_printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
 			if(s.p == INVALID_HANDLE_VALUE) 
 			{
 				log("Unable to open the serial port\r\n");
@@ -205,7 +250,7 @@ namespace robot_ui
 				sprintf(s.port,"");
 				log("Closing the serial port\r\n");
 				result = CloseHandle(h); if(!result) show_last_error("CloseHandle()");
-				printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
+				log_printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
 				graphs_timer->Enabled = FALSE;
 				graphs_checkBox_enable->Checked = false;
 			}
@@ -265,7 +310,7 @@ namespace robot_ui
 		if(s == "F11"	) key=KEY_F11;
 		if(s == "F12"	) key=KEY_F12;
 
-		printf("Key = 0x%04x\n",key);
+		log_printf("Key = 0x%04x\n",key);
 	}
 
 

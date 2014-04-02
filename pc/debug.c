@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include "debug.h"
 
-volatile unsigned long debug_functions = DBG_ALWAYS | DBG_MAIN;// | DBG_SER_READ;
+extern int	log_printf(const char *__fmt, ...);
+
+volatile unsigned long debug_functions = DBG_ALWAYS | DBG_MAIN; // | DBG_SER_READ;
 
 
 void dbg(unsigned long function, char *formatstring, ...) 
@@ -13,7 +15,7 @@ void dbg(unsigned long function, char *formatstring, ...)
    va_start(args, formatstring);
 
    sprintf( buff, formatstring, args);
-   if(debug_functions & function) printf("%s",buff);
+   if(debug_functions & function) log_printf("%s",buff);
 }
 
 
@@ -36,7 +38,7 @@ void show_last_error(char *s)
 
     // Display the error message and exit the process
 
-	printf("%s: %s\n",s,lpMsgBuf);
+	log_printf("%s: %s\n",s,lpMsgBuf);
 
     LocalFree(lpMsgBuf);
 }

@@ -6,6 +6,7 @@
 #include "kalman.h"
 #include "commands.h"
 #include "..\robot\config.h"
+#include "debug.h"
 
 #include <io.h>
 #include <fcntl.h>     /* for _O_TEXT and _O_BINARY */
@@ -21,6 +22,10 @@ extern "C"
 	extern volatile t_inputs inputs_history[200000];
 	extern volatile int history_index;
 	extern int update_interval;
+	extern char log_buffer[];
+	extern volatile int log_write_index;
+	extern volatile int log_read_index;
+	extern int	log_printf(const char *__fmt, ...);
 }
 
 
@@ -84,6 +89,8 @@ namespace robot_ui {
 	private: System::Windows::Forms::Label^  label6;
 	private: System::Windows::Forms::TabPage^  map_tab;
 	private: System::Windows::Forms::PictureBox^  map_picture;
+	private: System::Windows::Forms::Timer^  serial_timer;
+	private: System::Windows::Forms::Timer^  ui_timer;
 
 	private: System::Random^	random;
 
@@ -319,6 +326,8 @@ namespace robot_ui {
 			this->main_main_btn_stop_beh = (gcnew System::Windows::Forms::Button());
 			this->main_lbl_rate = (gcnew System::Windows::Forms::Label());
 			this->main_comboBox_rate = (gcnew System::Windows::Forms::ComboBox());
+			this->serial_timer = (gcnew System::Windows::Forms::Timer(this->components));
+			this->ui_timer = (gcnew System::Windows::Forms::Timer(this->components));
 			this->tabControl1->SuspendLayout();
 			this->parameters_tab->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->parameters_dataGridView))->BeginInit();
@@ -1050,6 +1059,7 @@ namespace robot_ui {
 			// 
 			// log_txt
 			// 
+			this->log_txt->AcceptsReturn = true;
 			this->log_txt->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left) 
 				| System::Windows::Forms::AnchorStyles::Right));
@@ -1061,6 +1071,7 @@ namespace robot_ui {
 			this->log_txt->ScrollBars = System::Windows::Forms::ScrollBars::Both;
 			this->log_txt->Size = System::Drawing::Size(1090, 631);
 			this->log_txt->TabIndex = 0;
+			this->log_txt->WordWrap = false;
 			// 
 			// main_textBox_vbatt
 			// 
@@ -1245,6 +1256,18 @@ namespace robot_ui {
 			this->main_comboBox_rate->Text = L"1";
 			this->main_comboBox_rate->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::main_comboBox_behavior_id_SelectedIndexChanged);
 			// 
+			// serial_timer
+			// 
+			this->serial_timer->Enabled = true;
+			this->serial_timer->Interval = 10;
+			this->serial_timer->Tick += gcnew System::EventHandler(this, &f1::serial_timer_Tick);
+			// 
+			// ui_timer
+			// 
+			this->ui_timer->Enabled = true;
+			this->ui_timer->Interval = 30;
+			this->ui_timer->Tick += gcnew System::EventHandler(this, &f1::ui_timer_Tick);
+			// 
 			// f1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -1300,6 +1323,33 @@ namespace robot_ui {
 	private: System::Void label1_Click(System::Object^  sender, System::EventArgs^  e) {
 			 }
 private: System::Void label2_Click(System::Object^  sender, System::EventArgs^  e) {
+		 }
+private: System::Void serial_timer_Tick(System::Object^  sender, System::EventArgs^  e);
+
+private: System::Void ui_timer_Tick(System::Object^  sender, System::EventArgs^  e) 
+		 {
+			 char s[500];
+			 int i;
+			 if(log_read_index != log_write_index)
+			 {
+				 i=0;
+				 while( (log_read_index != log_write_index)  && (i<499) )
+				 {
+					 s[i]=log_buffer[log_read_index];
+					 log_read_index++;
+					 if(s[i] == 10)
+					 {
+						 s[i++] = 0;
+						 log_txt->AppendText(gcnew String(s));
+						 log_txt->AppendText(System::Environment::NewLine);
+						 i=0;
+					 }
+					 else i++;
+					 if(log_read_index>=LOG_BUFFER_SIZE) log_read_index=0;
+				 }
+				 s[i]=0;
+				 log_txt->AppendText(gcnew String(s));
+			 }
 		 }
 };
 

@@ -43,7 +43,7 @@ namespace robot_ui
 				count++;
 			}
 		}
-		printf("grid x,y,total,w,h=%d,%d,%d,%f,%f\n",x_count,y_count,count,g->VisibleClipBounds.Width,g->VisibleClipBounds.Height);
+		log_printf("grid x,y,total,w,h=%d,%d,%d,%f,%f\n",x_count,y_count,count,g->VisibleClipBounds.Width,g->VisibleClipBounds.Height);
 	}
 
 
@@ -199,7 +199,7 @@ namespace robot_ui
 			if(i>=0)
 			{
 				theta = inputs_history[i].theta;
-				printf("radar_tabPage_Paint(): theta = %04.1f\n",theta);
+				log_printf("radar_tabPage_Paint(): theta = %04.1f\n",theta);
 				y=310.0f + 300.0f * sinf( theta * 3.14f / 180.0f);
 				x=310.0f + 300.0f * cosf( theta * 3.14f / 180.0f);
 				//g->FillEllipse(b2,(int) x, (int) y, 4, 4);

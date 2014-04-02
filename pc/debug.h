@@ -9,6 +9,10 @@
 extern "C" {
 #endif
 
+#define LOG_BUFFER_SIZE  100000
+
+extern int	log_printf(const char *__fmt, ...);
+
 #define DBG_ALWAYS		0x80000000UL
 #define DBG_MAIN		0x00000002UL
 #define DBG_SER_READ	0x00000001UL
@@ -18,7 +22,7 @@ extern void show_last_error(char *s) ;
 
 #ifdef WIN32UI
 
-#define DBG(function, params) if(debug_functions & function)  printf params
+#define DBG(function, params) if(debug_functions & function)  log_printf params
 
 #else
 

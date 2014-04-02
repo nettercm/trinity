@@ -62,22 +62,27 @@ namespace robot_ui
 				break;
 			case S08_VALUE:
 				v.s08 = (sint8) Convert::ToInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				log(Convert::ToString(v.s08) + "\n");
 				break;
 			case U16_VALUE:
 				v.u16 = Convert::ToUInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				log(Convert::ToString(v.u16) + "\n");
 				break;
 			case S16_VALUE:
 				v.s16 = Convert::ToInt16(parameters_dataGridView->Rows[r]->Cells[4]->Value);
-				log(Convert::ToString(v.s16));
+				log(Convert::ToString(v.s16) + "\n");
 				break;
 			case U32_VALUE:
 				v.u32 = Convert::ToUInt32(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				log(Convert::ToString((unsigned int)v.u32) + "\n");
 				break; 
 			case S32_VALUE:
 				v.s32 = Convert::ToInt32(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				log(Convert::ToString(v.s32) + "\n");
 				break;
 			case FLT_VALUE:
 				v.f = Convert::ToSingle(parameters_dataGridView->Rows[r]->Cells[4]->Value);
+				log(Convert::ToString(v.f) + "\n");
 				break;
 
 			}

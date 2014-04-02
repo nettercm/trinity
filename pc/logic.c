@@ -108,6 +108,7 @@ void process_user_input(void)
 	static sint16 l=0, r=0;
 	int ml_bias=0;
 	unsigned int c=0;
+	int update_required = 0;
 
 	//outputs->cmd = 0;
 
@@ -117,7 +118,7 @@ void process_user_input(void)
 	{
 		c=key; 
 		key=0;
-		printf("c = '%c' = 0x%04x\n",c,c);
+		log_printf("c = '%c' = 0x%04x\n",c,c);
 	}
 #endif
 
@@ -127,9 +128,11 @@ void process_user_input(void)
 		c = _getch();
 		if(c==0x00) c=_getch() + 0xe100;
 		if(c==0xe0) c=_getch() + 0xe000;
-		printf("c = '%c' = 0x%04x\n",c,c);
+		log_printf("c = '%c' = 0x%04x\n",c,c);
 	}
 //#endif
+
+	update_required=1;
 
 	switch(c)
 	{
@@ -280,7 +283,7 @@ void process_user_input(void)
 		break;
 
 	default:
-		//printf("c = '%c' = 0x%02x\n",c,c);
+		update_required=0;
 		break;
 	}
 
@@ -326,9 +329,11 @@ void process_user_input(void)
 			//CMD_set_motors(m_l_speed , m_r_speed ); // for baby tracks
 			CMD_motor_command(7 , 1,1 , m_l_speed , m_r_speed);
 			l=m_l_speed; r=m_r_speed;
+			update_required=1;
 		}
 	}
 	//CMD_set_motors(m_l_speed*1.0f, m_r_speed * 0.97f); //for right turns
+	if(update_required) CMD_send();
 }
 
 
@@ -337,6 +342,7 @@ void process_user_input(void)
 
 //////////////////////////////////////////////////////////////////////////////
 
+#if 0
 
 void outputs_update(HANDLE p, t_inputs *inputs, t_outputs *outputs)
 {
@@ -350,4 +356,4 @@ void outputs_update(HANDLE p, t_inputs *inputs, t_outputs *outputs)
 	}
 }
 
-
+#endif
