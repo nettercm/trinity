@@ -26,9 +26,9 @@ uint8 us_sequence_E_SE_NE[] = {2, US_E, US_SE };
 void ultrasonic_hardware_init(void)
 {
 	set_digital_output(IO_US_ECHO_AND_PING_1, LOW);
-	set_digital_output(IO_US_ECHO_AND_PING_2, LOW);
+	//set_digital_output(IO_US_ECHO_AND_PING_2, LOW);
 	set_digital_input(IO_US_ECHO_AND_PING_1,HIGH_IMPEDANCE);
-	set_digital_input(IO_US_ECHO_AND_PING_2,HIGH_IMPEDANCE);
+	//set_digital_input(IO_US_ECHO_AND_PING_2,HIGH_IMPEDANCE);
 }
 
 void ultrasonic_set_focus(uint8 sensor_id)
@@ -76,7 +76,7 @@ void set_ultrasonic_mux(uint8 addr)
 
 	
 	
-void ultrasonic_update_fsm(void)
+void ultrasonic_update_fsm(uint8 cmd, uint8 *param)
 {
 	static u08 cfg_idx_bitmap, cfg_idx_echo_timeout, cfg_idx_intra_delay;
 	static u08 bitmap;

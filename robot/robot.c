@@ -2,7 +2,7 @@
 
 #include "standard_includes.h"
 
-const unsigned char pulseInPins[] = { IO_US_ECHO_AND_PING_1 , IO_US_ECHO_AND_PING_2 };
+const unsigned char pulseInPins[] = { IO_US_ECHO_AND_PING_1 }; //, IO_US_ECHO_AND_PING_2 };
 
 extern int svp_demo(void);
 extern void commands_process_fsm(u08 cmd, u08 *param);
@@ -107,7 +107,7 @@ int hardware_init(void)
 
 	motors_hardware_init();
 	
-	//pulse_in_start(pulseInPins, 2);		// start measuring pulses (1 per each sonar;  uvtorn not used right now)
+	pulse_in_start(pulseInPins, 1);		// start measuring pulses (1 per each sonar;  uvtorn not used right now)
 	
 	return 0;
 }
@@ -474,7 +474,11 @@ void line_detection_fsm(u08 cmd, u08 *param)
 
 		next_(s_crossed_line)
 		{
-			enter_(s_crossed_line) 	{ lines_crossed++; }
+			enter_(s_crossed_line) 	
+			{
+				lines_crossed++;
+				dbg_printf("LINE! #=%d\n",lines_crossed);
+			}
 			if( (s.line[0]>=black) && (s.line[1]>=black) )  state = s_not_crossed;
 			exit_(s_crossed_line)  {}
 		}
@@ -586,6 +590,7 @@ u08 move_manneuver2(u08 cmd, s16 speed, float distance, s16 safe_left, s16 safe_
 		motor_command(7,2,2,(10-bias)*sign,(10+bias)*sign);
 		motor_command(6,1,1,(speed-bias)*sign,(speed+bias)*sign);
 		state = 1;
+		dbg_printf("move_manneuver2(c=%d, s=%d, d=%d, sl=%d, sr=%d)\n",cmd, speed, (int)distance, safe_left, safe_right);
 	}
 	else
 	{
@@ -596,6 +601,8 @@ u08 move_manneuver2(u08 cmd, s16 speed, float distance, s16 safe_left, s16 safe_
 		else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-40 ))   motor_command(7,1,1, sign*(10-bias), sign*(10+bias) );
 		else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-90 ))   motor_command(6,1,1, sign*(20-bias),sign*(20+bias));
 		else motor_command(6,1,1,(speed-bias)*sign,(speed+bias)*sign);
+
+		if(s.ir[AI_IR_N] < 60) { motor_command(2,0,0, 0, 0); state = 0; }
 	}
 	return state;
 }
@@ -1006,11 +1013,13 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			TURN_IN_PLACE(turn_speed, room3_turn_3);
 
 			//TODO:  implement a more general "find wall" logic and make it part of the "follow wall" state machine
+			/*
 			motor_command(cmd,accel,decel,turn_speed+5,turn_speed);
 			while( (s.ir[AI_IR_NE] > 120) && (s.ir[AI_IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
 			motor_command(cmd,accel,decel,0,0);
+			*/
 
-			//at this point we should be able to just follow the line a gain
+			//at this point we should be able to just follow the wall a gain
 			state = s_finding_room_2;
 
 			exit_(s_searching_room_3) { }
@@ -1086,9 +1095,11 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			TURN_IN_PLACE(turn_speed, room2_turn_3);
 
+			/*
 			motor_command(6,accel,decel,turn_speed+5,turn_speed);
 			while( (s.ir[AI_IR_NE] > 120) && (s.ir[AI_IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
 			motor_command(cmd,accel,decel,0,0);
+			*/
 			state = s_finding_room_1;
 
 			exit_(s_searching_room_2) { }
@@ -1553,7 +1564,45 @@ void test(u08 cmd, u08 *param)
 			s.behavior_state[TEST_LOGIC]=0;
 		}
 
-
+		if(s.behavior_state[TEST_LOGIC]==3)
+		{
+			TURN_IN_PLACE(50, -90);
+			TURN_IN_PLACE_AND_SCAN(50, 180, 4);
+			scan_result = find_flame_in_scan(scan_data,360,30);
+			if(scan_result.flame_center_value > 150) //TODO: make the minimum flame value a parameter
+			{
+				static int i, i_min;
+				static u16 min=999;
+				static float d;
+				TURN_IN_PLACE( 50, -(180-scan_result.center_angle) );
+				min=999;
+				for(i=scan_result.rising_edge_position-10; i<=scan_result.falling_edge_position+10; i++)
+				{
+					dbg_printf("scan_data[%3d]: ir_n=%3d, a=%d, f=%d\n",i,scan_data[i].ir_north, scan_data[i].angle, scan_data[i].flame);
+					task_wait(50);
+					if(scan_data[i].ir_north < min) { min=scan_data[i].ir_north; i_min=i; }
+				}
+				dbg_printf("distance to candle: %d @i=%d,a=%d\n",min,i_min,scan_data[i_min].angle);
+				if(min<100) min=100;
+				d = (float) (((min-100)*25)/10);
+				MOVE2(50,d,60,60);
+				/*
+				move_manneuver2(1,50,d,(70),(70)); 
+				while(move_manneuver2(0,50,d,(70),(70))) 
+				{
+					OS_SCHEDULE;
+					if( (s.ir[AI_IR_N] <= 60) || (s.ir[AI_IR_NE] <= 60) || (s.ir[AI_IR_NW] <= 60) )
+					{
+						dbg_printf("too close to object/wall! travelled %d\n",encoders_get_distance_since_checkpoint());
+						HARD_STOP();
+						break;
+					}
+				}
+				*/
+				
+			}
+			s.behavior_state[TEST_LOGIC]=0;
+		}
 
 		/*
 		while(s.behavior_state[11]==1) 
@@ -1641,7 +1690,7 @@ int main(void)
 	task_create( serial_receive_fsm,		13,  NULL, 0, 0);
 	task_create( commands_process_fsm,		14,  NULL, 0, 0);
 	task_create( motor_command_fsm,			15,  NULL, 0, 0);
-	//task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
+	task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
 	//task_create( debug_fsm, 17, NULL, 0, 0); //not used right now
 	task_create( wall_follow_fsm,			18,  NULL, 0, 0);
 	task_create( master_logic_fsm,			19,  NULL, 0, 0);

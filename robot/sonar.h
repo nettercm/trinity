@@ -11,7 +11,7 @@
 
 extern int ultrasonic_test();
 extern void set_ultrasonic_mux(uint8 addr);
-extern void ultrasonic_update_fsm(void);
+extern void ultrasonic_update_fsm(uint8 cmd, uint8 *param);
 
 extern void ultrasonic_set_focus(unsigned char sensor_id);
 extern void ultrasonic_set_sequence(unsigned char *new_sequence);

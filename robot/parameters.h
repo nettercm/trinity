@@ -29,7 +29,7 @@ S16(3, 4, "Ki",								0, 0, 0.10*16)
 //----------------------------------------------------------
 GRP(4, "ULTRASONIC RANGE")
 
-U08(4, 1, "sensor enable/disable bitmap",	0, 0, 0xff)
+U08(4, 1, "sensor enable/disable bitmap",	0, 0, 0x01)
 U32(4, 2, "echo timeout",					0, 0, 50)
 U32(4, 3, "minimum delay between sensors",	0, 0, 50)
 //----------------------------------------------------------
@@ -71,8 +71,8 @@ S16(9,22, "search Rm #3: turn #2",			0, 0, 210)		//basically we'll face west aft
 S16(9,23, "search Rm #3: turn #3",			0, 0, 90)		//basically we'll face sount (the door)
 
 S16(9,30, "search Rm #2: enter distance",	0, 0, 180)
-S16(9,31, "search Rm #2: turn #1",			0, 0,-140)
-S16(9,32, "search Rm #2: turn #2",			0, 0, 230)		//we'll face south at the end - need to turn another 90deg left to face the door
+S16(9,31, "search Rm #2: turn #1",			0, 0,-120)
+S16(9,32, "search Rm #2: turn #2",			0, 0, 210)		//we'll face south at the end - need to turn another 90deg left to face the door
 S16(9,33, "search Rm #2: turn #3",			0, 0, 90)		//we'll face south at the end - need to turn another 90deg left to face the door
 
 S16(9,40, "search Rm #1: etner distance",	0, 0, 180)

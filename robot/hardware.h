@@ -23,8 +23,8 @@
 #define AI_FLAME_N    2
 
 
-#define IO_US_ECHO_AND_PING_1 IO_D0
-#define IO_US_ECHO_AND_PING_2 IO_D1
+#define IO_US_ECHO_AND_PING_1 IO_D1
+#define IO_US_ECHO_AND_PING_2 IO_D0
 
 
 //sonar ping and echo
