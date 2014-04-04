@@ -188,7 +188,7 @@ namespace robot_ui
 		float theta;
 		float x,y;
 
-		log("Paint\n");
+		//log("radar_tabPage_Paint\n");
 
 #if 0
 

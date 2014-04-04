@@ -27,9 +27,10 @@ extern unsigned char *msptr;
 extern volatile unsigned long msCounter;
 
 //silence!
+/*
 #define play_note(a,b,c) NOP()
 #define play_from_program_space(a) NOP()
-
+*/
 
 /*
 

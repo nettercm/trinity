@@ -717,6 +717,7 @@ void scan(u08 cmd, u16 moving_avg)
 		if(angle != last_angle) 
 		{
 			scan_data[i].angle = angle;
+			scan_data[i].abs_angle = (s16)(s.inputs.theta * K_rad_to_deg);
 			scan_data[i].flame			= (u08) flame_avg; //255 - s.inputs.analog[AI_FLAME_N];
 			scan_data[i].ir_north		= ir_n_avg; //s.ir[AI_IR_N];
 			scan_data[i].ir_far_north	= ir_fn_avg; //s.ir[AI_IR_FAR_N];
@@ -771,18 +772,18 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static t_scan_result scan_result;
 	enum states 
 	{ 
-		s_disabled=0, 
-		s_waiting_for_start, 
-		s_aligning_south, 
-		s_finding_room_3, 
-		s_searching_room_3,
-		s_finding_room_2,
-		s_searching_room_2,
-		s_finding_room_1,
-		s_searching_room_1,
-		s_finding_room_4,
-		s_searching_room_4,
-		s_move_to_candle
+		s_disabled=0,			//0 
+		s_waiting_for_start,	//1
+		s_aligning_south,		//2
+		s_finding_room_3,		//3
+		s_searching_room_3,		//4
+		s_finding_room_2,		//5
+		s_searching_room_2,		//6
+		s_finding_room_1,		//7
+		s_searching_room_1,		//8
+		s_finding_room_4,		//9
+		s_searching_room_4,		//10
+		s_move_to_candle		//11
 	};
 	static enum states state=s_disabled;
 	static enum states last_state=s_disabled;
@@ -791,6 +792,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static u32 context_switch_counter=0;
 	static u32 t_last=0;
 	static u08 dog_position=0; //1=N side of Rm#4,  2=E side,    3=S side
+	static u08 stop;
 
 	DEFINE_CFG2(s16,turn_speed,						9,10);
 	DEFINE_CFG2(s16,cmd,							9,11);
@@ -977,6 +979,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//if so, then we were facing south initially, and now we are facing west; turn back...
 			if(s.ir[AI_IR_N] < 120)  TURN_IN_PLACE(turn_speed, 90);
 
+			odometry_update_postion(35.0f, 92.0f, 270.0f);
+
 			//on to the next state...
 			state = s_finding_room_3;
 
@@ -1028,6 +1032,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_signal(line_alignment_start_evt); 
 			event_wait(line_alignment_done_evt);
 
+			odometry_update_postion(10.0f, 65.0f, 90.0f);
+
 			//move a little into the room
 			MOVE(turn_speed, room3_enter);
 
@@ -1042,10 +1048,19 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) //TODO: make the minimum flame value a parameter
 			{
-				//turn into the direction where we saw the peak
-				//TODO: (low priority) move the "turn into the direction of the flame" logic into the "move to candle" state
-				TURN_IN_PLACE( turn_speed, -(room3_turn_2-scan_result.center_angle) );
-				//TODO: now confirm that we are still seeing the flame
+				if(scan_result.center_abs_angle > 270)
+				{
+					TURN_IN_PLACE( turn_speed, -(room3_turn_2+room3_turn_1) );
+					MOVE(turn_speed, room3_enter);
+					TURN_IN_PLACE( turn_speed, scan_result.center_abs_angle - s.inputs.theta );
+				}
+				else
+				{
+					//turn into the direction where we saw the peak
+					//TODO: (low priority) move the "turn into the direction of the flame" logic into the "move to candle" state
+					TURN_IN_PLACE( turn_speed, -(room3_turn_2-scan_result.center_angle) );
+					//TODO: now confirm that we are still seeing the flame
+				}
 				switch_(s_searching_room_3, s_move_to_candle);
 			}
 
@@ -1114,6 +1129,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 
+			odometry_update_postion(27.0f, 9.0f, 180.0f);
+
 			//move a little bit into the room
 			MOVE(turn_speed, room2_enter);
 
@@ -1126,8 +1143,17 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
-				//turn into the direction where we saw the peak
-				TURN_IN_PLACE( turn_speed, -(room2_turn_2-scan_result.center_angle) );
+				if(scan_result.center_abs_angle < 90)
+				{
+					TURN_IN_PLACE( turn_speed, -(room2_turn_2+room2_turn_1) );
+					MOVE(turn_speed, room2_enter);
+					TURN_IN_PLACE( turn_speed, scan_result.center_abs_angle - s.inputs.theta );
+				}
+				else
+				{
+					//turn into the direction where we saw the peak
+					TURN_IN_PLACE( turn_speed, -(room2_turn_2-scan_result.center_angle) );
+				}
 				//we are looging straight at the candle - proceed with extinguishing
 				switch_(s_searching_room_2, s_move_to_candle);
 			}
@@ -1189,6 +1215,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 
+			odometry_update_postion(NO_CHANGE_IN_POSITION, NO_CHANGE_IN_POSITION, 0.0f);
+
 			//move a little into the room
 			MOVE(turn_speed, room1_enter);
 
@@ -1201,8 +1229,17 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
-				//turn into the direction where we saw the peak
-				TURN_IN_PLACE( turn_speed, -(room1_turn_2-scan_result.center_angle) );
+				if(scan_result.center_abs_angle > 90)
+				{
+					TURN_IN_PLACE( turn_speed, -(room1_turn_2+room1_turn_1) );
+					MOVE(turn_speed, room1_enter);
+					TURN_IN_PLACE( turn_speed, scan_result.center_abs_angle - s.inputs.theta );
+				}
+				else
+				{
+					//turn into the direction where we saw the peak
+					TURN_IN_PLACE( turn_speed, -(room1_turn_2-scan_result.center_angle) );
+				}
 				switch_(s_searching_room_1, s_move_to_candle);
 			}
 
@@ -1245,6 +1282,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 			//TODO: make a note how far away we are from the wall on the right, because it affects a maneuver further down. (but watch out for mirrors!)
+
+			odometry_update_postion(89.0f, 36.0f, 90.0f);
+
 
 			//completely exit from room 1 until we have reached the center of the intersection
 			MOVE(turn_speed, find4_distance_1); //260); //TODO: make this a parameter
@@ -1367,6 +1407,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 
+			if(s.inputs.theta < (180.0f*K_deg_to_rad)) 	odometry_update_postion(57.0f, 56.0f, 90.0f);
+			else odometry_update_postion(66.0f, 76.0f, 270.0f);
+
 			//move a little bit into the room
 			MOVE(turn_speed, search4_distance_1); //100);
 
@@ -1381,8 +1424,17 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
-				//turn into the direction where we saw the peak
-				TURN_IN_PLACE( turn_speed, -(search4_turn_2-scan_result.center_angle) );
+				if(scan_result.center_abs_angle > 270)
+				{
+					TURN_IN_PLACE( turn_speed, -(search4_turn_2+search4_turn_1) );
+					MOVE(turn_speed, room2_enter);
+					TURN_IN_PLACE( turn_speed, -135 );
+				}
+				else
+				{
+					//turn into the direction where we saw the peak
+					TURN_IN_PLACE( turn_speed, -(search4_turn_2-scan_result.center_angle) );
+				}
 				//we are looging straight at the candle - proceed with extinguishing
 				switch_(s_searching_room_4, s_move_to_candle);
 			}
@@ -1407,12 +1459,37 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//now move forward until we reach the candle circle; 
 			RESET_LINE_DETECTION();
 
+			TURN_IN_PLACE(turn_speed, -45);
+			TURN_IN_PLACE_AND_SCAN(turn_speed, 90, flame_scan_filter);
+			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+			if(scan_result.flame_center_value < flame_found_threashold) 
+			{
+				state = s_disabled;
+				leave_(s_move_to_candle);
+			}
+
+			//turn into the direction where we saw the peak
+			TURN_IN_PLACE( turn_speed, -(90-scan_result.center_angle) );
+
 			//start moving straight
-			GO(turn_speed*2);
+			GO(30);
+			stop=0;
+			while(stop==0) 
+			{
+				OS_SCHEDULE;
+				if( (s.ir[AI_IR_N] <= 50) ) stop |= 0x01;
+				if( (s.ir[AI_IR_NE] <= 50)) stop |= 0x02;
+				if( (s.ir[AI_IR_NW] <= 50)) stop |= 0x04;
+				if( (s.inputs.sonar[0] <= 80) ) stop |= 0x08;
+
+			}
+			dbg_printf("too close to object/wall! reason: 0x%02x\n",stop);
+			HARD_STOP();
+
 
 			//if we reach the candle circle, stop - at this point we are withing 30cm / 12" of the candle
-			WAIT_FOR_LINE_DETECTION();
-			HARD_STOP();
+			//WAIT_FOR_LINE_DETECTION();
+			//HARD_STOP();
 
 			//now turn on the fan and sweep left and right for some time
 			FAN_ON(); 
@@ -1594,15 +1671,17 @@ void test(u08 cmd, u08 *param)
 
 		if(s.behavior_state[TEST_LOGIC]==3)
 		{
-			TURN_IN_PLACE(50, -90);
-			TURN_IN_PLACE_AND_SCAN(50, 180, 4);
+			TURN_IN_PLACE(40, -90);
+			TURN_IN_PLACE_AND_SCAN(40, 180, 4);
 			scan_result = find_flame_in_scan(scan_data,360,30);
 			if(scan_result.flame_center_value > 150) //TODO: make the minimum flame value a parameter
 			{
 				static int i, i_min;
 				static u16 min=999;
 				static float d;
-				TURN_IN_PLACE( 50, -(180-scan_result.center_angle) );
+				static u08 stop=0;
+				TURN_IN_PLACE( 40, -(180-scan_result.center_angle+2) );
+				/*
 				min=999;
 				for(i=scan_result.rising_edge_position-10; i<=scan_result.falling_edge_position+10; i++)
 				{
@@ -1614,19 +1693,26 @@ void test(u08 cmd, u08 *param)
 				if(min<100) min=100;
 				d = (float) (((min-100)*25)/10);
 				MOVE2(50,d,60,60);
-				/*
-				move_manneuver2(1,50,d,(70),(70)); 
-				while(move_manneuver2(0,50,d,(70),(70))) 
+				*/
+				
+				stop=0;
+				move_manneuver2(1,30,9999,(80),(90)); 
+				while(move_manneuver2(0,30,9999,(70),(70))) 
 				{
 					OS_SCHEDULE;
-					if( (s.ir[AI_IR_N] <= 60) || (s.ir[AI_IR_NE] <= 60) || (s.ir[AI_IR_NW] <= 60) )
+					if( (s.ir[AI_IR_N] <= 60) ) stop |= 0x01;
+					if( (s.ir[AI_IR_NE] <= 60)) stop |= 0x02;
+					if( (s.ir[AI_IR_NW] <= 60)) stop |= 0x04;
+					if( (s.inputs.sonar[0] <= 100) ) stop |= 0x08;
+
+					if(stop != 0)
 					{
-						dbg_printf("too close to object/wall! travelled %d\n",encoders_get_distance_since_checkpoint());
+						dbg_printf("too close to object/wall! reason: 0x%02x\n",stop);
 						HARD_STOP();
 						break;
 					}
 				}
-				*/
+				
 				
 			}
 			s.behavior_state[TEST_LOGIC]=0;

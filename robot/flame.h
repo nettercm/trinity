@@ -11,6 +11,7 @@ typedef struct
 typedef struct
 {
 	s16 angle;
+	s16 abs_angle;
 	u16 ir_north;
 	u16 ir_far_north;
 	u08 flame;
@@ -26,6 +27,7 @@ typedef struct
 	s16 falling_edge_angle;
 	u16 center_position;
 	s16 center_angle;
+	s16 center_abs_angle;
 } t_scan_result;
 
 extern void uvtron_update(void);

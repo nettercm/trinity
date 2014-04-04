@@ -101,7 +101,8 @@ t_scan_result find_flame_in_scan(t_scan *data, u16 number_of_points, uint8 threa
 	uint16 i;
 	uint8 value;
 	u16 position1=0,position2=0;
-	t_scan_result result = {0,0,0,0,0,0,0,0}; //initialize w/ values that indicate that we did not find a peak
+	s16 rising_edge_abs_angle,falling_edge_abs_angle;
+	t_scan_result result = {0,0,0,0,0,0,0,0,0}; //initialize w/ values that indicate that we did not find a peak
 	
 	min=255;
 	max=0;
@@ -125,6 +126,7 @@ t_scan_result find_flame_in_scan(t_scan *data, u16 number_of_points, uint8 threa
 		{
 			result.falling_edge_position = i-1; ////...and mark this as the falling edge location
 			result.falling_edge_angle = data[i-1].angle;
+			falling_edge_abs_angle = data[i-1].abs_angle;
 			break;
 		}
 	}
@@ -137,6 +139,7 @@ t_scan_result find_flame_in_scan(t_scan *data, u16 number_of_points, uint8 threa
 		{
 			result.rising_edge_position = i; ////...and mark this as the falling edge location
 			result.rising_edge_angle = data[i].angle;
+			rising_edge_abs_angle = data[i].abs_angle;
 			break;
 		}
 	}
@@ -145,11 +148,13 @@ t_scan_result find_flame_in_scan(t_scan *data, u16 number_of_points, uint8 threa
 	position2					= result.rising_edge_position + ((result.falling_edge_position+1)- result.rising_edge_position)/2;
 	result.center_position		= (position1+position2)/2;
 	result.center_angle			= (result.rising_edge_angle + result.falling_edge_angle)/2;
+	result.center_abs_angle		= rising_edge_abs_angle + (abs(rising_edge_abs_angle-falling_edge_abs_angle))/2;
+	if(result.center_abs_angle >= 360) result.center_abs_angle-=360;
 	result.flame_center_value	= max;
 
-	dbg_printf("find_flame_in_scan(np=%d, t=%d):  %d,%d,%d,%d\n", 
+	dbg_printf("find_flame_in_scan(np=%d, t=%d):  cv=%d,ca=%d,rea=%d,fea=%d, abs_angle=%d\n", 
 		number_of_points, threashold,
-		result.flame_center_value,  result.center_angle,  result.rising_edge_angle,  result.falling_edge_angle);
+		result.flame_center_value,  result.center_angle,  result.rising_edge_angle,  result.falling_edge_angle, result.center_abs_angle);
 
 	return result;
 }
