@@ -389,21 +389,65 @@ void _os_idle(void)
 
 
 
-#if 0
-void idle(void)
+#if 1
+
+void busy_task(u08 cmd, u08 *param)
+{
+	static u16 i;
+	static u32 ic1=0,ic2,ic3;
+	static u32 t_last,t_now;
+	static u32 min=999999,max=0,avg=0;
+
+	task_open();
+
+	t_now=t_last=get_ms();
+	
+	//110526 counts per second w/ no other tasks running
+	i=0;
+	while(1)
+	{
+		i++;
+		if(i>9) i=1;
+		usb_printf("%d percent busy...\n",i*10);
+		t_last=get_ms();
+		while(get_ms()-t_last < 10000)
+		{
+			delay_ms(i);
+			task_wait(10-i);
+		}
+	}
+	task_close();
+}
+
+
+void idle_task(u08 cmd, u08 *param)
 {
 	u08 i;
 	static u32 ic1=0,ic2,ic3;
+	static u32 t_last,t_now;
+	static u32 min=999999,max=0,avg=0;
+
 	task_open();
+
+	t_now=t_last=get_ms();
 	
 	//110526 counts per second w/ no other tasks running
 	while(1)
 	{
+		t_now=get_ms();
 		ic1 = idle_counter;	
-		task_wait(1000); 
+		task_wait(100); 
 		ic2 = idle_counter - ic1;
-		ic3 = (ic2*100UL)/(110526UL);
-		usb_printf("idle: %ld counts => %ld idle\n",ic2,ic3);
+		if(ic2<min) min=ic2;
+		if(ic2>max) max=ic2;
+		avg = ((avg*9)+ic2)/10;
+		if(t_now-t_last>=1000)
+		{
+			usb_printf("idle: min=%ld, avg=%ld, max=%ld\n",min,avg,max);
+			t_last=t_now;
+			min=999999;
+			max=0;
+		}
 	}
 	task_close();
 }
@@ -1375,27 +1419,11 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			task_wait(1000);
 			TURN_IN_PLACE(5,-10); 
 			task_wait(1000);
-			TURN_IN_PLACE(5,-10);
-			task_wait(1000);
-			TURN_IN_PLACE(5, 10);
-			task_wait(1000);
-			TURN_IN_PLACE(5, 10);
-			task_wait(1000);
 			TURN_IN_PLACE(5, 10);
 			task_wait(1000);
 			TURN_IN_PLACE(5, 10);
 			task_wait(1000);
 			TURN_IN_PLACE(5,-10);
-			task_wait(1000);
-			TURN_IN_PLACE(5,-10);
-			task_wait(1000);
-			TURN_IN_PLACE(5,-10);
-			task_wait(1000);
-			TURN_IN_PLACE(5,-10);
-			task_wait(1000);
-			TURN_IN_PLACE(5, 10);
-			task_wait(1000);
-			TURN_IN_PLACE(5, 10);
 			task_wait(1000);
 			FAN_OFF(); 
 
@@ -1697,6 +1725,8 @@ int main(void)
 	task_create( line_detection_fsm,		20,  NULL, 0, 0);
 	task_create( line_alignment_fsm,		21,  NULL, 0, 0);
 
+	//task_create( busy_task,					24,  NULL, 0, 0);
+	task_create( idle_task,					25,  NULL, 0, 0);
 
 	#else
 	task_create( fsm_test_task,				1,   NULL, 0, 0 );

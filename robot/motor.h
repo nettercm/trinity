@@ -19,4 +19,6 @@ extern void odometry_set_checkpoint(void);
 extern float odometry_get_rotation_since_checkpoint(void);
 extern float odometry_get_distance_since_checkpoint(void);
 
+extern void odometry_update_postion(float x, float y, float t);
+
 #endif

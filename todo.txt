@@ -13,6 +13,33 @@ Resolved Issues (for now):
 * sometimes missing the line/door when entering room 1 w/ door on the south side
 
 
+Return Trip: 
+1) Find the room exit / door - facing out
+	a) After blowing out the flame, stop in the original position (i.e. directly facing the candle)
+	b) turn around 180 degrees
+	c) go straight for the same distance that we initially travelled towards the flame (avoid walls)
+	d) now turn to face the door (based on map, e.g. -90deg for Rm#3) 
+	e) go straight until we cross the line
+	f) align to line
+2) travers the hallway depending on which room we come from
+
+How to stay in center of hallway during return trip:
+* go relatively slow
+* if we see a wall on both sides, stay in the middle (apply a bias depending on which wall is closer)
+* if we see a wall only on one side (distance > 20" == no wall), then just maintain 15" from that wall
+* if we dont' see a wall on either side, just go straight (remove any bias)
+* if something is right in front of us, make a course correction (depending on which side sensor registers a wall)
+
+Arbitrary candle location: 
+1) Scan for flame
+2) Play sound to indicate detection
+3) Turn into the direction of the peak flame value
+4) Confirm that the flame is still there
+5) If the front facing sensor readings within the flame peak cone indicate that we are already within 10” of the candle start blowing
+6) if distance from candle is > 20”, move straight 10” and then go to 1)
+7) if distance D from candle is < 20”, move straight ahead by D-10” and then start blowing
+
+
 Todo:
 * add start button
 * add sound activation

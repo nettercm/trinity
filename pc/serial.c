@@ -29,7 +29,7 @@ int serial_write(HANDLE p,char *message,DWORD size)
 	BOOL result;
 	DWORD written=0;
 
-	if(1)
+	if(0)
 	{
 		int i;
 		log_printf("%7lu: ",GetTickCount());

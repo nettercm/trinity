@@ -13,7 +13,7 @@ void commands_process(void)
 		
 	c  = (uint8*) &(s.commands);
 	end= c+sizeof(t_commands);
-	usb_printf("commands_process(end=0x%02x, c=0x%02x:  ",end,c);
+	usb_printf("%08ld: commands_process(end=0x%02x, c=0x%02x:  ",get_ms(),end,c);
 	for(i=0;i<sizeof(t_commands);i++)
 	{
 		usb_printf("%02x ",c[i]);

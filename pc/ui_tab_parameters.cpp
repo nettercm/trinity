@@ -88,6 +88,7 @@ namespace robot_ui
 			}
 			log("\n");
 			//for some reasone,  issuing commands from here results in some seq # skipping 
+			cfg_set_value_by_grp_id(grp,id, v);
 			CMD_set_config_value(grp,id, (uint8*)&v);
 			CMD_send();
 		}
@@ -162,6 +163,7 @@ namespace robot_ui
 				parameters_dataGridView->Rows[i]->Cells[3]->Value = "flt";
 				//parameters_dataGridView->Rows[i]->Cells[4]->Value = Convert::ToString(config[i].v.f);
 				parameters_dataGridView->Rows[i]->Cells[4]->Value = Convert::ToString(config_float_only[i].f);
+				config[i].v.f = config_float_only[i].f;
 				break;
 			} //switch
 		} //for

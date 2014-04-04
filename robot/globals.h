@@ -10,6 +10,10 @@
 #define GLOBALS_H_
 
 
+#define PI 3.1415926535897932384626433832795f
+#define K_rad_to_deg (180.0f/3.1415926535897932384626433832795f)
+#define K_deg_to_rad (PI/180.0f)
+#define NO_CHANGE_IN_POSITION 999999.0f
 
 #include "..\pc\messages.h"
 #include "..\pc\commands.h"

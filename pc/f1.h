@@ -353,7 +353,8 @@ namespace robot_ui {
 			// main_comboBox_port
 			// 
 			this->main_comboBox_port->FormattingEnabled = true;
-			this->main_comboBox_port->Items->AddRange(gcnew cli::array< System::Object^  >(1) {L"11"});
+			this->main_comboBox_port->Items->AddRange(gcnew cli::array< System::Object^  >(9) {L"4", L"7", L"8", L"9", L"10", L"11", 
+				L"12", L"13", L"55"});
 			this->main_comboBox_port->Location = System::Drawing::Point(67, 10);
 			this->main_comboBox_port->Name = L"main_comboBox_port";
 			this->main_comboBox_port->Size = System::Drawing::Size(36, 21);

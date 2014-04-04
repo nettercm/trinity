@@ -3,7 +3,6 @@
 
 volatile uint16 l_enc_cp=0,r_enc_cp=0;
 
-float PI = 3.1415926535897932384626433832795f;
 
 //float odo_cml= 0.1346671682494093856046448480279;
 //float odo_cmr= 0.1346671682494093856046448480279;
@@ -29,10 +28,14 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	d_y = d_U * sin(s.inputs.theta);
 	s.inputs.x  = s.inputs.x + d_x;
 	s.inputs.y  = s.inputs.y + d_y;
+
+	//TODO: limit theta to +/- 180 degrees
+
 	s.inputs.theta = s.inputs.theta + d_theta;
 	if(s.inputs.theta > 2.0f*PI) s.inputs.theta -= 2.0f*PI;
 	if(s.inputs.theta < -2.0f*PI) s.inputs.theta += 2.0f*PI;
 
+	//TODO: find a smarter way to do "checkpoints" (actually this way may be better once we start to adjust our absolute position using map matching)
 	//update relative position change since the last "checkpoint"
 	d_x = d_U * cos(s.dtheta);
 	d_y = d_U * sin(s.dtheta);
@@ -43,6 +46,15 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	if(s.dtheta > 2.0*PI) s.dtheta -= 2.0f*PI;
 	if(s.dtheta < -2.0*PI) s.dtheta += 2.0f*PI;
 }
+
+//t=theta is in degrees;  a value of NO_CHANGE_IN_POSITION (999999.0) indicates "don't make a change"
+void odometry_update_postion(float x, float y, float t)
+{
+	if(x<NO_CHANGE_IN_POSITION) s.inputs.x = x;
+	if(y<NO_CHANGE_IN_POSITION) s.inputs.y = y;
+	if(t<NO_CHANGE_IN_POSITION) s.inputs.theta = t * K_deg_to_rad;
+}
+
 
 
 
@@ -69,9 +81,10 @@ void odometry_set_checkpoint(void)
 	s.dx = s.dy = s.dtheta = 0.0;
 }
 
+//returns the change in orientation in degrees 
 float odometry_get_rotation_since_checkpoint(void)
 {
-	return (s.dtheta/(2*PI))*360.0;
+	return s.dtheta * K_rad_to_deg; //(s.dtheta/(2*PI))*360.0;
 }
 
 float odometry_get_distance_since_checkpoint(void)
