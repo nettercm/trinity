@@ -34,7 +34,7 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	s.inputs.theta = s.inputs.theta + d_theta;
 	if(s.inputs.theta > 2.0f*PI) s.inputs.theta -= 2.0f*PI;
 	//if(s.inputs.theta < -2.0f*PI) s.inputs.theta += 2.0f*PI;
-	if(s.inputs.theta < 0.0f) s.inputs.theta = 2.0f*PI-s.inputs.theta;
+	if(s.inputs.theta < 0.0f) s.inputs.theta = 2.0f*PI+s.inputs.theta;
 
 	//TODO: find a smarter way to do "checkpoints" (actually this way may be better once we start to adjust our absolute position using map matching)
 	//update relative position change since the last "checkpoint"
@@ -46,7 +46,6 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	s.dtheta = s.dtheta + d_theta;
 	if(s.dtheta > 2.0*PI) s.dtheta -= 2.0f*PI;
 	if(s.dtheta < -2.0*PI) s.dtheta += 2.0f*PI;
-	//if(s.dtheta < 0.0f) s.dtheta = 2.0f*PI-s.dtheta;
 }
 
 //t=theta is in degrees;  a value of NO_CHANGE_IN_POSITION (999999.0) indicates "don't make a change"

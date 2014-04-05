@@ -1,0 +1,25 @@
+I/O:
+
+//analogs.  The following refer to channel numbers
+AI_LINE_RIGHT 0
+AI_LINE_LEFT  1
+
+AI_FLAME_N    2
+
+AI_IR_NE      4		s.ir[4]  s.inputs.ir[2]
+AI_IR_N_long  5		s.ir[5]  s.inputs.ir[3]
+AI_IR_N       6		s.ir[6]  s.inputs.ir[1]
+AI_IR_NW      7		s.ir[7]  s.inputs.ir[0]
+
+			now		later
+flmae aux:	--		ADC3
+BT tx		D3		D3
+BT rx		D2		D2
+sonar 1:  	D1		D1
+sonar 2:  	--		D0
+
+SDA:		--		C1
+SCL:		--		C0
+
+fan:      	D0		B4
+start:		--		B3

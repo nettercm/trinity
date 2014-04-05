@@ -1,17 +1,28 @@
 
 Issues:
-* when turning into room #4 w/ door on the south side - turning too sharp
-* when the candle is near the wall, we might bump into the wall before we get close enough to the candle
-* when we found the flame, we need to confirm to rule out false positive caused by other IR sources (video cameras etc)
 * after extinguising, need to confirm that the flame is really out by dying a 360 degree scan; if not out, repeat.
 
 Resolved Issues (for now):
+* when turning into room #4 w/ door on the south side - turning too sharp
+* when the candle is near the wall, we might bump into the wall before we get close enough to the candle
+* when we found the flame, we need to confirm to rule out false positive caused by other IR sources (video cameras etc)
 * might scrape agains the wall when exiting from room 3 or 2 (turn more before exiting)
 * when moving towards the south entrance of room 4, sometimes we come short
 * when tranitioning to left wall following to pass room 4 on the east side, we should first get closer to the wall
 * IR Far North is interfering w/ the NE facing IR (but noth anymore with IR N, after pointing IR Far N to the rigth)
 * sometimes missing the line/door when entering room 1 w/ door on the south side
 
+
+Todo:
+* move Fan to B4
+* connect start button to B3
+
+Need to test at home:
+* return trip
+
+Can test at Trinity:
+* find & extinguis flame / arbitrary candle location mode
+* add the additional flame detectors for wide angle detection
 
 Return Trip: 
 1) Find the room exit / door - facing out
@@ -30,14 +41,38 @@ How to stay in center of hallway during return trip:
 * if we dont' see a wall on either side, just go straight (remove any bias)
 * if something is right in front of us, make a course correction (depending on which side sensor registers a wall)
 
-Arbitrary candle location: 
+
+With candle circle:
 1) Scan for flame
 2) Play sound to indicate detection
 3) Turn into the direction of the peak flame value
 4) Confirm that the flame is still there
-5) If the front facing sensor readings within the flame peak cone indicate that we are already within 10” of the candle start blowing
-6) if distance from candle is > 20”, move straight 10” and then go to 1)
-7) if distance D from candle is < 20”, move straight ahead by D-10” and then start blowing
+5) Start moving straight
+6) While moving, stay away from left/right wall by applying a small bias
+7) if we are way too close in front (<5") then stop
+8) if we are on the circle (both line sensors indicate "white"), stop; go 3" forward (avoid walls); start blowing
+
+
+Arbitrary candle location / no candle circle:
+1) Scan for flame
+2) Play sound to indicate detection
+3) Turn into the direction of the peak flame value
+4) Confirm that the flame is still there
+5) Start moving straight
+6) if we get too close to a wall on our right:
+	* stop; turn left 45 deg
+	* go straight for 10" or until we get to close to something on any sensor
+	* now turn right 90 deg and scan at the same time
+	* point into the direction of the candle
+	* go to step 5
+6) if we get too close to a wall on our left:
+	* stop; turn left 45 deg
+	* go straight for 10" or until we get to close to something on any sensor
+	* now turn left 90 deg and scan at the same time
+	* point into the direction of the candle
+	* go to step 5
+7) If the front facing IR or sonar sensor indicates that we are within 10” of the candle: stop;  start blowing
+
 
 
 Todo:

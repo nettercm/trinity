@@ -1215,7 +1215,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 
-			odometry_update_postion(NO_CHANGE_IN_POSITION, NO_CHANGE_IN_POSITION, 0.0f);
+			//which door are we enterhing through?
+			if(s.inputs.y > (18.0f*25.4f))  odometry_update_postion(47.0f, 27.0f, 0.0f);
+			else odometry_update_postion(47.0f, 9.0f, 0.0f);
 
 			//move a little into the room
 			MOVE(turn_speed, room1_enter);
