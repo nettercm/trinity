@@ -2,10 +2,17 @@
 
 #include "standard_includes.h"
 
-const unsigned char pulseInPins[] = { IO_US_ECHO_AND_PING_1 }; //, IO_US_ECHO_AND_PING_2 };
+const unsigned char pulseInPins[] = { IO_US_ECHO_AND_PING_1 , IO_US_ECHO_AND_PING_2 , SOUND_START_PIN};
 
 extern int svp_demo(void);
 extern void commands_process_fsm(u08 cmd, u08 *param);
+
+int check_for_start_signal();
+
+u16 sound_start_count=0;
+u16 consecutive_sound_start_count=0;
+u16 button_count=0;
+u32 frequency_in_hz=0;
 
 
 /*
@@ -86,7 +93,10 @@ void stop_all_behaviours(void)
 int hardware_init(void)
 {
 	//Make SSbar be an output so it does not interfere with SPI communication.
-	set_digital_output(IO_B4, LOW);
+	//SSbar == FAN_PIN
+	set_digital_output(FAN_PIN, HIGH);
+
+	set_digital_input(SOUND_START_PIN, PULL_UP_ENABLED);
 
 	//sonar pins	
 	ultrasonic_hardware_init();
@@ -107,7 +117,7 @@ int hardware_init(void)
 
 	motors_hardware_init();
 	
-	pulse_in_start(pulseInPins, 1);		// start measuring pulses (1 per each sonar;  uvtorn not used right now)
+	pulse_in_start(pulseInPins, 3);		// start measuring pulses (1 per each sonar;  uvtorn not used right now)
 	
 	return 0;
 }
@@ -176,8 +186,8 @@ void analog_update_fsm(u08 cmd, u08 *param)
 		if(value > long_filter_threashold) value = ((s.ir[AI_IR_N_long]*long_filter_amount) + value)/(long_filter_amount+1);
 		s.inputs.ir[3] = s.ir[AI_IR_N_long]		= value;
 
-		s.line[0] = s.inputs.analog[AI_LINE_RIGHT];
-		s.line[1] = s.inputs.analog[AI_LINE_LEFT];
+		s.line[RIGHT_LINE] = s.inputs.analog[AI_LINE_RIGHT];
+		s.line[LEFT_LINE] = s.inputs.analog[AI_LINE_LEFT];
 
 		//sample the following only once every 5 * 20 == 100ms
 		if( count >= 20)
@@ -234,7 +244,7 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 			play_note(A(4), 50, 10);
 			button_state = 0;
 			s.lcd_screen ++;
-			if(s.lcd_screen > 3) s.lcd_screen = 0;
+			if(s.lcd_screen > 4) s.lcd_screen = 0;
 		}
 
 
@@ -291,6 +301,14 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 			lcd_printf("V=%5d",	read_battery_millivolts_svp());     task_wait(5);
 			lcd_goto_xy(0,1);   task_wait(5);
 			lcd_printf("V=%5d,  %5d",	s.inputs.vbatt, count);     task_wait(5);
+		}
+		else if(s.lcd_screen==4)
+		{
+			clear();  
+			lcd_goto_xy(0,0);   task_wait(5);
+			lcd_printf("Hz=%ld  ssc=%d",frequency_in_hz,sound_start_count);  task_wait(5);
+			lcd_goto_xy(0,1);   task_wait(5);
+			lcd_printf("cssc=%d",consecutive_sound_start_count);     task_wait(5);
 		}
 		else if(s.lcd_screen==255) 
 		{
@@ -492,8 +510,8 @@ void line_detection_fsm(u08 cmd, u08 *param)
 		next_(s_not_crossed)
 		{
 			enter_(s_not_crossed) 	{}
-			if(s.line[0]<=white) state = s_l_crossed;
-			if(s.line[1]<=white) state = s_r_crossed;
+			if(s.line[LEFT_LINE]<=white) state = s_l_crossed;
+			if(s.line[RIGHT_LINE]<=white) state = s_r_crossed;
 			exit_(s_not_crossed)  { t_crossed = get_ms(); }
 		}
 
@@ -502,7 +520,7 @@ void line_detection_fsm(u08 cmd, u08 *param)
 		{
 			enter_(s_l_crossed) 	{}
 			if(get_ms() - t_crossed > 700) state = s_not_crossed;
-			if(s.line[1] <= white) state = s_crossed_line;
+			if(s.line[RIGHT_LINE] <= white) state = s_crossed_line;
 			exit_(s_l_crossed)  {}
 		}
 
@@ -511,7 +529,7 @@ void line_detection_fsm(u08 cmd, u08 *param)
 		{
 			enter_(s_l_crossed) 	{}
 			if(get_ms() - t_crossed > 700) state = s_not_crossed;
-			if(s.line[0] <= white) state = s_crossed_line;
+			if(s.line[LEFT_LINE] <= white) state = s_crossed_line;
 			exit_(s_r_crossed)  {}
 		}
 
@@ -523,12 +541,117 @@ void line_detection_fsm(u08 cmd, u08 *param)
 				lines_crossed++;
 				dbg_printf("LINE! #=%d\n",lines_crossed);
 			}
-			if( (s.line[0]>=black) && (s.line[1]>=black) )  state = s_not_crossed;
+			if( (s.line[LEFT_LINE]>=black) && (s.line[RIGHT_LINE]>=black) )  state = s_not_crossed;
 			exit_(s_crossed_line)  {}
 		}
 		s.inputs.watch[0]=state;
 		s.inputs.watch[1]=lines_crossed;
 		OS_SCHEDULE;
+	}
+	task_close();
+}
+
+
+
+void line_detection_fsm_v2(u08 cmd, u08 *param)
+{
+	static u08 l_state=0;
+	static u08 r_state=0;
+	static s32 l_ticks=0;
+	static s32 l_ticks_crossed=0;
+	static s32 r_ticks=0;
+	static s32 r_ticks_crossed=0;
+	static s32 d_ticks=0;
+	static u08 l_crossed=0;
+	static u08 r_crossed=0;
+	static u32 t_crossed=0;
+	
+	task_open();
+
+	PREPARE_CFG2(black);					
+	PREPARE_CFG2(white);					
+
+	UPDATE_CFG2(black);					
+	UPDATE_CFG2(white);
+
+	while(1)
+	{
+		if(l_state==0) //current on black...
+		{
+			if(s.line[LEFT_LINE] <= white) //now on white...
+			{
+				l_state=1;
+				l_crossed=0;
+				l_ticks = s.encoder_ticks; //s.inputs.encoders[0];
+			}
+		}
+		if(l_state==1) //current on white...
+		{
+			if(s.line[LEFT_LINE] > black) //now back on black...
+			{
+				l_state=0;
+				if(s.encoder_ticks /*inputs.encoders[0]*/ - l_ticks < 600) 
+				{
+					l_crossed=1;
+					if(t_crossed==0) t_crossed=get_ms();
+					l_ticks_crossed = s.encoder_ticks; //s.inputs.encoders[0];
+				}
+				dbg_printf("left line blip: %ld @ %ldms, %ld\n",s.encoder_ticks/*s.inputs.encoders[0]*/ - l_ticks,get_ms(),s.encoder_ticks); //s.inputs.encoders[0]);
+			}
+		}
+
+		if(r_state==0) //current on black...
+		{
+			if(s.line[RIGHT_LINE] <= white) //now on white...
+			{
+				r_state=1;
+				r_crossed=0;
+				r_ticks = s.encoder_ticks /*s.inputs.encoders[1]*/;
+			}
+		}
+		if(r_state==1) //current on white...
+		{
+			if(s.line[RIGHT_LINE] > black) //now back on black...
+			{
+				r_state=0;
+				if(s.encoder_ticks /*s.inputs.encoders[1]*/ - r_ticks < 600)
+				{
+					r_crossed=1;
+					if(t_crossed==0) t_crossed=get_ms();
+					r_ticks_crossed = s.encoder_ticks /*s.inputs.encoders[1]*/;
+				}
+				dbg_printf("right line blip: %ld @ %ldms, %ld\n",s.encoder_ticks /*s.inputs.encoders[1]*/ - r_ticks, get_ms(), s.encoder_ticks /*s.inputs.encoders[1]*/);
+			}
+		}
+
+		if( (l_crossed==1) && (r_crossed==1) )
+		{
+			if(r_ticks_crossed > l_ticks_crossed) d_ticks = r_ticks_crossed-l_ticks_crossed;
+			else d_ticks = l_ticks_crossed-r_ticks_crossed;
+			dbg_printf("crossed line w/ both sensors within %ldms  &  %ld ticks!\n", 
+				get_ms() - t_crossed,
+				d_ticks
+			);
+			if(d_ticks < 800) 
+			{
+				lines_crossed++;
+			}
+			t_crossed = 0;
+			l_crossed = r_crossed = 0;
+			l_ticks_crossed = r_ticks_crossed = 0;
+		}
+
+		/*
+		if( (t_crossed!=0) && ((get_ms() - t_crossed) > 700) )
+		{
+			dbg_printf("not a line!\n");
+			t_crossed = 0;
+			l_crossed = r_crossed = 0;
+		}
+		*/
+
+		OS_SCHEDULE;
+		s.inputs.watch[1]=lines_crossed;
 	}
 	task_close();
 }
@@ -544,10 +667,10 @@ void line_alignment_fsm(u08 cmd, u08 *param)
 	for(;;)
 	{
 		event_wait(line_alignment_start_evt);
-		while(s.line[0] <= white) { motor_command(7,0,0,0,20); task_wait(10); } motor_command(7,0,0,0,0); //move right wheel fwd until off the line
-		while(s.line[0] > white) { motor_command(7,0,0,0,-20); task_wait(10); } motor_command(7,0,0,0,0); //now move right whell backwards until back on the line
-		while(s.line[1] <= white) { motor_command(7,0,0,20,0); task_wait(10); } motor_command(7,0,0,0,0); //move left wheel fwd until off the line
-		while(s.line[1] > white) { motor_command(7,0,0,-20,0); task_wait(10); } motor_command(7,0,0,0,0); //now move left whell backwards until back on the line
+		while(s.line[RIGHT_LINE] <= white) { motor_command(7,0,0,0,20); task_wait(10); } motor_command(7,0,0,0,0); //move right wheel fwd until off the line
+		while(s.line[RIGHT_LINE] > white) { motor_command(7,0,0,0,-20); task_wait(10); } motor_command(7,0,0,0,0); //now move right whell backwards until back on the line
+		while(s.line[LEFT_LINE] <= white) { motor_command(7,0,0,20,0); task_wait(10); } motor_command(7,0,0,0,0); //move left wheel fwd until off the line
+		while(s.line[LEFT_LINE] > white) { motor_command(7,0,0,-20,0); task_wait(10); } motor_command(7,0,0,0,0); //now move left whell backwards until back on the line
 		task_wait(100);
 		event_signal(line_alignment_done_evt);
 	}
@@ -744,8 +867,8 @@ void scan(u08 cmd, u16 moving_avg)
 #define HARD_STOP()					motor_command(2,0,0,0,0);
 #define SOFT_STOP()					motor_command(6,5,5,0,0);
 
-#define FAN_ON()					set_digital_output(IO_D0,0)
-#define FAN_OFF()					set_digital_output(IO_D0,1)
+#define FAN_ON()					set_digital_output(FAN_PIN,0)
+#define FAN_OFF()					set_digital_output(FAN_PIN,1)
 
 #define RESET_LINE_DETECTION()		last_lines_crossed = lines_crossed;
 #define WAIT_FOR_LINE_DETECTION()	while(lines_crossed == last_lines_crossed) {OS_SCHEDULE;}
@@ -942,13 +1065,15 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				HARD_STOP(); //motor_command(cmd,accel,decel,0,0);
 				FAN_OFF();
 				STOP_BEHAVIOR(FOLLOW_WALL);
-				STOP_BEHAVIOR(MASTER_LOGIC);
+				//STOP_BEHAVIOR(MASTER_LOGIC);
 				RESET_LINE_DETECTION();
 				dog_position=0;
 				s.inputs.watch[0] = s.inputs.watch[1] = s.inputs.watch[2] = s.inputs.watch[3] = 0;
 			}
 
-			if(s.behavior_state[MASTER_LOGIC]!=0) state = s.behavior_state[MASTER_LOGIC]; //s_waiting_for_start;
+			//if(s.behavior_state[MASTER_LOGIC]!=0) state = s.behavior_state[MASTER_LOGIC]; //s_waiting_for_start;
+			state = s_waiting_for_start;
+			s.behavior_state[MASTER_LOGIC] = s_waiting_for_start;
 
 			exit_(s_disabled)  { }
 		}
@@ -960,7 +1085,11 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(s_waiting_for_start) { }
 
 			//TODO: Add actual start button / audio start logic. For now,  just fall through to the next state
-			state = s_aligning_south;
+			if(check_for_start_signal()) 
+			{
+				state = s_aligning_south;
+			}
+			else if(s.behavior_state[MASTER_LOGIC]!=0) state = s.behavior_state[MASTER_LOGIC]; //s_waiting_for_start;
 
 			exit_(s_waiting_for_start) { }
 		}
@@ -977,7 +1106,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//is something right in front of us?
 			//if so, then we were facing south initially, and now we are facing west; turn back...
-			if(s.ir[AI_IR_N] < 120)  TURN_IN_PLACE(turn_speed, 90);
+			if( (s.ir[AI_IR_N] < 120) || (s.inputs.sonar[0] < 120) )  TURN_IN_PLACE(turn_speed, 90);
 
 			odometry_update_postion(35.0f, 92.0f, 270.0f);
 
@@ -1032,7 +1161,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_signal(line_alignment_start_evt); 
 			event_wait(line_alignment_done_evt);
 
-			odometry_update_postion(10.0f, 65.0f, 90.0f);
+			odometry_update_postion( ((float)(s.ir[AI_IR_NW]))/16.0f , 65.0f, 90.0f);
 
 			//move a little into the room
 			MOVE(turn_speed, room3_enter);
@@ -1048,6 +1177,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) //TODO: make the minimum flame value a parameter
 			{
+				/* move this logic to another state 
 				if(scan_result.center_abs_angle > 270)
 				{
 					TURN_IN_PLACE( turn_speed, -(room3_turn_2+room3_turn_1) );
@@ -1055,6 +1185,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 					TURN_IN_PLACE( turn_speed, scan_result.center_abs_angle - s.inputs.theta );
 				}
 				else
+				*/
 				{
 					//turn into the direction where we saw the peak
 					//TODO: (low priority) move the "turn into the direction of the flame" logic into the "move to candle" state
@@ -1129,7 +1260,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_signal(line_alignment_start_evt);
 			event_wait(line_alignment_done_evt);
 
-			odometry_update_postion(27.0f, 9.0f, 180.0f);
+			odometry_update_postion(27.0f, ((float)(s.ir[AI_IR_NW]))/16.0f , 180.0f);
 
 			//move a little bit into the room
 			MOVE(turn_speed, room2_enter);
@@ -1143,6 +1274,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
+				/*
 				if(scan_result.center_abs_angle < 90)
 				{
 					TURN_IN_PLACE( turn_speed, -(room2_turn_2+room2_turn_1) );
@@ -1150,6 +1282,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 					TURN_IN_PLACE( turn_speed, scan_result.center_abs_angle - s.inputs.theta );
 				}
 				else
+				*/
 				{
 					//turn into the direction where we saw the peak
 					TURN_IN_PLACE( turn_speed, -(room2_turn_2-scan_result.center_angle) );
@@ -1216,8 +1349,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_wait(line_alignment_done_evt);
 
 			//which door are we enterhing through?
-			if(s.inputs.y > (18.0f*25.4f))  odometry_update_postion(47.0f, 27.0f, 0.0f);
-			else odometry_update_postion(47.0f, 9.0f, 0.0f);
+			if(s.inputs.y > (18.0f*25.4f))  odometry_update_postion(47.0f, 36.0f - ((float)(s.ir[AI_IR_NW]))/16.0f, 0.0f);
+			else odometry_update_postion(47.0f, ((float)(s.ir[AI_IR_NE]))/16.0f, 0.0f);
 
 			//move a little into the room
 			MOVE(turn_speed, room1_enter);
@@ -1231,6 +1364,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
+				/*
 				if(scan_result.center_abs_angle > 90)
 				{
 					TURN_IN_PLACE( turn_speed, -(room1_turn_2+room1_turn_1) );
@@ -1238,6 +1372,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 					TURN_IN_PLACE( turn_speed, scan_result.center_abs_angle - s.inputs.theta );
 				}
 				else
+				*/
 				{
 					//turn into the direction where we saw the peak
 					TURN_IN_PLACE( turn_speed, -(room1_turn_2-scan_result.center_angle) );
@@ -1285,7 +1420,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			event_wait(line_alignment_done_evt);
 			//TODO: make a note how far away we are from the wall on the right, because it affects a maneuver further down. (but watch out for mirrors!)
 
-			odometry_update_postion(89.0f, 36.0f, 90.0f);
+			odometry_update_postion(89.0f, ((float)(s.ir[AI_IR_NE]))/16.0f, 90.0f);
 
 
 			//completely exit from room 1 until we have reached the center of the intersection
@@ -1426,6 +1561,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
+				/*
 				if(scan_result.center_abs_angle > 270)
 				{
 					TURN_IN_PLACE( turn_speed, -(search4_turn_2+search4_turn_1) );
@@ -1433,6 +1569,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 					TURN_IN_PLACE( turn_speed, -135 );
 				}
 				else
+				*/
 				{
 					//turn into the direction where we saw the peak
 					TURN_IN_PLACE( turn_speed, -(search4_turn_2-scan_result.center_angle) );
@@ -1454,6 +1591,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		//-------------------------------------------------------------------------------------------------------
 		next_(s_move_to_candle)
 		{
+			static s16 bias=0;
+
 			enter_(s_move_to_candle) {}
 
 			//make sure we are not in front of some obstacle (in case we saw a reflection from the wall)
@@ -1461,37 +1600,104 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//now move forward until we reach the candle circle; 
 			RESET_LINE_DETECTION();
 
-			TURN_IN_PLACE(turn_speed, -45);
-			TURN_IN_PLACE_AND_SCAN(turn_speed, 90, flame_scan_filter);
-			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
-			if(scan_result.flame_center_value < flame_found_threashold) 
-			{
-				state = s_disabled;
-				leave_(s_move_to_candle);
-			}
-
-			//turn into the direction where we saw the peak
-			TURN_IN_PLACE( turn_speed, -(90-scan_result.center_angle) );
+			play_frequency(440,5000,15);
 
 			//start moving straight
-			GO(30);
+			motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
+			s.inputs.watch[0] = 1;
 			stop=0;
 			while(stop==0) 
 			{
-				OS_SCHEDULE;
-				if( (s.ir[AI_IR_N] <= 50) ) stop |= 0x01;
-				if( (s.ir[AI_IR_NE] <= 50)) stop |= 0x02;
-				if( (s.ir[AI_IR_NW] <= 50)) stop |= 0x04;
-				if( (s.inputs.sonar[0] <= 80) ) stop |= 0x08;
+				s.inputs.watch[0] = 2;
+				motor_command(6,1,1,30-bias,30+bias);		
+				task_wait(50);
+				if(s.ir[AI_IR_NE] < 70) bias=10;
+				else if(s.ir[AI_IR_NW] < 70) bias=-10;
+				else bias=0;
+
+				if( (s.ir[AI_IR_N] <= 100) ) stop |= 0x01;
+				//if( (s.ir[AI_IR_NE] <= 50)) stop |= 0x02;
+				//if( (s.ir[AI_IR_NW] <= 50)) stop |= 0x04;
+				if( (s.inputs.sonar[0] <= 100) ) stop |= 0x08;
+
+				if(LINE_WAS_DETECTED()) stop |= 0x10;
+
+
+				//just comment out the following 2 if() statements if we are not doing "arbitrary candle locaction"
+				if ((!stop) && (bias < 0) )
+				{
+					s.inputs.watch[0] = 3; task_wait(25);
+					//wall on the left!
+					dbg_printf("wall on the left!\n");
+					HARD_STOP();
+					s.inputs.watch[0] = 4; task_wait(25);
+					TURN_IN_PLACE(30,-90);
+					s.inputs.watch[0] = 5; task_wait(25);
+					MOVE(30,100);
+					s.inputs.watch[0] = 6; task_wait(25);
+					TURN_IN_PLACE_AND_SCAN(turn_speed, 180, flame_scan_filter);
+					s.inputs.watch[0] = 7; task_wait(25);
+					scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+					if(scan_result.flame_center_value > flame_found_threashold) 
+					{
+							s.inputs.watch[0] = 8; task_wait(25);
+							TURN_IN_PLACE( turn_speed, -(180-scan_result.center_angle) );
+							s.inputs.watch[0] = 9; task_wait(25);
+					}
+					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
+					bias=0;
+				}
+				if( (!stop) && (bias > 0) )
+				{
+					s.inputs.watch[0] = 10; task_wait(25);
+					//wall on the right!
+					dbg_printf("wall on the right!\n");
+					HARD_STOP();
+					s.inputs.watch[0] = 11; task_wait(25);
+					TURN_IN_PLACE(30, 90);
+					s.inputs.watch[0] = 12; task_wait(25);
+					MOVE(30,100);
+					s.inputs.watch[0] = 13; task_wait(25);
+					TURN_IN_PLACE_AND_SCAN(turn_speed, -180, flame_scan_filter);
+					s.inputs.watch[0] = 14; task_wait(25);
+					scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+					if(scan_result.flame_center_value > flame_found_threashold) 
+					{
+						s.inputs.watch[0] = 15; task_wait(25);
+							TURN_IN_PLACE( turn_speed, (180+scan_result.center_angle) );
+						s.inputs.watch[0] = 16; task_wait(25);
+					}
+					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
+					bias=0;
+				}
 
 			}
-			dbg_printf("too close to object/wall! reason: 0x%02x\n",stop);
+			dbg_printf("stopped! reason: 0x%02x\n",stop);
+			HARD_STOP();
+			s.inputs.watch[0] = 17; task_wait(25);
+
+
+			TURN_IN_PLACE(turn_speed, -45);
+			s.inputs.watch[0] = 18; task_wait(25);
+			TURN_IN_PLACE_AND_SCAN(turn_speed, 90, flame_scan_filter);
+			s.inputs.watch[0] = 19; task_wait(25);
+			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+			if(scan_result.flame_center_value > flame_found_threashold) 
+			{
+				s.inputs.watch[0] = 20; task_wait(25);
+				TURN_IN_PLACE( turn_speed, -(90-scan_result.center_angle) );
+				s.inputs.watch[0] = 21; task_wait(25);
+			}
+
+			s.inputs.watch[0] = 22; task_wait(25);
+			while( (s.inputs.sonar[0] > 70) && (s.ir[AI_IR_N] > 70) )
+			{
+				motor_command(7,1,1,10,10);
+				OS_SCHEDULE;
+			}
+			s.inputs.watch[0] = 23; task_wait(25);
 			HARD_STOP();
 
-
-			//if we reach the candle circle, stop - at this point we are withing 30cm / 12" of the candle
-			//WAIT_FOR_LINE_DETECTION();
-			//HARD_STOP();
 
 			//now turn on the fan and sweep left and right for some time
 			FAN_ON(); 
@@ -1523,6 +1729,107 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 }
 #pragma endregion
 
+
+
+
+// This array of pins is used to initialize the OrangutanPulseIn routines.  To measure
+// pulses on multiple pins, add more elements to the array.  For example:
+// const unsigned char pulseInPins[] = { IO_D0, IO_C0, IO_C1 };
+// BUZZER_IO is IO_D4 on the Orangutan SVP and IO_B2 on the LV, SV, Baby, and 3pi
+const unsigned char sound_pulse_pins[] = { IO_B3 };
+
+
+int check_for_start_signal()
+{
+	static unsigned long curPulse;		// length of current pulse in ticks (0.4 us)
+	static unsigned char state;		// current state of input (1 if high, 0 if low)
+	static u32 t_last=0;
+	static u32 t_now;
+	t_now = get_ms();
+
+	if(t_last==0) t_last=t_now;
+
+		// get current pulse state for D0
+		get_current_pulse_state(SOUND_PULSE_CHANNEL, &curPulse, &state);	// pass arguments as pointers
+
+		// if more than 100 ms have elapsed since the last pin
+		// change on this channel, we indicate that pulses have stopped
+		if (pulse_to_microseconds(curPulse) >= 50000UL)
+		{
+			if (is_digital_input_high(IO_B3) ) //  state == HIGH)		// if line is currently high
+			{
+				/*
+				lcd_goto_xy(0, 0);	// go to start of first LCD row
+				print("Pin HIGH  ");
+				lcd_goto_xy(0, 1);	// go to start of second LCD row
+				print("          ");	// clear the row by overwriting with spaces
+				*/
+				//dbg_printf("start == HIGH\n");
+				button_count=0;
+				sound_start_count=0;
+				consecutive_sound_start_count=0;
+			}
+			else
+			{
+				/*
+				lcd_goto_xy(0, 0);	// go to start of first LCD row
+				print("          ");	// clear the row by overwriting with spaces
+				lcd_goto_xy(0, 1);	// go to start of second LCD row
+				print("Pin  LOW  ");
+				*/
+				dbg_printf("start == LOW\n");
+				button_count++;
+				sound_start_count=0;
+				consecutive_sound_start_count=0;
+			}
+		}
+		else if (new_high_pulse(SOUND_PULSE_CHANNEL) && new_low_pulse(SOUND_PULSE_CHANNEL))	// if we have new high and low pulses
+		{
+			unsigned long high_pulse = get_last_high_pulse(SOUND_PULSE_CHANNEL);
+			unsigned long period_in_ticks = high_pulse + get_last_low_pulse(SOUND_PULSE_CHANNEL);
+
+			// compute frequency as 1 / period = 1 / (0.4us * period_in_ticks)
+			//  = 2.5 MHz / period_in_ticks
+			unsigned long frequency_in_hz = 2500000UL / period_in_ticks;
+
+			// duty cycle = high pulse / (high pulse + low pulse)
+			// we multiply by 100 to convert it into a percentage and we add half of the denominator to
+			// the numerator to get a properly rounded result
+			unsigned long duty_cycle_percent = (100 * high_pulse + period_in_ticks/2) / period_in_ticks;
+
+			if( (frequency_in_hz > 3600) && (frequency_in_hz < 4000) )
+			{
+				sound_start_count++;
+			}
+			if(t_now - t_last > 250)
+			{
+				dbg_printf("sound start count = %d\n",sound_start_count);
+				if(sound_start_count <= 1) consecutive_sound_start_count=0;
+				if(sound_start_count >  1) consecutive_sound_start_count++;
+				sound_start_count=0;
+				t_last=t_now;
+			}
+
+			/*
+			lcd_goto_xy(0, 0);		// go to start of first LCD row
+			print_unsigned_long(frequency_in_hz);		// print the measured PWM frequency
+			print(" Hz      ");
+			lcd_goto_xy(0, 1);		// go to start of second LCD row
+			print("DC: ");
+			print_unsigned_long(duty_cycle_percent);	// print the measured PWM duty cycle
+			print("%  ");
+			*/
+		}
+		if( (button_count >= 2) || (consecutive_sound_start_count >= 3) ) 
+		{
+			dbg_printf("bc = %d, cssc = %d\n",button_count, consecutive_sound_start_count);
+			button_count = 0;
+			consecutive_sound_start_count = 0;
+			sound_start_count = 0;
+			return 1; 
+		}
+		else return 0;
+}
 
 
 void test(u08 cmd, u08 *param)
@@ -1720,6 +2027,20 @@ void test(u08 cmd, u08 *param)
 			s.behavior_state[TEST_LOGIC]=0;
 		}
 
+		if(s.behavior_state[TEST_LOGIC]==4) 
+		{
+			FAN_ON();
+			task_wait(1000);
+			FAN_OFF();
+			s.behavior_state[TEST_LOGIC]=0;
+		}
+
+		if(s.behavior_state[TEST_LOGIC]==5) 
+		{
+			dbg_printf("start = %d\n",is_digital_input_high(IO_B3));
+			task_wait(500);
+		}
+
 		/*
 		while(s.behavior_state[11]==1) 
 		{
@@ -1747,7 +2068,7 @@ void test(u08 cmd, u08 *param)
 
 int main(void)
 {
-	T0(1,1);
+	//T0(1,1);
 	//initialize hardware & pololu libraries
 	hardware_init();
 	//i2c_init();
@@ -1763,6 +2084,7 @@ int main(void)
 	//initialize the configuration parameter module
 	cfg_init();
 
+	//sound_start_test();
 
 	//initialize misc support libraries
 	LOOKUP_init();
@@ -1779,8 +2101,8 @@ int main(void)
 	s.inputs.vbatt=read_battery_millivolts_svp();
 	//LOOKUP_initialize_table(line_sensor_table);  //only needed if we need to normalize left & right line sensor for some reason
 
-	T0(1,2);
-	dbg_printf("0123456789 %d",0);
+	//T0(1,2);
+	//dbg_printf("0123456789 %d",0);
 	//T1(2,3);
 	//T2(4);
 	//T3(5,6);
@@ -1810,8 +2132,9 @@ int main(void)
 	//task_create( debug_fsm, 17, NULL, 0, 0); //not used right now
 	task_create( wall_follow_fsm,			18,  NULL, 0, 0);
 	task_create( master_logic_fsm,			19,  NULL, 0, 0);
-	task_create( line_detection_fsm,		20,  NULL, 0, 0);
+	//task_create( line_detection_fsm,		20,  NULL, 0, 0);
 	task_create( line_alignment_fsm,		21,  NULL, 0, 0);
+	task_create( line_detection_fsm_v2,		22,  NULL, 0, 0);
 
 	//task_create( busy_task,					24,  NULL, 0, 0);
 	task_create( idle_task,					25,  NULL, 0, 0);

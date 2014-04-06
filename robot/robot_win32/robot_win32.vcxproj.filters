@@ -43,6 +43,7 @@
     <Text Include="..\..\run1.txt" />
     <Text Include="..\..\data1.txt" />
     <Text Include="..\..\data2.txt" />
+    <Text Include="..\..\io_map.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

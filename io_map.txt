@@ -23,3 +23,17 @@ SCL:		--		C0
 
 fan:      	D0		B4
 start:		--		B3
+
+
+		s_disabled=0,			//0 
+		s_waiting_for_start,	//1
+		s_aligning_south,		//2
+		s_finding_room_3,		//3
+		s_searching_room_3,		//4
+		s_finding_room_2,		//5
+		s_searching_room_2,		//6
+		s_finding_room_1,		//7
+		s_searching_room_1,		//8
+		s_finding_room_4,		//9
+		s_searching_room_4,		//10
+		s_move_to_candle		//11

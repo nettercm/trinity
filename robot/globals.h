@@ -33,8 +33,12 @@ typedef struct
 	sint16 m_ramp;
 	uint8 motor_command_state;
 	
+	float U;
+	s32 encoder_ticks;  //total number of encoder ticks i.e. abs(l+r)/2
+
 	//odometry (since checkpoint; global odometry state is part of inputs struct)
 	float dx,dy,dtheta,dU;
+
 	
 	//behavior control
 	uint8 behavior_state[16];

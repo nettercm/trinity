@@ -28,6 +28,7 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	d_y = d_U * sin(s.inputs.theta);
 	s.inputs.x  = s.inputs.x + d_x;
 	s.inputs.y  = s.inputs.y + d_y;
+	s.U			= s.U + d_U;
 
 	//TODO: limit theta to +/- 180 degrees
 
@@ -75,15 +76,15 @@ void encoders_reset(void)
 {
 	svp_get_counts_and_reset_ab();
 	svp_get_counts_and_reset_cd();
-	s.inputs.encoders[0] = svp_get_counts_ab();
-	s.inputs.encoders[1] = svp_get_counts_cd();
-	s.inputs.x = s.inputs.y = s.inputs.theta = 0.0;
-	s.dx = s.dy = s.dtheta = 0.0;
+	s.inputs.encoders[0] = 0; //svp_get_counts_ab();
+	s.inputs.encoders[1] = 0; //svp_get_counts_cd();
+	s.inputs.x = s.inputs.y = s.inputs.theta = s.U = 0.0f;
+	s.dx = s.dy = s.dtheta = s.dU = 0.0f;
 }
 
 void odometry_set_checkpoint(void)
 {
-	s.dx = s.dy = s.dtheta = 0.0;
+	s.dx = s.dy = s.dtheta = s.dU =  0.0f;
 }
 
 //returns the change in orientation in degrees 
@@ -165,6 +166,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 		s.inputs.actual_speed[1] = r_enc_delta;
 		s.inputs.encoders[0] += l_enc_delta;
 		s.inputs.encoders[1] += r_enc_delta;
+		s.encoder_ticks += (s32)((abs(l_enc_delta) + abs(r_enc_delta))/2);
 		
 		switch(s.motor_command_state)
 		{

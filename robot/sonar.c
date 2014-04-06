@@ -26,9 +26,9 @@ uint8 us_sequence_E_SE_NE[] = {2, US_E, US_SE };
 void ultrasonic_hardware_init(void)
 {
 	set_digital_output(IO_US_ECHO_AND_PING_1, LOW);
-	//set_digital_output(IO_US_ECHO_AND_PING_2, LOW);
+	set_digital_output(IO_US_ECHO_AND_PING_2, LOW);
 	set_digital_input(IO_US_ECHO_AND_PING_1,HIGH_IMPEDANCE);
-	//set_digital_input(IO_US_ECHO_AND_PING_2,HIGH_IMPEDANCE);
+	set_digital_input(IO_US_ECHO_AND_PING_2,HIGH_IMPEDANCE);
 }
 
 void ultrasonic_set_focus(uint8 sensor_id)

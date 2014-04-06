@@ -1254,7 +1254,7 @@ namespace robot_ui {
 			this->main_comboBox_rate->Name = L"main_comboBox_rate";
 			this->main_comboBox_rate->Size = System::Drawing::Size(61, 21);
 			this->main_comboBox_rate->TabIndex = 9;
-			this->main_comboBox_rate->Text = L"1";
+			this->main_comboBox_rate->Text = L"0";
 			this->main_comboBox_rate->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::main_comboBox_behavior_id_SelectedIndexChanged);
 			// 
 			// serial_timer

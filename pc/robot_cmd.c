@@ -28,7 +28,7 @@ char *serial_port=NULL;
 
 volatile t_inputs inputs_history[200000]; //1 hour @ 50Hz
 volatile int history_index=0;
-int update_interval=1000;
+int update_interval=0;
 
 extern void print1(char *str);
 

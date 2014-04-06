@@ -49,8 +49,8 @@ FLT(5, 3, "odo_b",							0, 0, 156.5)
 //----------------------------------------------------------
 GRP(6, "LINE DETECTION")
 
-U08(6, 1, "black",							0, 0, 20)
-U08(6, 2, "white",							0, 0, 10)
+U08(6, 1, "black",							0, 0, 51)//12)//70)
+U08(6, 2, "white",							0, 0, 50)//11)//50)
 //----------------------------------------------------------
 
 
@@ -62,7 +62,7 @@ S16(9,11, "motor command",					0, 0, 7)		//which motor command to use for certai
 S16(9,12, "acceleration",					0, 0, 1)		//
 S16(9,13, "deceleration",					0, 0, 1)
 S16(9,14, "flame_scan_edge_threashold ",	0, 0, 30)
-S16(9,15, "flame_found_threashold ",		0, 0, 200)
+S16(9,15, "flame_found_threashold ",		0, 0, 180)
 U16(9,16, "flame scan filter ",				0, 0, 4)
 
 S16(9,20, "search Rm #3: enter distance",	0, 0, 180)		//distance is in mm here

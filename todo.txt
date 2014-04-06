@@ -1,4 +1,7 @@
 
+Todo:
+* ignore home circle when going around Room 4
+
 Issues:
 * after extinguising, need to confirm that the flame is really out by dying a 360 degree scan; if not out, repeat.
 
@@ -13,9 +16,6 @@ Resolved Issues (for now):
 * sometimes missing the line/door when entering room 1 w/ door on the south side
 
 
-Todo:
-* move Fan to B4
-* connect start button to B3
 
 Need to test at home:
 * return trip
@@ -41,6 +41,7 @@ How to stay in center of hallway during return trip:
 * if we dont' see a wall on either side, just go straight (remove any bias)
 * if something is right in front of us, make a course correction (depending on which side sensor registers a wall)
 
+How to ignore the home circle:
 
 With candle circle:
 1) Scan for flame
