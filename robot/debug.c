@@ -24,6 +24,7 @@ s16 dbg_buffer_read=0;
 
 int	usb_printf(const char *__fmt, ...)
 {
+#if 0
 	#ifdef USB_COMM
 	#if 1
 	int size;
@@ -37,6 +38,7 @@ int	usb_printf(const char *__fmt, ...)
 	}
 	#endif
 	#endif
+#endif
 	return 0;
 }
 

@@ -97,7 +97,8 @@ int hardware_init(void)
 	set_digital_output(FAN_PIN, HIGH);
 
 	set_digital_input(SOUND_START_PIN, PULL_UP_ENABLED);
-
+	set_digital_input(BUTTON_START_PIN, PULL_UP_ENABLED);
+	
 	//sonar pins	
 	ultrasonic_hardware_init();
 	
@@ -590,7 +591,7 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 			if(s.line[LEFT_LINE] > black) //now back on black...
 			{
 				l_state=0;
-				if(s.encoder_ticks /*inputs.encoders[0]*/ - l_ticks < 600) 
+				if(s.encoder_ticks /*inputs.encoders[0]*/ - l_ticks < 700) 
 				{
 					l_crossed=1;
 					if(t_crossed==0) t_crossed=get_ms();
@@ -614,7 +615,7 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 			if(s.line[RIGHT_LINE] > black) //now back on black...
 			{
 				r_state=0;
-				if(s.encoder_ticks /*s.inputs.encoders[1]*/ - r_ticks < 600)
+				if(s.encoder_ticks /*s.inputs.encoders[1]*/ - r_ticks < 700)
 				{
 					r_crossed=1;
 					if(t_crossed==0) t_crossed=get_ms();
@@ -632,9 +633,10 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 				get_ms() - t_crossed,
 				d_ticks
 			);
-			if(d_ticks < 800) 
+			if(d_ticks < 1500) 
 			{
 				lines_crossed++;
+				dbg_printf("\n\nLINE! count=%d\n\n",lines_crossed);
 			}
 			t_crossed = 0;
 			l_crossed = r_crossed = 0;
@@ -1082,7 +1084,11 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 		next_(s_waiting_for_start)
 		{
-			enter_(s_waiting_for_start) { }
+			enter_(s_waiting_for_start) 
+			{
+				pulse_in_stop();
+				pulse_in_start(pulseInPins,3);
+			}
 
 			//TODO: Add actual start button / audio start logic. For now,  just fall through to the next state
 			if(check_for_start_signal()) 
@@ -1091,7 +1097,11 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			}
 			else if(s.behavior_state[MASTER_LOGIC]!=0) state = s.behavior_state[MASTER_LOGIC]; //s_waiting_for_start;
 
-			exit_(s_waiting_for_start) { }
+			exit_(s_waiting_for_start)
+			{
+				pulse_in_stop();
+				pulse_in_start(pulseInPins,2);
+			}
 		}
 		
 
@@ -1600,7 +1610,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//now move forward until we reach the candle circle; 
 			RESET_LINE_DETECTION();
 
-			play_frequency(440,5000,15);
+			play_frequency(440,25000,15);
+			task_wait(500);
+			FAN_ON(); 
+
 
 			//start moving straight
 			motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
@@ -1620,7 +1633,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				//if( (s.ir[AI_IR_NW] <= 50)) stop |= 0x04;
 				if( (s.inputs.sonar[0] <= 100) ) stop |= 0x08;
 
-				if(LINE_WAS_DETECTED()) stop |= 0x10;
+				//if(LINE_WAS_DETECTED()) stop |= 0x10;
 
 
 				//just comment out the following 2 if() statements if we are not doing "arbitrary candle locaction"
@@ -1646,6 +1659,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 					}
 					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
 					bias=0;
+					//FAN_ON(); 
 				}
 				if( (!stop) && (bias > 0) )
 				{
@@ -1669,12 +1683,14 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 					}
 					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
 					bias=0;
+					//FAN_ON(); 
 				}
 
 			}
 			dbg_printf("stopped! reason: 0x%02x\n",stop);
 			HARD_STOP();
 			s.inputs.watch[0] = 17; task_wait(25);
+			FAN_ON(); 
 
 
 			TURN_IN_PLACE(turn_speed, -45);
@@ -1745,90 +1761,114 @@ int check_for_start_signal()
 	static unsigned char state;		// current state of input (1 if high, 0 if low)
 	static u32 t_last=0;
 	static u32 t_now;
+	static u08 start_button_state=0;
+	static u08 start_button_count=0;
 	t_now = get_ms();
 
 	if(t_last==0) t_last=t_now;
 
-		// get current pulse state for D0
-		get_current_pulse_state(SOUND_PULSE_CHANNEL, &curPulse, &state);	// pass arguments as pointers
-
-		// if more than 100 ms have elapsed since the last pin
-		// change on this channel, we indicate that pulses have stopped
-		if (pulse_to_microseconds(curPulse) >= 50000UL)
+	if(start_button_state==0) //button not pressed
+	{
+		if( !(is_digital_input_high(IO_C1)) ) //is the button pressed?
 		{
-			if (is_digital_input_high(IO_B3) ) //  state == HIGH)		// if line is currently high
-			{
-				/*
-				lcd_goto_xy(0, 0);	// go to start of first LCD row
-				print("Pin HIGH  ");
-				lcd_goto_xy(0, 1);	// go to start of second LCD row
-				print("          ");	// clear the row by overwriting with spaces
-				*/
-				//dbg_printf("start == HIGH\n");
-				button_count=0;
-				sound_start_count=0;
-				consecutive_sound_start_count=0;
-			}
-			else
-			{
-				/*
-				lcd_goto_xy(0, 0);	// go to start of first LCD row
-				print("          ");	// clear the row by overwriting with spaces
-				lcd_goto_xy(0, 1);	// go to start of second LCD row
-				print("Pin  LOW  ");
-				*/
-				dbg_printf("start == LOW\n");
-				button_count++;
-				sound_start_count=0;
-				consecutive_sound_start_count=0;
-			}
+			start_button_state=1;
+			start_button_count=0; //start counting...
 		}
-		else if (new_high_pulse(SOUND_PULSE_CHANNEL) && new_low_pulse(SOUND_PULSE_CHANNEL))	// if we have new high and low pulses
+	}
+	else //button currently in a pressed state
+	{
+		if( (is_digital_input_high(IO_C1)) ) //button released?
 		{
-			unsigned long high_pulse = get_last_high_pulse(SOUND_PULSE_CHANNEL);
-			unsigned long period_in_ticks = high_pulse + get_last_low_pulse(SOUND_PULSE_CHANNEL);
+			start_button_state=0;
+			start_button_count=0;
+		}
+		else //button still pressed....
+		{
+			start_button_count++;
+		}
+	}
 
-			// compute frequency as 1 / period = 1 / (0.4us * period_in_ticks)
-			//  = 2.5 MHz / period_in_ticks
-			unsigned long frequency_in_hz = 2500000UL / period_in_ticks;
 
-			// duty cycle = high pulse / (high pulse + low pulse)
-			// we multiply by 100 to convert it into a percentage and we add half of the denominator to
-			// the numerator to get a properly rounded result
-			unsigned long duty_cycle_percent = (100 * high_pulse + period_in_ticks/2) / period_in_ticks;
+	// get current pulse state for D0
+	get_current_pulse_state(SOUND_PULSE_CHANNEL, &curPulse, &state);	// pass arguments as pointers
 
-			if( (frequency_in_hz > 3600) && (frequency_in_hz < 4000) )
-			{
-				sound_start_count++;
-			}
-			if(t_now - t_last > 250)
-			{
-				dbg_printf("sound start count = %d\n",sound_start_count);
-				if(sound_start_count <= 1) consecutive_sound_start_count=0;
-				if(sound_start_count >  1) consecutive_sound_start_count++;
-				sound_start_count=0;
-				t_last=t_now;
-			}
-
+	// if more than 100 ms have elapsed since the last pin
+	// change on this channel, we indicate that pulses have stopped
+	if (pulse_to_microseconds(curPulse) >= 50000UL)
+	{
+		if (is_digital_input_high(IO_B3) ) //  state == HIGH)		// if line is currently high
+		{
 			/*
-			lcd_goto_xy(0, 0);		// go to start of first LCD row
-			print_unsigned_long(frequency_in_hz);		// print the measured PWM frequency
-			print(" Hz      ");
-			lcd_goto_xy(0, 1);		// go to start of second LCD row
-			print("DC: ");
-			print_unsigned_long(duty_cycle_percent);	// print the measured PWM duty cycle
-			print("%  ");
+			lcd_goto_xy(0, 0);	// go to start of first LCD row
+			print("Pin HIGH  ");
+			lcd_goto_xy(0, 1);	// go to start of second LCD row
+			print("          ");	// clear the row by overwriting with spaces
 			*/
+			//dbg_printf("start == HIGH\n");
+			button_count=0;
+			sound_start_count=0;
+			consecutive_sound_start_count=0;
 		}
-		if( (button_count >= 2) || (consecutive_sound_start_count >= 3) ) 
+		else
 		{
-			dbg_printf("bc = %d, cssc = %d\n",button_count, consecutive_sound_start_count);
-			button_count = 0;
-			consecutive_sound_start_count = 0;
-			sound_start_count = 0;
-			return 1; 
+			/*
+			lcd_goto_xy(0, 0);	// go to start of first LCD row
+			print("          ");	// clear the row by overwriting with spaces
+			lcd_goto_xy(0, 1);	// go to start of second LCD row
+			print("Pin  LOW  ");
+			*/
+			dbg_printf("start == LOW\n");
+			button_count++;
+			sound_start_count=0;
+			consecutive_sound_start_count=0;
 		}
-		else return 0;
+	}
+	else if (new_high_pulse(SOUND_PULSE_CHANNEL) && new_low_pulse(SOUND_PULSE_CHANNEL))	// if we have new high and low pulses
+	{
+		unsigned long high_pulse = get_last_high_pulse(SOUND_PULSE_CHANNEL);
+		unsigned long period_in_ticks = high_pulse + get_last_low_pulse(SOUND_PULSE_CHANNEL);
+
+		// compute frequency as 1 / period = 1 / (0.4us * period_in_ticks)
+		//  = 2.5 MHz / period_in_ticks
+		unsigned long frequency_in_hz = 2500000UL / period_in_ticks;
+
+		// duty cycle = high pulse / (high pulse + low pulse)
+		// we multiply by 100 to convert it into a percentage and we add half of the denominator to
+		// the numerator to get a properly rounded result
+		unsigned long duty_cycle_percent = (100 * high_pulse + period_in_ticks/2) / period_in_ticks;
+
+		if( (frequency_in_hz > 3600) && (frequency_in_hz < 4000) )
+		{
+			sound_start_count++;
+		}
+		if(t_now - t_last > 250)
+		{
+			dbg_printf("sound start count = %d\n",sound_start_count);
+			if(sound_start_count <= 1) consecutive_sound_start_count=0;
+			if(sound_start_count >  1) consecutive_sound_start_count++;
+			sound_start_count=0;
+			t_last=t_now;
+		}
+
+		/*
+		lcd_goto_xy(0, 0);		// go to start of first LCD row
+		print_unsigned_long(frequency_in_hz);		// print the measured PWM frequency
+		print(" Hz      ");
+		lcd_goto_xy(0, 1);		// go to start of second LCD row
+		print("DC: ");
+		print_unsigned_long(duty_cycle_percent);	// print the measured PWM duty cycle
+		print("%  ");
+		*/
+	}
+	if( (start_button_count>=3) || (button_count >= 10) || (consecutive_sound_start_count >= 3) ) 
+	{
+		dbg_printf("bc = %d, cssc = %d\n",button_count, consecutive_sound_start_count);
+		button_count = 0;
+		consecutive_sound_start_count = 0;
+		sound_start_count = 0;
+		return 1; 
+	}
+	else return 0;
 }
 
 
@@ -2137,7 +2177,7 @@ int main(void)
 	task_create( line_detection_fsm_v2,		22,  NULL, 0, 0);
 
 	//task_create( busy_task,					24,  NULL, 0, 0);
-	task_create( idle_task,					25,  NULL, 0, 0);
+	//task_create( idle_task,					25,  NULL, 0, 0);
 
 	#else
 	task_create( fsm_test_task,				1,   NULL, 0, 0 );

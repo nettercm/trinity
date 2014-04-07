@@ -118,7 +118,7 @@ void process_user_input(void)
 	{
 		c=key; 
 		key=0;
-		log_printf("c = '%c' = 0x%04x\n",c,c);
+		//log_printf("c = '%c' = 0x%04x\n",c,c);
 	}
 #endif
 
@@ -128,7 +128,7 @@ void process_user_input(void)
 		c = _getch();
 		if(c==0x00) c=_getch() + 0xe100;
 		if(c==0xe0) c=_getch() + 0xe000;
-		log_printf("c = '%c' = 0x%04x\n",c,c);
+		//log_printf("c = '%c' = 0x%04x\n",c,c);
 	}
 //#endif
 

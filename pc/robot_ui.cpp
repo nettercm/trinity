@@ -292,7 +292,7 @@ namespace robot_ui
 	{
 		String ^s = e->KeyData.ToString();
 		e->Handled = true;
-		log(s + "\n");
+		//log(s + "\n");
 		main_textBox_keyb->Clear();
 		key=0;
 
@@ -310,7 +310,7 @@ namespace robot_ui
 		if(s == "F11"	) key=KEY_F11;
 		if(s == "F12"	) key=KEY_F12;
 
-		log_printf("Key = 0x%04x\n",key);
+		//log_printf("Key = 0x%04x\n",key);
 	}
 
 

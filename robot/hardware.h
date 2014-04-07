@@ -29,6 +29,7 @@
 #define FAN_PIN IO_B4
 
 #define SOUND_START_PIN IO_B3
+#define BUTTON_START_PIN IO_C1
 
 #define IO_US_ECHO_AND_PING_1 IO_D1
 #define IO_US_ECHO_AND_PING_2 IO_D0
