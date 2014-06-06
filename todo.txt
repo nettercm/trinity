@@ -1,4 +1,14 @@
 
+Tethered operation:
+* from PC to robot:
+	* locomotion commands  ( MOVE(), TURN(), GO(), HARD_STOP(), SOFT_STOP() )
+	* start/stop a state machine / behavior / reflex / feedback control loop that runs on the robot 
+	  (e.g. wall following,  line detection, line alignment)
+	* odometry / positionaing update (i.e. set x,y,theta to specific value)
+	* update global state (e.g. which room we are in)
+	* turn on the extinguisher
+
+
 Todo:
 * ignore home circle when going around Room 4
 
