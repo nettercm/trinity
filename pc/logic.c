@@ -335,6 +335,7 @@ void process_user_input(void)
 	//CMD_set_motors(m_l_speed*1.0f, m_r_speed * 0.97f); //for right turns
 	if(update_required) CMD_send();
 
+#ifdef WIN32UI
 	{
 		extern volatile u32 joystick_changed,lAxisRz_1,lAxisZ_1;
 		static u32 jc=0;
@@ -346,6 +347,7 @@ void process_user_input(void)
 			CMD_send();
 		}
 	}
+#endif
 }
 
 

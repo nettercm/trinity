@@ -111,6 +111,10 @@
     <ClCompile Include="commands.c" />
     <ClCompile Include="data.c" />
     <ClCompile Include="debug.c" />
+    <ClCompile Include="joystick.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="kalman.c" />
     <ClCompile Include="logic.c" />
     <ClCompile Include="odometry.c" />
