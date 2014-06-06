@@ -50,19 +50,23 @@ int serial_write(HANDLE p,char *message,DWORD size)
 int serial_read(HANDLE h,char *message,DWORD size)
 {
 	BOOL result=TRUE;
-	DWORD read=0,r=0;
+	DWORD read=0,r=0,t1,t2,t3,t4;
 	int count;
 	DBG(DBG_SER_READ,("["));
 
 	//wait for the first byte to arrive
 	count = 0;
+	t1=timeGetTime();
 	while(result==TRUE && read==0)
 	{
 		if(count>400) break;
+		t2=timeGetTime();
 		result = ReadFile(h,message,1,&read,NULL);
+		t3=timeGetTime();
 		count++;
 		//Sleep(1);
 	}
+	t4=timeGetTime();
 	if(!result || !read) 
 	{
 		DBG(DBG_SER_READ,("]\n"));
@@ -294,10 +298,15 @@ HANDLE serial_init(char* port, int baud, int stopbits)
 		//error setting serial port state
 	}
 
+#if 1
+	timeouts.ReadIntervalTimeout		=	MAXDWORD; //1;
+	timeouts.ReadTotalTimeoutConstant	=	10; //1;
+	timeouts.ReadTotalTimeoutMultiplier	=	MAXDWORD; //0;
+#else
 	timeouts.ReadIntervalTimeout		=	1;
 	timeouts.ReadTotalTimeoutConstant	=	1;
 	timeouts.ReadTotalTimeoutMultiplier	=	0;
-
+#endif
 	timeouts.WriteTotalTimeoutConstant	=	0;
 	timeouts.WriteTotalTimeoutMultiplier=	0;
 

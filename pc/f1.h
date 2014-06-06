@@ -271,15 +271,15 @@ namespace robot_ui {
 		void InitializeComponent(void)
 		{
 			this->components = (gcnew System::ComponentModel::Container());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle1 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle4 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle2 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle3 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea1 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea2 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::Legend^  legend1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle5 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle8 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle6 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle7 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea3 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea4 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Legend^  legend2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series3 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series4 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(f1::typeid));
 			this->main_serial_thread = (gcnew System::ComponentModel::BackgroundWorker());
 			this->graphs_timer = (gcnew System::Windows::Forms::Timer(this->components));
@@ -473,27 +473,27 @@ namespace robot_ui {
 			this->parameters_dataGridView->AllowUserToDeleteRows = false;
 			this->parameters_dataGridView->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left));
-			dataGridViewCellStyle1->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			dataGridViewCellStyle1->BackColor = System::Drawing::SystemColors::Control;
-			dataGridViewCellStyle1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+			dataGridViewCellStyle5->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			dataGridViewCellStyle5->BackColor = System::Drawing::SystemColors::Control;
+			dataGridViewCellStyle5->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle1->ForeColor = System::Drawing::SystemColors::WindowText;
-			dataGridViewCellStyle1->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle1->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle1->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
-			this->parameters_dataGridView->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+			dataGridViewCellStyle5->ForeColor = System::Drawing::SystemColors::WindowText;
+			dataGridViewCellStyle5->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle5->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle5->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
+			this->parameters_dataGridView->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
 			this->parameters_dataGridView->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
 			this->parameters_dataGridView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(7) {this->Group, 
 				this->id, this->name, this->Type, this->val, this->inc, this->dec});
-			dataGridViewCellStyle4->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
-			dataGridViewCellStyle4->BackColor = System::Drawing::SystemColors::Window;
-			dataGridViewCellStyle4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+			dataGridViewCellStyle8->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
+			dataGridViewCellStyle8->BackColor = System::Drawing::SystemColors::Window;
+			dataGridViewCellStyle8->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle4->ForeColor = System::Drawing::SystemColors::ControlText;
-			dataGridViewCellStyle4->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle4->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle4->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
-			this->parameters_dataGridView->DefaultCellStyle = dataGridViewCellStyle4;
+			dataGridViewCellStyle8->ForeColor = System::Drawing::SystemColors::ControlText;
+			dataGridViewCellStyle8->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle8->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle8->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
+			this->parameters_dataGridView->DefaultCellStyle = dataGridViewCellStyle8;
 			this->parameters_dataGridView->Location = System::Drawing::Point(18, 16);
 			this->parameters_dataGridView->Name = L"parameters_dataGridView";
 			this->parameters_dataGridView->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
@@ -505,8 +505,8 @@ namespace robot_ui {
 			// 
 			// Group
 			// 
-			dataGridViewCellStyle2->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->Group->DefaultCellStyle = dataGridViewCellStyle2;
+			dataGridViewCellStyle6->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->Group->DefaultCellStyle = dataGridViewCellStyle6;
 			this->Group->HeaderText = L"Group";
 			this->Group->Name = L"Group";
 			this->Group->ReadOnly = true;
@@ -521,8 +521,8 @@ namespace robot_ui {
 			// 
 			// name
 			// 
-			dataGridViewCellStyle3->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->name->DefaultCellStyle = dataGridViewCellStyle3;
+			dataGridViewCellStyle7->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->name->DefaultCellStyle = dataGridViewCellStyle7;
 			this->name->HeaderText = L"Name";
 			this->name->Name = L"name";
 			this->name->ReadOnly = true;
@@ -644,31 +644,31 @@ namespace robot_ui {
 				| System::Windows::Forms::AnchorStyles::Right));
 			this->graphs_chart->AntiAliasing = System::Windows::Forms::DataVisualization::Charting::AntiAliasingStyles::None;
 			this->graphs_chart->BorderlineColor = System::Drawing::Color::RoyalBlue;
-			chartArea1->AxisX->MajorGrid->Enabled = false;
-			chartArea1->Name = L"ChartArea1";
-			chartArea2->AxisX->MajorGrid->Enabled = false;
-			chartArea2->Name = L"ChartArea2";
-			this->graphs_chart->ChartAreas->Add(chartArea1);
-			this->graphs_chart->ChartAreas->Add(chartArea2);
-			legend1->Name = L"Legend1";
-			this->graphs_chart->Legends->Add(legend1);
+			chartArea3->AxisX->MajorGrid->Enabled = false;
+			chartArea3->Name = L"ChartArea1";
+			chartArea4->AxisX->MajorGrid->Enabled = false;
+			chartArea4->Name = L"ChartArea2";
+			this->graphs_chart->ChartAreas->Add(chartArea3);
+			this->graphs_chart->ChartAreas->Add(chartArea4);
+			legend2->Name = L"Legend1";
+			this->graphs_chart->Legends->Add(legend2);
 			this->graphs_chart->Location = System::Drawing::Point(-5, -1);
 			this->graphs_chart->Margin = System::Windows::Forms::Padding(0);
 			this->graphs_chart->Name = L"graphs_chart";
-			series1->ChartArea = L"ChartArea1";
-			series1->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series1->IsXValueIndexed = true;
-			series1->Legend = L"Legend1";
-			series1->MarkerSize = 1;
-			series1->Name = L"Series 1";
-			series1->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
-			series2->ChartArea = L"ChartArea2";
-			series2->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series2->IsXValueIndexed = true;
-			series2->Legend = L"Legend1";
-			series2->Name = L"Series 2";
-			this->graphs_chart->Series->Add(series1);
-			this->graphs_chart->Series->Add(series2);
+			series3->ChartArea = L"ChartArea1";
+			series3->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series3->IsXValueIndexed = true;
+			series3->Legend = L"Legend1";
+			series3->MarkerSize = 1;
+			series3->Name = L"Series 1";
+			series3->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
+			series4->ChartArea = L"ChartArea2";
+			series4->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series4->IsXValueIndexed = true;
+			series4->Legend = L"Legend1";
+			series4->Name = L"Series 2";
+			this->graphs_chart->Series->Add(series3);
+			this->graphs_chart->Series->Add(series4);
 			this->graphs_chart->Size = System::Drawing::Size(894, 621);
 			this->graphs_chart->TabIndex = 0;
 			this->graphs_chart->Text = L"graphs_chart";
