@@ -334,6 +334,18 @@ void process_user_input(void)
 	}
 	//CMD_set_motors(m_l_speed*1.0f, m_r_speed * 0.97f); //for right turns
 	if(update_required) CMD_send();
+
+	{
+		extern volatile u32 joystick_changed,lAxisRz_1,lAxisZ_1;
+		static u32 jc=0;
+
+		if(jc != joystick_changed)
+		{
+			jc = joystick_changed;
+			CMD_motor_command(7 , 1,1 , lAxisRz_1 - lAxisZ_1, lAxisRz_1 + lAxisZ_1);
+			CMD_send();
+		}
+	}
 }
 
 

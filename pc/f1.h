@@ -12,6 +12,12 @@
 #include <fcntl.h>     /* for _O_TEXT and _O_BINARY */
 #include <math.h>
 
+//
+// Global variables
+//
+
+
+#define NOP()  _dummy_++
 
 extern "C" 
 { 
@@ -26,6 +32,9 @@ extern "C"
 	extern volatile int log_write_index;
 	extern volatile int log_read_index;
 	extern int	log_printf(const char *__fmt, ...);
+	extern void ParseRawInput(PRAWINPUT pRawInput);
+	extern void process_wm_input(LPARAM lParam);
+	extern void register_joystick(HWND hwnd);
 }
 
 
@@ -40,6 +49,8 @@ namespace robot_ui {
 	using namespace System::Data;
 	using namespace System::Drawing;
 	using namespace System::Runtime::InteropServices;
+	using namespace System::Security::Permissions;
+
 
 	/// <summary>
 	/// Summary for f1
@@ -52,6 +63,30 @@ namespace robot_ui {
 	/// </summary>
 	public ref class f1 : public System::Windows::Forms::Form
 	{
+	public:
+	volatile int _dummy_;
+
+	public:
+		[SecurityPermissionAttribute(SecurityAction::LinkDemand, Flags = SecurityPermissionFlag::UnmanagedCode)]
+		[SecurityPermissionAttribute(SecurityAction::InheritanceDemand, Flags = SecurityPermissionFlag::UnmanagedCode)]
+		virtual  void WndProc( Message% m ) override
+		{
+
+			// Listen for operating system messages. 
+			switch ( m.Msg )
+			{
+			case WM_ACTIVATEAPP:
+				NOP();
+				break;
+			case WM_INPUT:
+				process_wm_input(static_cast<LPARAM>(m.LParam.ToInt32()));
+				//log_printf("WM_INPUT\n");
+				break;
+			}
+			Form::WndProc( m );
+		}
+
+
 	private: int ignore_parameter_changes;
 	public: Graphics^ g;
 	private: System::Windows::Forms::CheckBox^  radar_checkBox_show_ir_ne;

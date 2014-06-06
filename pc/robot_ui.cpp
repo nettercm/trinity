@@ -4,7 +4,10 @@
 #include "f1.h"
 #include <stdio.h>
 #include <windows.h>
+#include <Winuser.h>
 
+#pragma comment(lib, "user32.lib")
+#pragma comment(lib, "hid.lib")
 
 using namespace robot_ui;
 
@@ -80,6 +83,8 @@ namespace robot_ui
 		//TODO: Add the constructor code here
 		//
 		ignore_parameter_changes = 0;
+
+		register_joystick(static_cast<HWND>(Handle.ToPointer()));
 
 		log_printf("-- f1::f1(void)\n");
 	}
