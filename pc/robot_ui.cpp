@@ -14,8 +14,9 @@ int main(array<System::String ^> ^args)
 	AllocConsole();
 	freopen("CON","wb",stdout);
 	log_printf("PC <-> Robot Interface v1.0  (UI version)\n\n");
-	log_printf("sizeof(t_inputs)      = %3d\n",sizeof(t_inputs));
-	log_printf("sizeof(t_frame_to_pc) = %3d\n",sizeof(t_frame_to_pc));
+	log_printf("sizeof(t_inputs)        = %3d\n",sizeof(t_inputs));
+	log_printf("sizeof(t_frame_to_pc)   = %3d\n",sizeof(t_frame_to_pc));
+	log_printf("sizeof(t_frame_from_pc) = %3d\n",sizeof(t_frame_from_pc));
 
 	// Enabling Windows XP visual effects before any controls are created
 	Application::EnableVisualStyles();
@@ -49,14 +50,11 @@ namespace robot_ui
 		int i;
 		float f;
 		String ^s;
+		DWORD t1,t2;
 
 		log_printf("++ f1::f1(void)\n");
 
 		timeBeginPeriod(1);
-
-		DWORD t1 = timeGetTime();
-		Sleep(1);
-		DWORD t2 = timeGetTime();
 
 		ignore_parameter_changes = 1;
 
@@ -73,7 +71,9 @@ namespace robot_ui
 
 		InitializeParametersTab();
 
-		log_printf("Timing test:  Sleep(1) = %lu\n",t2-t1);
+		t1 = timeGetTime(); 	Sleep(1);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(1) = %lu\n",t2-t1);
+		t1 = timeGetTime(); 	Sleep(2);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(2) = %lu\n",t2-t1);
+		t1 = timeGetTime(); 	Sleep(10);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(10) = %lu\n",t2-t1);
 
 		g = radar_tabPage->CreateGraphics();
 		//
@@ -121,8 +121,14 @@ namespace robot_ui
 	{
 		int result = 0;
 		static float theta = 0.0f;
+		DWORD t1,t2;
 
 		//data_init();
+
+		t1 = timeGetTime(); 	Sleep(1);		t2 = timeGetTime(); 		log_printf("Timing test (serial thread):  Sleep(1) = %lu\n",t2-t1);
+		t1 = timeGetTime(); 	Sleep(2);		t2 = timeGetTime(); 		log_printf("Timing test (serial thread):  Sleep(2) = %lu\n",t2-t1);
+		t1 = timeGetTime(); 	Sleep(10);		t2 = timeGetTime(); 		log_printf("Timing test (serial thread):  Sleep(10) = %lu\n",t2-t1);
+
 
 		#if 1
 
@@ -172,7 +178,14 @@ namespace robot_ui
 	System::Void f1::serial_timer_Tick(System::Object^  sender, System::EventArgs^  e) 
 	{
 		int result = 0;
+		static int iterations=0;
 		static float theta = 0.0f;
+
+		iterations++;
+		if(iterations<200) 	log_printf("%7ld\n",timeGetTime());
+
+		//CMD_reset_encoders();
+		//CMD_send();
 		
 		#if 0
 

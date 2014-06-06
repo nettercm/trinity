@@ -12,6 +12,7 @@ uint8 rx_buffer[RX_BUFFER_SIZE];
 t_frame_to_pc tx_buffer;
 t_frame_from_pc frame;
 Evt_t serial_cmd_evt;
+u08 packets_received=0;
 
 #if _SERIAL_PORTS > 1
 
@@ -73,19 +74,28 @@ void serial_send_fsm(u08 cmd, u08 *param)
 	static uint8 seq=0;
 	static uint8 interval_cfg_idx;
 	uint8 serial_send_interval;
+	static uint8 p_r=0;
+	static uint8 iterations;
 	u08 i;
 
 	task_open();
 	
 	interval_cfg_idx	= cfg_get_index_by_grp_and_id(1,1);
 
+	p_r = packets_received;
 	
 	while(1)
 	{
 		serial_send_interval = cfg_get_u08_by_index(interval_cfg_idx);
-		task_wait(serial_send_interval);
+		iterations=0;
+		//while( (packets_received==0) && (iterations<5) )
+		//{
+			task_wait(serial_send_interval);
+		//	iterations++;
+		//}
 		tx_buffer.seq = seq; seq++; //=get_ms();
-		//tx_buffer.ack = 0;
+		tx_buffer.ack = packets_received;
+		packets_received = p_r = 0;
 		tx_buffer.magic1[0] = 0xab;
 		tx_buffer.magic1[1] = 0xcd;
 		tx_buffer.magic2[0] = 0xdc;
@@ -207,7 +217,7 @@ void serial_receive_fsm(u08 cmd, u08 *param)
 {
 	static uint8 state=0;
 	static uint32 count=0;
-	static uint8 received=0,wr_idx=0,rd_idx=0,r=0;
+	static wr_idx=0,rd_idx=0,r=0;
 	uint8 result = 0;
 	t_commands* c;
 	t_frame_from_pc *f;
@@ -230,7 +240,8 @@ void serial_receive_fsm(u08 cmd, u08 *param)
 			{
 				//usb_printf("got one!\n");
 				memcpy(&(s.commands),(uint8*)(&frame)+6,sizeof(t_commands));
-				tx_buffer.ack=frame.seq;
+				packets_received++;
+				//tx_buffer.ack=packets_received; //frame.seq;
 				event_signal(serial_cmd_evt);
 				OS_SCHEDULE;
 			}

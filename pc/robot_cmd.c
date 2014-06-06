@@ -105,12 +105,12 @@ void detect_packet_loss(void)
 {
 	static u08 previous_seq=0,previous_ack=0;
 	if(rx_buffer->seq != (u08)(previous_seq+1))     log_printf("\n=============  PC missed a packet ==============\n\n");
-	/* this detection does not work reliably
+	/* this detection does not work reliably */
 	if(rx_buffer->ack != previous_ack)
 	{
-	if(rx_buffer->ack != (u08)(previous_ack+1)) printf("\n-------------  R. missed a packet --------------\n\n");
+		if(rx_buffer->ack != (u08)(previous_ack+1)) log_printf("\n-------------  R. missed a packet --------------\n\n");
 	}
-	*/
+	
 	//if(inputs->timestamp_rx != previous_rx_seq+1) printf("TX ERROR (Robot missed a packet)\n");
 	previous_seq=rx_buffer->seq;
 	previous_ack=rx_buffer->ack;
@@ -131,11 +131,11 @@ void display_inputs_and_state(t_inputs *inputs)
 	t_delta_avg = (t_delta_avg*19.0f + t_delta)/20.0f;
 
 	//sprintf(s.msg, "%03u, %03u, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,    FSM,%1d,%1d,%1d,%1d,%1d,%1d,%1d,%1d  E,%4d,%4d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",				
-	sprintf(s.msg, "D_ ( %3u, %3u, %6ld,   V,%3.1f,  0x%04x,  A,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,     E,%5d,%5d,   O,%4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d,  M,%3d,%3d, %3d,%3d, %3d,%3d,   W,%3d,%3d,%3d,%3d )\n",				
+	sprintf(s.msg, "D_ ( %3u, %3u, %6ld,  T,%3d,%3.1f,   V,%3.1f,  0x%04x,  A,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,     E,%5d,%5d,   O,%4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d,  M,%3d,%3d, %3d,%3d, %3d,%3d,   W,%3d,%3d,%3d,%3d )\n",				
 				rx_buffer->seq,
 				rx_buffer->ack,
 				inputs->timestamp,
-				/*t_delta, t_delta_avg,*/
+				t_delta, t_delta_avg,
 				inputs->vbatt/1000.0f,
 				inputs->flags,
 
@@ -211,8 +211,8 @@ int loop(void) //return 0 if we did not actually go throught the loop
 	else 
 	{
 		log_printf("\nError.  serial_receive() failed with result=%d\n",result);
-		s.p = serial_reopen(s.p,s.port);
-		Sleep(2000);
+		//s.p = serial_reopen(s.p,s.port);
+		//Sleep(2000);
 	}
 
 	if(!result) 
@@ -221,14 +221,73 @@ int loop(void) //return 0 if we did not actually go throught the loop
 		//log_printf("No data received!\r\n");
 	}
 
+	if(result)
+	{
+
+	}
+
 	return result;
 }
 
 #ifndef WIN32UI
 
+
+void serial_loopback_timing_test(void)
+{
+	DWORD t1,t2,td,min=2000,max=0,avg,sum=0;
+	unsigned char rx_buffer[500],tx_buffer[500];
+	int result,size;
+	int i;
+
+	for(i=1; i<=201; i+=10)
+	{
+		t1=timeGetTime();
+		serial_write(s.p,tx_buffer,i);
+		size = serial_read(s.p,(char*)rx_buffer,i);  
+		t2=timeGetTime();
+		printf("Timing test: %3lums for loopback for %3d of %3d bytes\n",t2-t1,abs(size),i);
+	}
+
+	i=0;
+	while(1)//for(i=1; i<=100; i+=1)
+	{
+		t1=timeGetTime();
+		serial_write(s.p,tx_buffer,50);
+		size = serial_read(s.p,(char*)rx_buffer,50);  
+		t2=timeGetTime();
+		td=t2-t1;
+		if(td<min) min=td;
+		if(td>max) max=td;
+		//avg = ((19*avg)+td)/20;
+		sum+=td;
+		i++;
+		if(i==20)
+		{
+			i=0;
+			avg=sum/20;
+			sum=0;
+			printf("min, avg, max = %3lu, %3lu, %4lu\n",min, avg, max);
+			min=2000;
+			max=0;
+		}
+
+		if(abs(size)!=50) printf("Timing test: %3lums for loopback for %3d of %3d bytes\n",t2-t1,abs(size),50);
+	}
+
+}
+
 int main(int argc, char **argv)
 {
+	DWORD t1,t2;
+	unsigned char buffer[500];
+	int result,size;
+
 	timeBeginPeriod(1);
+
+	t1 = timeGetTime(); 	Sleep(1);		t2 = timeGetTime(); 		printf("Timing test:  Sleep(1) = %lu\n",t2-t1);
+	t1 = timeGetTime(); 	Sleep(2);		t2 = timeGetTime(); 		printf("Timing test:  Sleep(2) = %lu\n",t2-t1);
+	t1 = timeGetTime(); 	Sleep(10);		t2 = timeGetTime(); 		printf("Timing test:  Sleep(10) = %lu\n",t2-t1);
+
 	memset(&outputs,0,sizeof(outputs));
 	memset(&commands,0,sizeof(t_commands));
 
@@ -248,7 +307,8 @@ int main(int argc, char **argv)
 	data_init();
 	//kalman_init(&ks,4.0,4.0,8.0,50);
 
-	s.p=serial_open(s.port);
+	s.p=serial_open("\\\\.\\COM10"); //(s.port);
+	serial_loopback_timing_test();
 	//serial_test(p);
 
 	while(1)  

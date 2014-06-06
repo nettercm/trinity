@@ -5,7 +5,7 @@
 
 extern int	log_printf(const char *__fmt, ...);
 
-volatile unsigned long debug_functions = DBG_ALWAYS | DBG_MAIN; // | DBG_SER_READ;
+volatile unsigned long debug_functions = DBG_ALWAYS | DBG_MAIN  | DBG_SER_READ;
 
 
 void dbg(unsigned long function, char *formatstring, ...) 
