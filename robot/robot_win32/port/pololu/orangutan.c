@@ -8,6 +8,8 @@
 
 unsigned long msCounter=0;
 
+volatile unsigned char UCSR1A;
+volatile unsigned char DDRD;
 
 //int on the SVP-1284 / Atmega is 16bits.
 #define int short
@@ -25,8 +27,13 @@ void BP(void)
 
 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//OrangutanDigital.h
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void set_digital_output(unsigned char pin, unsigned char outputState) { unsigned char dummy = pin+outputState; NOT_IMPLEMENTED(); }
 void set_digital_input(unsigned char pin, unsigned char inputState) { unsigned char dummy = pin+inputState; NOT_IMPLEMENTED(); }
+unsigned char is_digital_input_high(unsigned char pin) {return 0;};
 
 
 
@@ -44,7 +51,6 @@ unsigned char svp_get_firmware_version(void) { NOT_IMPLEMENTED(); }
 //OrangutanTime.h
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
 unsigned long get_ticks(void){ return m.elapsed_milliseconds * 25000; }
 unsigned long ticks_to_microseconds(unsigned long ticks) {	NOT_IMPLEMENTED(); return ticks; }
 void time_reset(void) { m.elapsed_milliseconds=0; }
@@ -61,7 +67,6 @@ void delay_ms(unsigned int milliseconds)
 	Sleep(milliseconds);
 	m.elapsed_milliseconds += milliseconds;
 }
-
 
 
 

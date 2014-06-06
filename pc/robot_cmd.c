@@ -235,7 +235,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 void serial_loopback_timing_test(void)
 {
 	DWORD t1,t2,td,min=2000,max=0,avg,sum=0;
-	unsigned char rx_buffer[500],tx_buffer[500];
+	char rx_buffer[500],tx_buffer[500];
 	int result,size;
 	int i;
 
@@ -251,6 +251,7 @@ void serial_loopback_timing_test(void)
 	i=0;
 	while(1)//for(i=1; i<=100; i+=1)
 	{
+		Sleep(200);
 		t1=timeGetTime();
 		serial_write(s.p,tx_buffer,50);
 		size = serial_read(s.p,(char*)rx_buffer,50);  
@@ -266,7 +267,7 @@ void serial_loopback_timing_test(void)
 			i=0;
 			avg=sum/20;
 			sum=0;
-			printf("min, avg, max = %3lu, %3lu, %4lu\n",min, avg, max);
+			printf("50 bytes:  min, avg, max = %3lu, %3lu, %4lu\n",min, avg, max);
 			min=2000;
 			max=0;
 		}

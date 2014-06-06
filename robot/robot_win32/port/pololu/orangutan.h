@@ -13,6 +13,9 @@
 
 #define TCNT2 0
 
+extern volatile unsigned char UCSR1A;
+extern volatile unsigned char DDRD;
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //OrangutanDigital.h
@@ -88,6 +91,9 @@
 
 void set_digital_output(unsigned char pin, unsigned char outputState);
 void set_digital_input(unsigned char pin, unsigned char inputState);
+void set_digital_output_value(struct IOStruct* ioPin, unsigned char val);
+unsigned char get_digital_input_value(struct IOStruct* ioPin);
+unsigned char is_digital_input_high(unsigned char pin);
 
 #endif
 

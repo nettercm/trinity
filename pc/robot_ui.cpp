@@ -187,7 +187,7 @@ namespace robot_ui
 		static float theta = 0.0f;
 
 		iterations++;
-		if(iterations<200) 	log_printf("%7ld\n",timeGetTime());
+		if(iterations<5) 	log_printf("serial_timer_Tick(): timeGetTime() = %7ld\n",timeGetTime());
 
 		//CMD_reset_encoders();
 		//CMD_send();

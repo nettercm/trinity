@@ -71,6 +71,16 @@ namespace robot_ui {
 		[SecurityPermissionAttribute(SecurityAction::InheritanceDemand, Flags = SecurityPermissionFlag::UnmanagedCode)]
 		virtual  void WndProc( Message% m ) override
 		{
+			static unsigned long t1=0,t2,count=0;
+
+			count++;
+			t2=GetTickCount();
+			if(t2-t1>=1000)
+			{
+				t1=t2;
+				//log_printf("%lu messages per second\n",count);
+				count=0;
+			}
 
 			// Listen for operating system messages. 
 			switch ( m.Msg )
