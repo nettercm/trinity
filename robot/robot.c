@@ -92,6 +92,9 @@ void stop_all_behaviours(void)
 
 int hardware_init(void)
 {
+	UCSR1A = 0;
+	DDRD = 0;
+
 	//Make SSbar be an output so it does not interfere with SPI communication.
 	//SSbar == FAN_PIN
 	set_digital_output(FAN_PIN, HIGH);
