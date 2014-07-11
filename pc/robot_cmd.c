@@ -305,6 +305,8 @@ int main(int argc, char **argv)
 	//ir_test();
 	//PID_test_2();
 
+	{extern int ip_server_test(void); ip_server_test(); }
+
 	data_init();
 	//kalman_init(&ks,4.0,4.0,8.0,50);
 
