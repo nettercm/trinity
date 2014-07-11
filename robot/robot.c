@@ -2136,7 +2136,11 @@ int main(void)
 	//servos_start(demuxPins, sizeof(demuxPins));
 	//set_servo_target(0, 1375);
 #ifdef WIN32
-	test_flame();
+	//test_flame();
+#endif
+
+#if 0
+	{ extern void fsm_test_2(void);   while(1) {fsm_test_2();} }
 #endif
 
 	//initialize our state
