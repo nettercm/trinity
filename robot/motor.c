@@ -368,9 +368,9 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			accelleration = p1;  if(accelleration==0) accelleration=1;
 			decelleration = p2;  if(decelleration==0) decelleration=1;
 
-			//limit target speed to +/- 120
-			LIMIT(lm_speed,-120,+120);
-			LIMIT(rm_speed,-120,+120);
+			//limit target speed to +/- MAX_SPEED
+			LIMIT(lm_speed,-MAX_SPEED,+MAX_SPEED);
+			LIMIT(rm_speed,-MAX_SPEED,+MAX_SPEED);
 			//start
 			if(s.motor_command_state == 6)
 			{
@@ -393,9 +393,9 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 
 		if(cmd==7) //use feed-forward to compensate for battery voltage fluctuations and then regulate speed
 		{
-			//limit target speed to +/- 120
-			LIMIT(lm_speed,-120,+120);
-			LIMIT(rm_speed,-120,+120);
+			//limit target speed to +/- MAX_SPEED
+			LIMIT(lm_speed,-MAX_SPEED,+MAX_SPEED);
+			LIMIT(rm_speed,-MAX_SPEED,+MAX_SPEED);
 			
 			if(s.motor_command_state == 7)
 			{
@@ -423,9 +423,9 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 
 		if(cmd==8) //use feed-forward to compensate for battery voltage fluctuations, but don't regulate speed
 		{
-			//limit target speed to +/- 120
-			LIMIT(lm_speed,-120,+120);
-			LIMIT(rm_speed,-120,+120);
+			//limit target speed to +/- MAX_SPEED
+			LIMIT(lm_speed,-MAX_SPEED,+MAX_SPEED);
+			LIMIT(rm_speed,-MAX_SPEED,+MAX_SPEED);
 			
 			//pwm = target * K/vbatt
 			//K = (pwm * vbatt)/target

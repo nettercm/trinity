@@ -21,4 +21,7 @@ extern float odometry_get_distance_since_checkpoint(void);
 
 extern void odometry_update_postion(float x, float y, float t);
 
+//the following is in units of encoder ticks per time period;  should not be higher than what can be attained
+#define MAX_SPEED 150 
+
 #endif
