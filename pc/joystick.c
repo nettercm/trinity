@@ -110,28 +110,28 @@ void ParseRawInput(PRAWINPUT pRawInput)
 		switch(pValueCaps[i].Range.UsageMin)
 		{
 		case 0x30:	// X-axis
-			lAxisX_2 = (128-(LONG)value)/2;// - 128;
+			lAxisX_2 = (128-(LONG)value)/1;// - 128;
 			if(abs(lAxisX_2)<=3) lAxisX_2=0;
 			if(lAxisX_2 != lAxisX_1) changed++;
 			lAxisX_1=lAxisX_2;
 			break;
 
 		case 0x31:	// Y-axis
-			lAxisY_2 = (128-(LONG)value)/2;// - 128;
+			lAxisY_2 = (128-(LONG)value)/1;// - 128;
 			if(abs(lAxisY_2)<=3) lAxisY_2=0;
 			if(lAxisY_2 != lAxisY_1) changed++;
 			lAxisY_1=lAxisY_2;
 			break;
 
 		case 0x32: // Z-axis
-			lAxisZ_2 = (128-(LONG)value)/2;// - 128;
+			lAxisZ_2 = (128-(LONG)value)/1;// - 128;
 			if(abs(lAxisZ_2)<=3) lAxisZ_2=0;
 			if(lAxisZ_2 != lAxisZ_1) changed++;
 			lAxisZ_1=lAxisZ_2;
 			break;
 
 		case 0x35: // Rotate-Z
-			lAxisRz_2 = (128-(LONG)value)/2;// - 128;
+			lAxisRz_2 = (128-(LONG)value)/1;// - 128;
 			if(abs(lAxisRz_2)<=3) lAxisRz_2=0;
 			if(lAxisRz_2 != lAxisRz_1) changed++;
 			lAxisRz_1=lAxisRz_2;
@@ -229,3 +229,4 @@ void enumerate_raw_input(void)
 }
 
 //******************************************************************************************************************************
+
