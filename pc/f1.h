@@ -35,6 +35,8 @@ extern "C"
 	extern void ParseRawInput(PRAWINPUT pRawInput);
 	extern void process_wm_input(LPARAM lParam);
 	extern void register_joystick(HWND hwnd);
+	extern void enumerate_raw_input(void);
+	extern void UpdateControllerState(void);
 }
 
 
