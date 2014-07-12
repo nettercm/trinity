@@ -51,18 +51,6 @@ void serial_test(void)
 void serial_hardware_init(void)
 {
 	_serial_set_baud_rate(UART_PC, 115200);
-	
-	//serial_send_blocking(UART_PC, "test\r\n", 5);
-	//serial_receive(UART_PC, rx_buffer, RX_BUFFER_SIZE);
-	#if SIM
-	{
-		t_outputs *o = (t_outputs*)rx_buffer;
-		o->magic1[0] = 0xab;
-		o->magic1[1] = 0xcd;
-		o->magic2[0] = 0xdc;
-		o->magic2[1] = 0xba;
-	}
-	#endif
 }
 
 

@@ -6,7 +6,29 @@
 #include <math.h>
 #include <hidsdi.h>
 
+#include <XInput.h>
+#pragma comment(lib,"xinput9_1_0.lib")
+
 #include "debug.h"
+
+
+//-----------------------------------------------------------------------------
+// Defines, constants, and global variables
+//-----------------------------------------------------------------------------
+#define MAX_CONTROLLERS 4  // XInput handles up to 4 controllers 
+#define INPUT_DEADZONE  ( 0.24f * FLOAT(0x7FFF) )  // Default to 24% of the +/- 32767 range.   This is a reasonable default value but can be altered if needed.
+
+typedef struct 
+{
+    XINPUT_STATE state;
+    int bConnected;
+} CONTROLLER_STATE;
+
+CONTROLLER_STATE g_Controllers[MAX_CONTROLLERS];
+WCHAR g_szMessage[4][1024] = {0};
+HWND    g_hWnd;
+int    g_bDeadZoneOn = 0;
+
 
 #define ARRAY_SIZE(x)	(sizeof(x) / sizeof((x)[0]))
 #define WC_MAINFRAME	TEXT("MainFrame")
@@ -23,6 +45,25 @@ volatile LONG lAxisRz_1, lAxisRz_2; //right stick - up/down
 volatile LONG lHat_1, lHat_2;
 volatile INT  g_NumberOfButtons;
 volatile LONG joystick_changed=0;
+
+
+//-----------------------------------------------------------------------------
+void UpdateControllerState(void)
+{
+    DWORD dwResult;
+	DWORD i;
+    for( i = 0; i < MAX_CONTROLLERS; i++ )
+    {
+        // Simply get the state of the controller from XInput.
+        dwResult = XInputGetState( i, &g_Controllers[i].state );
+
+        if( dwResult == ERROR_SUCCESS )
+            g_Controllers[i].bConnected = 1;
+        else
+            g_Controllers[i].bConnected = 0;
+    }
+}
+
 
 void ParseRawInput(PRAWINPUT pRawInput)
 {

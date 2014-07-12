@@ -84,7 +84,9 @@ namespace robot_ui
 		//
 		ignore_parameter_changes = 0;
 
-		register_joystick(static_cast<HWND>(Handle.ToPointer()));
+		//enumerate_raw_input();
+		//register_joystick(static_cast<HWND>(Handle.ToPointer()));
+		UpdateControllerState();
 
 		log_printf("-- f1::f1(void)\n");
 	}

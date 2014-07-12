@@ -148,7 +148,7 @@ if(marker)							\
 }
 */
 
-
+//set SIM to 1 for running under the Atmel Studio Simulator (SIM has nothing to do w/ running under WIN32)
 #define SIM 0
 //////////////////////////////////////////////////////////////////////////////
 #if SIM
