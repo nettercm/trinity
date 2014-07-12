@@ -332,7 +332,7 @@ HANDLE serial_open(char *port)
 	while(p==INVALID_HANDLE_VALUE)
 	{
 		//p=serial_init("\\\\.\\COM52",115200,ONESTOPBIT); //BT2 is COM26;  BT1 on small USB transceiver is COM27; BT1 on new USB is COM28
-		p=serial_init(port,460800/*115200*/,ONESTOPBIT); //BT2 is COM26;  BT1 on small USB transceiver is COM27; BT1 on new USB is COM28
+		p=serial_init(port,115200,ONESTOPBIT); //BT2 is COM26;  BT1 on small USB transceiver is COM27; BT1 on new USB is COM28
 		PurgeComm(p,0x000f);
 		ClearCommError(p,NULL,NULL);
 		if(p==INVALID_HANDLE_VALUE)
