@@ -58,9 +58,20 @@ void UpdateControllerState(void)
         dwResult = XInputGetState( i, &g_Controllers[i].state );
 
         if( dwResult == ERROR_SUCCESS )
+		{
             g_Controllers[i].bConnected = 1;
+			lAxisZ_2 =  g_Controllers[i].state.Gamepad.sThumbRX / -256;
+			if(abs(lAxisZ_2)<=3) lAxisZ_2=0;
+			if(lAxisZ_2 != lAxisZ_1) { joystick_changed++; 	lAxisZ_1=lAxisZ_2; }
+
+			lAxisRz_2 = g_Controllers[i].state.Gamepad.sThumbRY / 256;
+			if(abs(lAxisRz_2)<=3) lAxisRz_2=0;
+			if(lAxisRz_2 != lAxisRz_1) { joystick_changed++; lAxisRz_1=lAxisRz_2; }
+		}
         else
+		{
             g_Controllers[i].bConnected = 0;
+		}
     }
 }
 

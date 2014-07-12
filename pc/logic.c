@@ -337,11 +337,12 @@ void process_user_input(void)
 
 #ifdef WIN32UI
 	{
-		extern volatile u32 joystick_changed,lAxisRz_1,lAxisZ_1;
+		extern volatile s32 joystick_changed,lAxisRz_1,lAxisZ_1;
 		static u32 jc=0;
 
 		if(jc != joystick_changed)
 		{
+			//log_printf("joystick:  lAxisRz_1=%d, lAxisZ_1=%d\n",lAxisRz_1,lAxisZ_1);
 			jc = joystick_changed;
 			CMD_motor_command(7 , 1,1 , lAxisRz_1 - lAxisZ_1, lAxisRz_1 + lAxisZ_1);
 			CMD_send();

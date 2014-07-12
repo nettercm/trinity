@@ -108,7 +108,7 @@ void detect_packet_loss(void)
 	/* this detection does not work reliably */
 	if(rx_buffer->ack != previous_ack)
 	{
-		if(rx_buffer->ack != (u08)(previous_ack+1)) log_printf("\n-------------  R. missed a packet --------------\n\n");
+		//if(rx_buffer->ack != (u08)(previous_ack+1)) log_printf("\n-------------  R. missed a packet --------------\n\n");
 	}
 	
 	//if(inputs->timestamp_rx != previous_rx_seq+1) printf("TX ERROR (Robot missed a packet)\n");

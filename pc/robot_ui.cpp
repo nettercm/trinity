@@ -84,8 +84,11 @@ namespace robot_ui
 		//
 		ignore_parameter_changes = 0;
 
-		//enumerate_raw_input();
-		//register_joystick(static_cast<HWND>(Handle.ToPointer()));
+		//for standard:
+		enumerate_raw_input();
+		register_joystick(static_cast<HWND>(Handle.ToPointer()));
+		
+		//for DS3
 		UpdateControllerState();
 
 		log_printf("-- f1::f1(void)\n");
@@ -190,6 +193,8 @@ namespace robot_ui
 
 		iterations++;
 		if(iterations<5) 	log_printf("serial_timer_Tick(): timeGetTime() = %7ld\n",timeGetTime());
+
+		UpdateControllerState();
 
 		//CMD_reset_encoders();
 		//CMD_send();
