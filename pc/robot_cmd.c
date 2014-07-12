@@ -236,6 +236,7 @@ void serial_loopback_timing_test(void)
 {
 	DWORD t1,t2,td,min=2000,max=0,avg,sum=0;
 	char rx_buffer[500],tx_buffer[500];
+	int stats[10];
 	int result,size;
 	int i;
 
@@ -251,7 +252,7 @@ void serial_loopback_timing_test(void)
 	i=0;
 	while(1)//for(i=1; i<=100; i+=1)
 	{
-		Sleep(200);
+		Sleep(10);
 		t1=timeGetTime();
 		serial_write(s.p,tx_buffer,50);
 		size = serial_read(s.p,(char*)rx_buffer,50);  
@@ -261,15 +262,22 @@ void serial_loopback_timing_test(void)
 		if(td>max) max=td;
 		//avg = ((19*avg)+td)/20;
 		sum+=td;
+		if(td<=8) stats[0]++;
+		else if(td<=10) stats[1]++;
+		else if(td<=15) stats[2]++;
+		else if(td<=20) stats[3]++;
+		else stats[4]++;
 		i++;
-		if(i==20)
+		if(i==100)
 		{
 			i=0;
-			avg=sum/20;
+			avg=sum/100;
 			sum=0;
-			printf("50 bytes:  min, avg, max = %3lu, %3lu, %4lu\n",min, avg, max);
+			printf("50 bytes:  min, avg, max = %3lu, %3lu, %4lu   stats = %2d  %2d  %2d  %2d  %2d\n",
+				min, avg, max, stats[0], stats[1], stats[2], stats[3], stats[4]);
 			min=2000;
 			max=0;
+			memset(stats,0,sizeof(stats));
 		}
 
 		if(abs(size)!=50) printf("Timing test: %3lums for loopback for %3d of %3d bytes\n",t2-t1,abs(size),50);
