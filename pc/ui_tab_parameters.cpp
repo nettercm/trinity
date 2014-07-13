@@ -87,7 +87,7 @@ namespace robot_ui
 
 			}
 			log("\n");
-			//for some reasone,  issuing commands from here results in some seq # skipping 
+			//TODO: for some reasone,  issuing commands from here results in some seq # skipping 
 			cfg_set_value_by_grp_id(grp,id, v);
 			CMD_set_config_value(grp,id, (uint8*)&v);
 			CMD_send();

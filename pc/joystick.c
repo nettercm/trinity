@@ -38,13 +38,13 @@ int    g_bDeadZoneOn = 0;
 
 
 volatile BOOL bButtonStates[MAX_BUTTONS];
-volatile LONG lAxisX_1, lAxisX_2;
-volatile LONG lAxisY_1, lAxisY_2;
-volatile LONG lAxisZ_1, lAxisZ_2;   //right stick - left/right
-volatile LONG lAxisRz_1, lAxisRz_2; //right stick - up/down
+volatile LONG joystick_Lx_1, joystick_Lx_2;
+volatile LONG joystick_Ly_1, joystick_Ly_2;
+volatile LONG joystick_Rx_1, joystick_Rx_2;   //right stick - left/right, i.e X axis
+volatile LONG joystick_Ry_1, joystick_Ry_2; //right stick - up/down, i.e. Y axis
 volatile LONG lHat_1, lHat_2;
 volatile INT  g_NumberOfButtons;
-volatile LONG joystick_changed=0;
+volatile LONG joystick_changed_R=0,joystick_changed_L=0;
 
 
 //-----------------------------------------------------------------------------
@@ -60,13 +60,30 @@ void UpdateControllerState(void)
         if( dwResult == ERROR_SUCCESS )
 		{
             g_Controllers[i].bConnected = 1;
-			lAxisZ_2 =  g_Controllers[i].state.Gamepad.sThumbRX / -256;
-			if(abs(lAxisZ_2)<=3) lAxisZ_2=0;
-			if(lAxisZ_2 != lAxisZ_1) { joystick_changed++; 	lAxisZ_1=lAxisZ_2; }
 
-			lAxisRz_2 = g_Controllers[i].state.Gamepad.sThumbRY / 256;
-			if(abs(lAxisRz_2)<=3) lAxisRz_2=0;
-			if(lAxisRz_2 != lAxisRz_1) { joystick_changed++; lAxisRz_1=lAxisRz_2; }
+			joystick_Rx_2 =  g_Controllers[i].state.Gamepad.sThumbRX / -256;
+			if(abs(joystick_Rx_2)<=3) joystick_Rx_2=0;
+			if(joystick_Rx_2 != joystick_Rx_1) { joystick_changed_R++; 	joystick_Rx_1=joystick_Rx_2; }
+
+			joystick_Ry_2 = g_Controllers[i].state.Gamepad.sThumbRY / 256;
+			if(abs(joystick_Ry_2)<=3) joystick_Ry_2=0;
+			if(joystick_Ry_2 != joystick_Ry_1) { joystick_changed_R++; joystick_Ry_1=joystick_Ry_2; }
+
+			joystick_Lx_2 =  g_Controllers[i].state.Gamepad.sThumbLX / -256;
+			if(abs(joystick_Lx_2)<=3) joystick_Lx_2=0;
+			if(joystick_Lx_2 != joystick_Lx_1) 
+			{ 
+				joystick_changed_L++; 	
+				joystick_Lx_1=(joystick_Lx_1+joystick_Lx_2)/2; 
+			}
+
+			joystick_Ly_2 = g_Controllers[i].state.Gamepad.sThumbLY / 256;
+			if(abs(joystick_Ly_2)<=3) joystick_Ly_2=0;
+			if(joystick_Ly_2 != joystick_Ly_1) 
+			{ 
+				joystick_changed_L++; 
+				joystick_Ly_1=(joystick_Ly_1+joystick_Ly_2)/2; 
+			}
 		}
         else
 		{
@@ -162,31 +179,31 @@ void ParseRawInput(PRAWINPUT pRawInput)
 		switch(pValueCaps[i].Range.UsageMin)
 		{
 		case 0x30:	// X-axis
-			lAxisX_2 = (128-(LONG)value)/1;// - 128;
-			if(abs(lAxisX_2)<=3) lAxisX_2=0;
-			if(lAxisX_2 != lAxisX_1) changed++;
-			lAxisX_1=lAxisX_2;
+			joystick_Lx_2 = (128-(LONG)value)/1;// - 128;
+			if(abs(joystick_Lx_2)<=3) joystick_Lx_2=0;
+			if(joystick_Lx_2 != joystick_Lx_1) changed++;
+			joystick_Lx_1=joystick_Lx_2;
 			break;
 
 		case 0x31:	// Y-axis
-			lAxisY_2 = (128-(LONG)value)/1;// - 128;
-			if(abs(lAxisY_2)<=3) lAxisY_2=0;
-			if(lAxisY_2 != lAxisY_1) changed++;
-			lAxisY_1=lAxisY_2;
+			joystick_Ly_2 = (128-(LONG)value)/1;// - 128;
+			if(abs(joystick_Ly_2)<=3) joystick_Ly_2=0;
+			if(joystick_Ly_2 != joystick_Ly_1) changed++;
+			joystick_Ly_1=joystick_Ly_2;
 			break;
 
 		case 0x32: // Z-axis
-			lAxisZ_2 = (128-(LONG)value)/1;// - 128;
-			if(abs(lAxisZ_2)<=3) lAxisZ_2=0;
-			if(lAxisZ_2 != lAxisZ_1) changed++;
-			lAxisZ_1=lAxisZ_2;
+			joystick_Rx_2 = (128-(LONG)value)/1;// - 128;
+			if(abs(joystick_Rx_2)<=3) joystick_Rx_2=0;
+			if(joystick_Rx_2 != joystick_Rx_1) changed++;
+			joystick_Rx_1=joystick_Rx_2;
 			break;
 
 		case 0x35: // Rotate-Z
-			lAxisRz_2 = (128-(LONG)value)/1;// - 128;
-			if(abs(lAxisRz_2)<=3) lAxisRz_2=0;
-			if(lAxisRz_2 != lAxisRz_1) changed++;
-			lAxisRz_1=lAxisRz_2;
+			joystick_Ry_2 = (128-(LONG)value)/1;// - 128;
+			if(abs(joystick_Ry_2)<=3) joystick_Ry_2=0;
+			if(joystick_Ry_2 != joystick_Ry_1) changed++;
+			joystick_Ry_1=joystick_Ry_2;
 			break;
 
 		case 0x39:	// Hat Switch
@@ -198,8 +215,8 @@ void ParseRawInput(PRAWINPUT pRawInput)
 	}
 	if(changed) 
 	{
-		joystick_changed++;
-		//log_printf("%5d,%5d,%5d,%5d,%5d\n",lAxisX_1,lAxisY_1,lAxisZ_1,lAxisRz_1,lHat_1);
+		joystick_changed_R++;
+		//log_printf("%5d,%5d,%5d,%5d,%5d\n",joystick_Lx_1,joystick_Ly_1,joystick_Rx_1,joystick_Ry_1,lHat_1);
 	}
 	//
 	// Clean up

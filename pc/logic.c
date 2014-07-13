@@ -337,14 +337,35 @@ void process_user_input(void)
 
 #ifdef WIN32UI
 	{
-		extern volatile s32 joystick_changed,lAxisRz_1,lAxisZ_1;
-		static u32 jc=0;
+		extern volatile s32 joystick_changed_R,joystick_changed_L, joystick_Ry_1,joystick_Rx_1, joystick_Ly_1,joystick_Lx_1;
+		static u32 jcR=0;
+		static u32 jcL=0;
 
-		if(jc != joystick_changed)
+		if(jcL != joystick_changed_L)
 		{
-			//log_printf("joystick:  lAxisRz_1=%d, lAxisZ_1=%d\n",lAxisRz_1,lAxisZ_1);
-			jc = joystick_changed;
-			CMD_motor_command(7 , 1,1 , lAxisRz_1 - lAxisZ_1, lAxisRz_1 + lAxisZ_1);
+			t_config_value v;
+
+			jcL = joystick_changed_L;
+
+			log_printf("joystick:  joystick_Ly_1=%d, joystick_Lx_1=%d\n",joystick_Ly_1,joystick_Lx_1);
+			v.u16=122+(joystick_Lx_1/2);
+			cfg_set_value_by_grp_id(15,6, v);
+			CMD_set_config_value(15,6, (uint8*)&v);
+			CMD_send();
+			
+			v.u16=145+(joystick_Ly_1/3);
+			cfg_set_value_by_grp_id(15,5, v);
+			CMD_set_config_value(15,5, (uint8*)&v);
+			CMD_send();
+			
+
+		}
+
+		if(jcR != joystick_changed_R)
+		{
+			//log_printf("joystick:  joystick_Ry_1=%d, joystick_Rx_1=%d\n",joystick_Ry_1,joystick_Rx_1);
+			jcR = joystick_changed_R;
+			CMD_motor_command(7 , 1,1 , joystick_Ry_1 - joystick_Rx_1, joystick_Ry_1 + joystick_Rx_1);
 			CMD_send();
 		}
 	}
