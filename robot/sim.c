@@ -1,6 +1,7 @@
 
 
 #include "standard_includes.h"
+#include "../pc/ip.h"
 
 /*
 	uint32 timestamp;
@@ -67,11 +68,42 @@ int	lcd_printf(const char *__fmt, ...)
 
 
 
+void sim_motors(void)
+{
+	static u32 t_last = 0, t_now = 0;
+
+	m.actual_enc_ab_ticks_per_interval = (s16) ((float)m.m2 / 1.83f)/2;
+	m.actual_enc_cd_ticks_per_interval = (s16) ((float)m.m1 / 1.83f)/2;
+
+	t_now = get_ms();
+	if(t_now - t_last >= 10)
+	{
+		m.enc_ab += m.actual_enc_ab_ticks_per_interval;
+		m.enc_cd += m.actual_enc_cd_ticks_per_interval;
+		t_last = t_now;
+	}
+}
+
+
+void sim_serial(void)
+{
+	static int state=0;
+	int result;
+	
+	if(state==0)
+	{
+		result = tcp_server_accept(0);
+		if(result > 0) 
+		{
+			state = 1;
+		}
+	}
+
+}
 
 void sim(u08 cmd, u08 *param)
 {
 	static u08 initialized=0;
-	static u32 t_last = 0, t_now = 0;
 
 
 	task_open();
@@ -79,22 +111,13 @@ void sim(u08 cmd, u08 *param)
 	m.rx_ring_buffer_size = 0;
 	m.rx_ring_buffer = NULL;
 
+	tcp_server_init("127.0.0.1",5555);
 
-	
 	for(;;)
 	{
 		task_wait(1);
-
-		m.actual_enc_ab_ticks_per_interval = (s16) ((float)m.m2 / 1.83f)/2;
-		m.actual_enc_cd_ticks_per_interval = (s16) ((float)m.m1 / 1.83f)/2;
-
-		t_now = get_ms();
-		if(t_now - t_last >= 10)
-		{
-			m.enc_ab += m.actual_enc_ab_ticks_per_interval;
-			m.enc_cd += m.actual_enc_cd_ticks_per_interval;
-			t_last = t_now;
-		}
+		sim_motors();
+		sim_serial();
 	}
 	task_close();
 }

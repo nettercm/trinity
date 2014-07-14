@@ -91,6 +91,11 @@ namespace robot_ui
 		//for DS3
 		UpdateControllerState();
 
+		//tcp_server_init("127.0.0.1",5555);
+		//tcp_server_accept(1);
+		//tcp_client_init("127.0.0.1",5555);
+		//tcp_send("test",4);
+
 		log_printf("-- f1::f1(void)\n");
 	}
 
@@ -166,7 +171,8 @@ namespace robot_ui
 				result = loop();
 				if(result)
 				{
-					update_ui();
+					//the following seems to result in some blocking when using tcp connection 
+					//update_ui();
 				}
 			}
 		}
@@ -191,14 +197,14 @@ namespace robot_ui
 		static int iterations=0;
 		static float theta = 0.0f;
 
-		iterations++;
-		if(iterations<5) 	log_printf("serial_timer_Tick(): timeGetTime() = %7ld\n",timeGetTime());
+		//test code...
+		iterations++;	if(iterations<5) 	log_printf("serial_timer_Tick(): timeGetTime() = %7ld\n",timeGetTime());
 
+		//update the DS3 joystick state (standard joystick data comes in via WM_ message)
 		UpdateControllerState();
 
-		//CMD_reset_encoders();
-		//CMD_send();
-		
+
+		/*  
 		#if 0
 
 		if(s.p == INVALID_HANDLE_VALUE)
@@ -228,6 +234,7 @@ namespace robot_ui
 		}
 
 		#endif
+		*/
 	}
 
 
@@ -251,6 +258,8 @@ namespace robot_ui
 
 		if(main_checkBox_connect->Checked)
 		{
+			tcp_client_init("127.0.0.1",5555);
+
 			log("Opening serial port COM" + str + "\r\n" );
 			s.p = serial_init(port,115200,ONESTOPBIT);
 			h = s.p;

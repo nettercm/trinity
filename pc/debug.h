@@ -27,9 +27,11 @@ extern void show_last_error(char *s) ;
 #else
 
 #define DBG(function, params) if(debug_functions & function)  printf params
+#define log_printf printf
 
 #endif
 
+#define usb_printf printf
 
 
 

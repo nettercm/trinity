@@ -3,7 +3,8 @@
 //#pragma warning( push )
 //#pragma warning( disable : C4103 )
 //#pragma warning(disable:C4244)
-#define usb_printf(what)
+//#define usb_printf(what) 
+#define usb_printf printf
 #define pgm_get_far_address(what) 0
 #endif
 

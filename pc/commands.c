@@ -5,6 +5,7 @@
 #include <string.h>
 #include "serial.h"
 #include "data.h"
+#include "ip.h"
 
 t_commands commands;
 t_frame_from_pc tx_buffer;
@@ -28,7 +29,8 @@ int CMD_send(void)
 		tx_buffer.magic2[1] = 0xba;
 
 		memcpy(tx_buffer.payload+2, &commands, sizeof(t_commands));
-		result = serial_write(s.p,(char*)&tx_buffer,sizeof(t_frame_from_pc));
+		//result = serial_write(s.p,(char*)&tx_buffer,sizeof(t_frame_from_pc));
+		result = tcp_send((char*)&tx_buffer,sizeof(t_frame_from_pc),0);
 		memset(&commands,0,sizeof(t_commands));
 		memset(&tx_buffer,0,sizeof(t_frame_from_pc));
 	}

@@ -24,6 +24,18 @@ s16 dbg_buffer_read=0;
 
 int	usb_printf(const char *__fmt, ...)
 {
+#ifdef WIN32
+	int size;
+	va_list ap;
+	//if(usb_power_present())
+	{
+		va_start(ap, __fmt);
+		size = vsprintf(_b, __fmt, ap);
+		printf(_b);
+		va_end(ap);
+	}
+#endif
+
 #if 0
 	#ifdef USB_COMM
 	#if 1

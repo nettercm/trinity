@@ -78,7 +78,7 @@ void serial_send_fsm(u08 cmd, u08 *param)
 		iterations=0;
 		//while( (packets_received==0) && (iterations<5) )
 		//{
-			task_wait(serial_send_interval);
+			task_wait(serial_send_interval); 
 		//	iterations++;
 		//}
 		tx_buffer.seq = seq; seq++; //=get_ms();
@@ -205,7 +205,7 @@ void serial_receive_fsm(u08 cmd, u08 *param)
 {
 	static uint8 state=0;
 	static uint32 count=0;
-	static wr_idx=0,rd_idx=0,r=0;
+	static uint8 wr_idx=0,rd_idx=0,r=0;
 	uint8 result = 0;
 	t_commands* c;
 	t_frame_from_pc *f;
@@ -213,7 +213,7 @@ void serial_receive_fsm(u08 cmd, u08 *param)
 	task_open();
 	
 	memset(rx_buffer,0,RX_BUFFER_SIZE);
-	serial_receive_ring(UART_PC,rx_buffer, RX_BUFFER_SIZE);
+	serial_receive_ring(UART_PC, (char*) rx_buffer, RX_BUFFER_SIZE);
 
 	while(1)
 	{

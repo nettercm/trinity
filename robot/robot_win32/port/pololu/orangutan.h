@@ -460,3 +460,18 @@ unsigned char get_single_debounced_button_release(unsigned char buttons);
 #undef int
 
 #endif
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//OrangutanServos.h
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+unsigned char servos_start(const unsigned char servoPins[], unsigned char numPins);
+unsigned char servos_start_extended(const unsigned char servoPins[], unsigned char numPins, const unsigned char servoPinsB[], unsigned char numPinsB);
+unsigned int get_servo_position(unsigned char servoNum);
+void set_servo_target(unsigned char servoNum, unsigned int pos_us);
+unsigned int get_servo_target(unsigned char servoNum);
+void set_servo_speed(unsigned char servoNum, unsigned int speed);
+unsigned int get_servo_speed(unsigned char servoNum);
+void servos_stop(void);

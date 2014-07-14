@@ -18,7 +18,7 @@
 #include "logic.h"
 #include "commands.h"
 #include "odometry.h"
-
+#include "ip.h"
 
 t_frame_to_pc *rx_buffer;
 t_frame_to_pc dummy_frame;
@@ -101,6 +101,44 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 }
 
 
+int tcp_receive(unsigned char *buffer)
+{
+	int result,size;
+
+	size = tcp_recv((char*)buffer,300,0);  
+	result = size >= sizeof(t_frame_to_pc) ? 1 : 0; 
+
+	if(result == 1)
+	{
+		//the last sizeof(t_inputs) number of bytes from the retrieved buffer contain the t_inputs message
+		rx_buffer = (t_frame_to_pc*) &(buffer[size-sizeof(t_frame_to_pc)]);
+
+		if(rx_buffer->payload[1]==2)
+		{
+			log_printf("%s",&(rx_buffer->payload[2]));
+		}
+		else
+		{
+			memcpy((void*)(&inputs),(void*) &(rx_buffer->payload[2]),sizeof(inputs));
+			s.inputs = &inputs;
+		}
+
+		if( (rx_buffer->magic1[0] != 0xab) ||
+			(rx_buffer->magic1[1] != 0xcd) ||
+			(rx_buffer->magic2[0] != 0xdc) ||
+			(rx_buffer->magic2[1] != 0xba) )
+		{
+			int i;
+			log_printf("%02x %02x %02x %02x\n",rx_buffer->magic1[0],rx_buffer->magic1[1],rx_buffer->magic2[0],rx_buffer->magic2[1]);
+			for(i=0; i<200; i++) log_printf("%02x",(unsigned int)buffer[i]);
+			log_printf("\n");
+			result = -1;
+		}
+	}
+	else rx_buffer = &dummy_frame;
+	return result;
+}
+
 void detect_packet_loss(void)
 {
 	static u08 previous_seq=0,previous_ack=0;
@@ -177,10 +215,10 @@ int loop(void) //return 0 if we did not actually go throught the loop
 	//t2=timeGetTime();  td=t2-t1;  t1=t2;  //timestamping
 
 	//wait for an incoming t_inputs message; data in buffer; inputs points to t_inputs payload 
-	result = serial_receive(s.p,buffer);
+	result = tcp_receive(buffer); //serial_receive(s.p,buffer);
 
-	//if(result == 1)
-	if(1) //let's do this regardless....
+	if(result == 1)
+	//if(1) //let's do this regardless....
 	{
 		//ir_sensor_update(&s.ir_NN_state,inputs->analog[3]);
 
@@ -217,7 +255,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 
 	if(!result) 
 	{
-		Sleep(20); //in case the port is open but no data is coming in....
+		Sleep(10); //in case the port is open but no data is coming in....
 		//log_printf("No data received!\r\n");
 	}
 

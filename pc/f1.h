@@ -6,6 +6,7 @@
 #include "kalman.h"
 #include "commands.h"
 #include "..\robot\config.h"
+#include "ip.h"
 #include "debug.h"
 
 #include <io.h>

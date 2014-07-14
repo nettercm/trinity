@@ -128,6 +128,7 @@
     <ClInclude Include="..\wall_follow.h" />
     <ClInclude Include="port\avr\interrupt.h" />
     <ClInclude Include="port\avr\io.h" />
+    <ClCompile Include="..\..\pc\ip.c" />
     <ClCompile Include="..\commands.c" />
     <ClCompile Include="..\fsm.c" />
     <ClCompile Include="..\sim.c" />
