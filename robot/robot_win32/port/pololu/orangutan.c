@@ -132,6 +132,7 @@ unsigned char serial_get_received_bytes(unsigned char port)
 		{
 			m.rx_ring_buffer[index] = b[i];
 			index++;
+			if(index>127) index=0;
 		}
 		//return index; 
 	}
@@ -151,7 +152,7 @@ void serial_send(unsigned char port, char *buffer, unsigned char size)
 	for(i=0;i<size;i++)	printf("%02X,",(unsigned char)(buffer[i]));
 	printf("\n");
 	#endif
-	tcp_send(buffer,size,1);
+	tcp_send(buffer,size,0);
 }
 
 void serial_send_blocking(unsigned char port, char *buffer, unsigned char size) { NOT_IMPLEMENTED(); }

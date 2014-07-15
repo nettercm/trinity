@@ -149,8 +149,9 @@ namespace robot_ui
 
 		while(1)
 		{
-			if(s.p == INVALID_HANDLE_VALUE)
+			if(s.connection==0) //(s.p == INVALID_HANDLE_VALUE)
 			{
+				//if not connected, generate some dummy data so we can test the graphs
 				Sleep(20);
 				inputs_history[history_index].analog[0] = history_index;
 				inputs_history[history_index].theta = theta;
@@ -203,6 +204,10 @@ namespace robot_ui
 		//update the DS3 joystick state (standard joystick data comes in via WM_ message)
 		UpdateControllerState();
 
+		if( (s.connection > 0) && (s.inputs!=NULL) )
+		{
+			main_textBox_vbatt->Text = Convert::ToString(((float)s.inputs->vbatt)/1000.0f)+"V";
+		}
 
 		/*  
 		#if 0
@@ -238,7 +243,35 @@ namespace robot_ui
 	}
 
 
+	/******************************************************************************************************************************************
+	*
+	******************************************************************************************************************************************/
+	System::Void f1::main_checkBox_connect_ip_CheckedChanged(System::Object^  sender, System::EventArgs^  e) 
+	{
+		int result;
 
+		if(main_checkBox_connect_ip->Checked)
+		{
+			result = tcp_client_init("127.0.0.1",5555);
+			if(result >= 0)
+			{
+				log("TCP connection established!\r\n");
+				s.connection = 2;
+			}
+			else
+			{
+				log("TCP connection failed!\r\n");
+			}
+		}
+		else
+		{
+			s.connection = 0;
+			tcp_client_close();
+			log("Closing the TCP connection\r\n");
+			graphs_timer->Enabled = FALSE;
+			graphs_checkBox_enable->Checked = false;
+		}
+	}
 
 	/******************************************************************************************************************************************
 	*
@@ -258,8 +291,6 @@ namespace robot_ui
 
 		if(main_checkBox_connect->Checked)
 		{
-			tcp_client_init("127.0.0.1",5555);
-
 			log("Opening serial port COM" + str + "\r\n" );
 			s.p = serial_init(port,115200,ONESTOPBIT);
 			h = s.p;
@@ -271,6 +302,7 @@ namespace robot_ui
 			else
 			{
 				log("Port open!\r\n");
+				s.connection = 1;
 			}
 		}
 		else
@@ -279,6 +311,7 @@ namespace robot_ui
 			printf("h,s.p:  0x%08x, 0x%08x\n",h,s.p);
 			if(s.p != INVALID_HANDLE_VALUE)
 			{
+				s.connection = 0;
 				s.p = INVALID_HANDLE_VALUE;
 				Sleep(100);
 				sprintf(s.port,"");

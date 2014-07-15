@@ -134,7 +134,6 @@ void cfg_test(void)
 	usb_printf("addr of config:       0x%08x\n",config);
 	usb_printf("addr of config_flash: 0x%08x\n",pgm_get_far_address(config_flash));
 	usb_printf("%d\n", config[0].v.s16);
-	
 }
 
 
@@ -157,7 +156,7 @@ u08 cfg_get_index_by_grp_and_id(uint8 grp, uint8 id)
 		if( (config[i].grp == grp) && (config[i].id == id) ) break;;
 		if( config[i].grp == 255 ) {i=MAX_CFG_ITEMS; break;}
 	}
-	usb_printf("cfg index of %d,%d = %d\n",grp,id,i);
+	//usb_printf("cfg index of %d,%d = %d\n",grp,id,i);
 	return i;
 }
 

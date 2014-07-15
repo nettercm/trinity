@@ -56,14 +56,15 @@ void fsm_test_task(u08 cmd, u08 *param)
 #if 1
 
 volatile int _dummy2_;
-#define BEGIN_STATE(s)  if(state==s) 
-#define END_STATE()		if(last_state != state) goto fsm_end
-#define END_FSM() fsm_end: {}
-#define BEGIN_FSM() {}
-#define ENTER() if(( last_state != state ? ((last_state=state)+1) : 0))
-#define EXIT() if(state!=last_state)
-
 #define nop() {_dummy2_++;}
+
+#define STATE(s)  if(state==s) 
+#define ON_ENTRY() if(( last_state != state ? ((last_state=state)+1) : 0))
+#define ON_EXIT() if(state!=last_state)
+//#define END_STATE()		if(last_state != state) goto fsm_end
+//#define END_FSM() fsm_end: {}
+//#define BEGIN_FSM() {}
+
 
 void fsm_test_2(void)
 {
@@ -72,9 +73,9 @@ void fsm_test_2(void)
 	//BEGIN_FSM();
 
 	//--------------------------------------------------------------------------------------------------------
-	BEGIN_STATE(1)
+	STATE(1)
 	{
-		ENTER()
+		ON_ENTRY()
 		{
 			printf("entering state %d\n",state);
 			nop();
@@ -88,7 +89,7 @@ void fsm_test_2(void)
 		if(counter>2) { state = 2; }
 		printf("1-b\n");
 
-		EXIT()
+		ON_EXIT()
 		{
 			printf("leaving state %d - going to state %d\n",last_state,state);
 			nop();
@@ -100,9 +101,9 @@ void fsm_test_2(void)
 
 
 	//--------------------------------------------------------------------------------------------------------
-	BEGIN_STATE(2)
+	STATE(2)
 	{
-		ENTER()
+		ON_ENTRY()
 		{
 			printf("entering state %d\n",state);
 			nop();
@@ -117,7 +118,7 @@ void fsm_test_2(void)
 		printf("2-b\n");
 
 		_exit_from_state_2: 
-		EXIT()
+		ON_EXIT()
 		{
 			printf("leaving state %d - going to state %d\n",last_state,state);
 			nop();

@@ -124,6 +124,8 @@ int read_n_bytes(HANDLE h, char *buffer, int n)
 	return total;
 }
 #else
+
+
 int read_n_bytes(HANDLE h, char *buffer, int n)
 {
 	static long total=0;

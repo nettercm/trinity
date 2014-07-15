@@ -16,7 +16,7 @@ int CMD_send(void)
 	int result=0;
 	static uint8 seq=0;
 
-	if(s.p == INVALID_HANDLE_VALUE) return -1;
+	if(s.connection==0) return -1;
 
 	if(commands.i > 0)
 	{
@@ -29,8 +29,11 @@ int CMD_send(void)
 		tx_buffer.magic2[1] = 0xba;
 
 		memcpy(tx_buffer.payload+2, &commands, sizeof(t_commands));
-		//result = serial_write(s.p,(char*)&tx_buffer,sizeof(t_frame_from_pc));
-		result = tcp_send((char*)&tx_buffer,sizeof(t_frame_from_pc),0);
+
+		//now call the right send method
+		if(s.connection==1) result = serial_write(s.p,(char*)&tx_buffer,sizeof(t_frame_from_pc));
+		else if(s.connection==2) result = tcp_send((char*)&tx_buffer,sizeof(t_frame_from_pc),0);
+
 		memset(&commands,0,sizeof(t_commands));
 		memset(&tx_buffer,0,sizeof(t_frame_from_pc));
 	}
@@ -72,6 +75,8 @@ void CMD_append_data(uint8 *data, uint8 size)
 	//update the command structure to point to the next available free byte
 	commands.i = i;
 }
+
+
 
 void CMD_append_word(uint16 data)
 {

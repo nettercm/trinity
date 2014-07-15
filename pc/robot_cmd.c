@@ -142,11 +142,11 @@ int tcp_receive(unsigned char *buffer)
 void detect_packet_loss(void)
 {
 	static u08 previous_seq=0,previous_ack=0;
-	if(rx_buffer->seq != (u08)(previous_seq+1))     log_printf("\n=============  PC missed a packet ==============\n\n");
+	if(rx_buffer->seq != (u08)(previous_seq+1))     log_printf("\n=============  PC missed a packet ============== (seq=%d, p_seq=%d) \n\n",rx_buffer->seq,previous_seq);
 	/* this detection does not work reliably */
 	if(rx_buffer->ack != previous_ack)
 	{
-		//if(rx_buffer->ack != (u08)(previous_ack+1)) log_printf("\n-------------  R. missed a packet --------------\n\n");
+		if(rx_buffer->ack != (u08)(previous_ack+1)) log_printf("\n-------------  R. missed a packet -------------- (ack=%d, p_ack=%d) \n\n",rx_buffer->ack,previous_ack);
 	}
 	
 	//if(inputs->timestamp_rx != previous_rx_seq+1) printf("TX ERROR (Robot missed a packet)\n");
@@ -209,37 +209,24 @@ void display_inputs_and_state(t_inputs *inputs)
 int loop(void) //return 0 if we did not actually go throught the loop
 {
 	static int do_user_input=4;
-	int result;
+	int result=0;
 	uint8 buffer[500];
 
-	//t2=timeGetTime();  td=t2-t1;  t1=t2;  //timestamping
-
 	//wait for an incoming t_inputs message; data in buffer; inputs points to t_inputs payload 
-	result = tcp_receive(buffer); //serial_receive(s.p,buffer);
+	if(s.connection==1) serial_receive(s.p,buffer);
+	else if(s.connection==2) result = tcp_receive(buffer);
 
 	if(result == 1)
 	//if(1) //let's do this regardless....
 	{
-		//ir_sensor_update(&s.ir_NN_state,inputs->analog[3]);
-
-		//update the outputs and send t_outputs message back to the robot - note: may happen at a slower rate
-		//outputs_update(s.p, inputs, &outputs);
-		//if(--do_user_input<=0)
-		{
-			do_user_input = 2;
-			process_user_input();
-			//CMD_send(); //this was moved into process_user_input() and is now done only if required;
-		}
-
-		//kalman_update(&ks,inputs->analog[0]);
+		process_user_input();
 
 		odometry_update(inputs.encoders[0] - odo_last_l, inputs.encoders[1] - odo_last_r , &odo_x , &odo_y , &odo_theta);
 		odo_last_l = inputs.encoders[0];
 		odo_last_r = inputs.encoders[1];
 
-		//display_inputs_and_state(s.inputs);
-		
 		display_inputs_and_state(&inputs);
+
 		if(result) detect_packet_loss();
 
 		inputs_history[history_index] = inputs;
@@ -248,20 +235,12 @@ int loop(void) //return 0 if we did not actually go throught the loop
 	}
 	else 
 	{
-		log_printf("\nError.  serial_receive() failed with result=%d\n",result);
-		//s.p = serial_reopen(s.p,s.port);
-		//Sleep(2000);
+		log_printf("\nError.  receive() failed with result=%d\n",result);
 	}
 
 	if(!result) 
 	{
 		Sleep(10); //in case the port is open but no data is coming in....
-		//log_printf("No data received!\r\n");
-	}
-
-	if(result)
-	{
-
 	}
 
 	return result;

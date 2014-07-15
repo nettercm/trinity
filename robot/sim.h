@@ -22,7 +22,7 @@ typedef struct
 
 } t_robot_model;
 
-extern void sim(u08 cmd, u08 *param);
+extern void sim_task(u08 cmd, u08 *param);
 
 t_robot_model m;
 

@@ -470,9 +470,10 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 
 	}
 	
-	if( (s.motor_command_state != last_state) || (cmd != 0) )
+	if( (s.motor_command_state != last_state) ) //|| (cmd != 0) )
 	{
-		usb_printf("%08ld: motor_command_fsm(%d,%d,%d,%d,%d) ls,s=%d,%d\r\n", t_now, cmd, p1, p2, lm_speed, rm_speed, last_state,s.motor_command_state);
+		//the intent here is to only do a printf if something changes and not for udpates, but tasks like "wall following" will continuously issue 'new' motor commands
+		usb_printf("%08ld: motor_command(cmd=%d,%d,%d,lm=%d,rm=%d) lst,st=%d,%d\r\n", t_now, cmd, p1, p2, lm_speed, rm_speed, last_state,s.motor_command_state);
 		last_state = s.motor_command_state;
 	}
 
@@ -492,6 +493,8 @@ void motor_command_fsm(u08 cmd, u08 *param)
 	DEFINE_CFG(flt,odo_b,5,3);
 		
 	task_open();
+
+	usb_printf("motor_command_fsm()\n");
 	
 	PREPARE_CFG(u08,update_rate);
 	PREPARE_CFG(flt,odo_cml);

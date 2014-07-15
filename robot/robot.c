@@ -62,25 +62,7 @@ t_LOOKUP_table line_sensor_table[] = // R,L  I.E. Left senser reads a smaller va
 };
 #endif
 
-/*
-void wait_for_start_button(void)
-{
-	set_digital_input(IO_US_ECHO, PULL_UP_ENABLED);
 
-	set_ultrasonic_mux(7);
-	
-	while(0)
-	{
-		delay_ms(200);
-		usb_printf("Start=%d.  V=%d\r\n",is_digital_input_high(IO_US_ECHO),  read_battery_millivolts_svp());
-	}
-	
-	while( is_digital_input_high(IO_US_ECHO) ) ;
-
-	set_digital_input(IO_US_ECHO, HIGH_IMPEDANCE);
-}
-*/	
-	
 	
 void stop_all_behaviours(void)
 {
@@ -151,6 +133,8 @@ void analog_update_fsm(u08 cmd, u08 *param)
 	s16 long_filter_amount;
 
 	task_open();
+
+	usb_printf("analog_update_fsm()\n");
 
 	for(i=0;i<=7;i++) s.inputs.analog[i] = (analog_read(i))>>2;
 	s.inputs.vbatt = read_battery_millivolts_svp();
@@ -226,7 +210,9 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 	static uint16 update_rate;
 	
 	task_open();
-	
+
+	usb_printf("lcd_update_fsm()\n");
+
 	update_rate_cfg_idx = cfg_get_index_by_grp_and_id(1,2);
 	
 	while(1)
@@ -322,33 +308,6 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 	task_close();
 }
 
-
-
- t_PID_state pid =
-{
-	50,	//setpoint;
-	0,	//error;
-	20, //max_pos_error;
-	-20, //max_neg_error;
-	0,	//last_error;
-	0,	//integral;
-	10,	//integral_max;
-	-10,	//integral_min;
-	0,	//output;
-	1,	//Kp;
-	5,	//Kd;
-	0,	//Ki;
-	1,	//dT;
-	0		//dEdT;
-};
-
-/*
-typedef struct 
-{
-	sint16 lm;
-	sint16 rm;
-} t_set_motors_cmd;
-*/
 
 
 
@@ -451,6 +410,8 @@ void idle_task(u08 cmd, u08 *param)
 
 	task_open();
 
+	usb_printf("idle_task()\n");
+
 	t_now=t_last=get_ms();
 	
 	//110526 counts per second w/ no other tasks running
@@ -476,7 +437,7 @@ void idle_task(u08 cmd, u08 *param)
 #endif
 
 
-
+#if 0
 void line_detection_fsm(u08 cmd, u08 *param)
 {
 	enum states { s_none=0, s_disabled=1, s_not_crossed, s_l_crossed, s_r_crossed, s_crossed_line };
@@ -488,6 +449,8 @@ void line_detection_fsm(u08 cmd, u08 *param)
 	//NOTE: parameters black and white are defined as globals, but the updating happens in this task
 	
 	task_open();
+
+	usb_printf("line_detection_fsm()\n");
 
 	PREPARE_CFG2(black);					
 	PREPARE_CFG2(white);					
@@ -554,6 +517,7 @@ void line_detection_fsm(u08 cmd, u08 *param)
 	}
 	task_close();
 }
+#endif
 
 
 
@@ -571,6 +535,8 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 	static u32 t_crossed=0;
 	
 	task_open();
+
+	usb_printf("line_detection_fsm_v2()\n");
 
 	PREPARE_CFG2(black);					
 	PREPARE_CFG2(white);					
@@ -668,6 +634,8 @@ Evt_t line_alignment_done_evt;
 void line_alignment_fsm(u08 cmd, u08 *param)
 {
 	task_open();
+
+	usb_printf("line_alignment_fsm()\n");
 
 	for(;;)
 	{
@@ -1057,6 +1025,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	task_open_2();
 	//code after this point resumes execution wherever it left off when a context switch happened
 
+	usb_printf("master_logic_fsm()\n");
+
 	while(1)
 	{
 		//the following state transition applies to all states
@@ -1093,7 +1063,6 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				pulse_in_start(pulseInPins,3);
 			}
 
-			//TODO: Add actual start button / audio start logic. For now,  just fall through to the next state
 			if(check_for_start_signal()) 
 			{
 				state = s_aligning_south;
@@ -1875,7 +1844,7 @@ int check_for_start_signal()
 }
 
 
-void servo(u08 cmd, u08 *param)
+void servo_task(u08 cmd, u08 *param)
 {
 	DEFINE_CFG2(u16,s1_speed,15,1);					
 	DEFINE_CFG2(u16,s2_speed,15,2);					
@@ -1893,6 +1862,8 @@ void servo(u08 cmd, u08 *param)
 
 	task_open_2();
 	//execution below this point will resume wherever it left off when a context switch happens
+
+	usb_printf("servo_task()\n");
 
 	servos_start(demuxPins, sizeof(demuxPins));
 	
@@ -1929,7 +1900,7 @@ void servo(u08 cmd, u08 *param)
 	task_close();
 }
 
-void test(u08 cmd, u08 *param)
+void test_task(u08 cmd, u08 *param)
 {
 	static u16 i;
 	float time_to_stop=0,distance_to_stop;
@@ -1957,13 +1928,15 @@ void test(u08 cmd, u08 *param)
 	task_open_2();
 	//execution below this point will resume wherever it left off when a context switch happens
 
+	usb_printf("test_task()\n");
+
 	PREPARE_CFG2(accel);
 	PREPARE_CFG2(decel);
 	PREPARE_CFG2(speed);
 	PREPARE_CFG2(distance);
 	PREPARE_CFG2(angle);
 	
-	test(1,(uint8 *)0x1234);
+	test_task(1,(uint8 *)0x1234);
 
 	/*
 	for(;;)
@@ -2165,84 +2138,73 @@ void test(u08 cmd, u08 *param)
 
 int main(void)
 {
-	//T0(1,1);
-	//initialize hardware & pololu libraries
-	hardware_init();
+	hardware_init();  //initialize hardware & pololu libraries
 	//i2c_init();
-	//clear(); lcd_goto_xy(0,0); printf("V=%d",	read_battery_millivolts_svp());
-	//delay_ms(100);
 
+	//clear(); lcd_goto_xy(0,0); printf("V=%d",	read_battery_millivolts_svp()); delay_ms(100);
 
-	//wait_for_start_button();
-	//play_note(A(4), 50, 10);
 	play_from_program_space(welcome);
 
 
-	//initialize the configuration parameter module
-	cfg_init();
-
-	//sound_start_test();
-
-	//initialize misc support libraries
+	//--------  initialize misc support libraries  -----------
+	cfg_init();  //initialize the configuration parameter module
 	LOOKUP_init();
 	SHARPIR_init();
 	//PID_init();  //not actually using the PID module right now
-	//servos_start(demuxPins, sizeof(demuxPins));
-	//set_servo_target(0, 1375);
-#ifdef WIN32
+
+
+	//--------------  misc unit test stuff ----------------
 	//test_flame();
+	//sound_start_test();
+	//{ extern void fsm_test_2(void);   while(1) {fsm_test_2();} }
+#if 0
+	T0(1,2);
+	dbg_printf("0123456789 %d",0);
+	T1(2,3);
+	T2(4);
+	T3(5,6);
 #endif
 
-#if 0
-	{ extern void fsm_test_2(void);   while(1) {fsm_test_2();} }
-#endif
 
 	//initialize our state
 	memset(&s,0,sizeof(t_state));
 	s.inputs.vbatt=read_battery_millivolts_svp();
 	//LOOKUP_initialize_table(line_sensor_table);  //only needed if we need to normalize left & right line sensor for some reason
 
-	//T0(1,2);
-	//dbg_printf("0123456789 %d",0);
-	//T1(2,3);
-	//T2(4);
-	//T3(5,6);
 
-
-
-	//initialize the cooperative multitasking subsystem and start all tasks
-	os_init();
-	#if 1
+	os_init();  //initialize the cooperative multitasking subsystem and start all tasks
+#if 1
 	serial_cmd_evt = event_create();
 	line_alignment_start_evt = event_create();
 	line_alignment_done_evt = event_create();
 
 #ifdef SVP_ON_WIN32
-	task_create( sim,						 1,  NULL, 0, 0);
-
+	task_create( sim_task,					 1,  NULL, 0, 0);
 #endif
-	task_create( test,						 2,  NULL, 0, 0);
 
-	//task_create( lcd_update_fsm,			10,  NULL, 0, 0 );		
+	task_create( test_task,					 2,  NULL, 0, 0);
+
+	//task_create( lcd_update_fsm,			10,  NULL, 0, 0 );	//lcd is incompatible with servos	
 	task_create( analog_update_fsm,			11,  NULL, 0, 0 );	
 	task_create( serial_send_fsm,			12 , NULL, 0, 0 );		
 	task_create( serial_receive_fsm,		13,  NULL, 0, 0);
 	task_create( commands_process_fsm,		14,  NULL, 0, 0);
 	task_create( motor_command_fsm,			15,  NULL, 0, 0);
 	task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
-	//task_create( debug_fsm, 17, NULL, 0, 0); //not used right now
+	//task_create( debug_fsm,				17, NULL, 0, 0);   //not used right now
 	task_create( wall_follow_fsm,			18,  NULL, 0, 0);
 	task_create( master_logic_fsm,			19,  NULL, 0, 0);
 	//task_create( line_detection_fsm,		20,  NULL, 0, 0);
 	task_create( line_alignment_fsm,		21,  NULL, 0, 0);
 	task_create( line_detection_fsm_v2,		22,  NULL, 0, 0);
-	task_create( servo,						23,  NULL, 0, 0);
+	task_create( servo_task,				23,  NULL, 0, 0);
 	//task_create( busy_task,				24,  NULL, 0, 0);
 	//task_create( idle_task,				25,  NULL, 0, 0);
+	task_create( fsm_test_task,				29,   NULL, 0, 0 );
 
-	#else
+#else
 	task_create( fsm_test_task,				1,   NULL, 0, 0 );
-	#endif
+#endif
 	os_start();
 	
 	//won't ever get here...

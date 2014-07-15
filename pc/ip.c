@@ -99,7 +99,7 @@ int tcp_server_accept(unsigned long nonblocking)
 
 
 
-int tcp_send(char *buffer, int size, unsigned long nonblocking)
+int tcp_send(char *buffer, int size, unsigned long nonblocking) //nonblocking=1 means "non blocking"...duh
 {
 	int retval;
 
@@ -116,6 +116,7 @@ int tcp_send(char *buffer, int size, unsigned long nonblocking)
 		message_socket = INVALID_SOCKET;
 	}
 	//else log_printf("TCP Server: send() is OK.\n");
+	return retval;
 }
 
 
@@ -179,6 +180,12 @@ int tcp_server_init(char *ip_address, unsigned short port)
 	return 0;
 }
 
+
+void tcp_client_close(void)
+{
+	closesocket(message_socket);
+	message_socket = INVALID_SOCKET;
+}
 
 
 int tcp_client_init(char *server_name, int port)

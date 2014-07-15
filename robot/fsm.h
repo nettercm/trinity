@@ -2,7 +2,8 @@
 #ifndef _fsm_h_
 #define _fsm_h_
 
-extern void fsm_test_task(void);
+extern void fsm_test_task(u08 cmd, u08 *param);
+extern void fsm_test_2(void);
 
 
 #define STATE_HAS_CHANGED ( last_state != state ? (t_entry=get_ms()),((last_state=state)+1) : 0) /*need to make sure this always returns >0 even if new state is '0'*/

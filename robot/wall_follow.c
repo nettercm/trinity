@@ -40,6 +40,8 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 	//code that comes after this resumes where it left off
 	task_open();
+
+	usb_printf("wall_follow_fsm()\n");
 	
 	PREPARE_CFG2(interval);					PREPARE_CFG2(nominal_speed);
 	PREPARE_CFG2(target_distance);			PREPARE_CFG2(max_error);

@@ -67,6 +67,8 @@ void serial_send_fsm(u08 cmd, u08 *param)
 	u08 i;
 
 	task_open();
+
+	usb_printf("serial_send_fsm()\n");
 	
 	interval_cfg_idx	= cfg_get_index_by_grp_and_id(1,1);
 
@@ -83,7 +85,7 @@ void serial_send_fsm(u08 cmd, u08 *param)
 		//}
 		tx_buffer.seq = seq; seq++; //=get_ms();
 		tx_buffer.ack = packets_received;
-		packets_received = p_r = 0;
+		//packets_received = p_r = 0;
 		tx_buffer.magic1[0] = 0xab;
 		tx_buffer.magic1[1] = 0xcd;
 		tx_buffer.magic2[0] = 0xdc;
@@ -211,6 +213,8 @@ void serial_receive_fsm(u08 cmd, u08 *param)
 	t_frame_from_pc *f;
 
 	task_open();
+
+	usb_printf("serial_receive_fsm()\n");
 	
 	memset(rx_buffer,0,RX_BUFFER_SIZE);
 	serial_receive_ring(UART_PC, (char*) rx_buffer, RX_BUFFER_SIZE);

@@ -89,6 +89,8 @@ void commands_process(void)
 void commands_process_fsm(u08 cmd, u08 *param)
 {
 	task_open();
+
+	usb_printf("commands_process_fsm()\n");
 	
 	for(;;)
 	{

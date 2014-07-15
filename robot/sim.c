@@ -87,26 +87,54 @@ void sim_motors(void)
 
 void sim_serial(void)
 {
-	static int state=0;
+	enum states { s_none=0, s_waiting=1, s_connected};
+	static enum states state=s_waiting;
+	static enum states last_state=s_none;
+	static u32 t_entry=0;
 	int result;
 	
-	if(state==0)
+	first_(s_waiting)
 	{
-		result = tcp_server_accept(0);
+		enter_(s_waiting)  //required!  this updates the "last_state" variable!
+		{  
+			usb_printf("sim_serial(): waiting for UI connection\n");
+		}
+
+		result = tcp_server_accept(1);
 		if(result > 0) 
 		{
-			state = 1;
+			state = s_connected;
+		}
+
+		exit_(s_waiting)  
+		{ 
+			NOP();
 		}
 	}
 
+	next_(s_connected)
+	{
+		enter_(s_connected)  //required!  this updates the "last_state" variable!
+		{  
+			NOP();
+		}
+
+		exit_(s_connected)  
+		{ 
+			NOP();
+		}
+	}
 }
 
-void sim(u08 cmd, u08 *param)
+void sim_task(u08 cmd, u08 *param)
 {
 	static u08 initialized=0;
 
 
 	task_open();
+
+	usb_printf("sim_task()\n");
+
 	m.vbatt = 10000;
 	m.rx_ring_buffer_size = 0;
 	m.rx_ring_buffer = NULL;

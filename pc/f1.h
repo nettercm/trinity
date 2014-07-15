@@ -139,6 +139,9 @@ namespace robot_ui {
 	private: System::Windows::Forms::PictureBox^  map_picture;
 	private: System::Windows::Forms::Timer^  serial_timer;
 	private: System::Windows::Forms::Timer^  ui_timer;
+	private: System::Windows::Forms::Label^  main_lbl_ip;
+	private: System::Windows::Forms::ComboBox^  main_comboBox_ip;
+	private: System::Windows::Forms::CheckBox^  main_checkBox_connect_ip;
 
 	private: System::Random^	random;
 
@@ -184,8 +187,10 @@ namespace robot_ui {
 	private: System::Void graphs_timer_Tick(System::Object^  sender, System::EventArgs^  e); 
 
 	private: System::Void main_checkBox_connect_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
+	private: System::Void main_checkBox_connect_ip_CheckedChanged(System::Object^  sender, System::EventArgs^  e);
 	private: System::Void main_serial_thread_DoWork(System::Object^  sender, System::ComponentModel::DoWorkEventArgs^  e); 
 	private: System::Void main_comboBox_port_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {		 }
+	private: System::Void main_comboBox_ip_SelectedIndexChanged(System::Object^  sender, System::EventArgs^  e) {		 }
 	private: System::Void main_textBox_keyb_TextChanged(System::Object^  sender, System::EventArgs^  e) {		 }
 	private: System::Void main_textBox_keyb_KeyDown(System::Object^  sender, System::Windows::Forms::KeyEventArgs^  e) ;
 	private: System::Void main_btn_stop_Click(System::Object^  sender, System::EventArgs^  e) 	{	}
@@ -376,6 +381,9 @@ namespace robot_ui {
 			this->main_comboBox_rate = (gcnew System::Windows::Forms::ComboBox());
 			this->serial_timer = (gcnew System::Windows::Forms::Timer(this->components));
 			this->ui_timer = (gcnew System::Windows::Forms::Timer(this->components));
+			this->main_lbl_ip = (gcnew System::Windows::Forms::Label());
+			this->main_comboBox_ip = (gcnew System::Windows::Forms::ComboBox());
+			this->main_checkBox_connect_ip = (gcnew System::Windows::Forms::CheckBox());
 			this->tabControl1->SuspendLayout();
 			this->parameters_tab->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->parameters_dataGridView))->BeginInit();
@@ -403,9 +411,9 @@ namespace robot_ui {
 			this->main_comboBox_port->FormattingEnabled = true;
 			this->main_comboBox_port->Items->AddRange(gcnew cli::array< System::Object^  >(9) {L"4", L"7", L"8", L"9", L"10", L"11", 
 				L"12", L"13", L"55"});
-			this->main_comboBox_port->Location = System::Drawing::Point(67, 10);
+			this->main_comboBox_port->Location = System::Drawing::Point(51, 20);
 			this->main_comboBox_port->Name = L"main_comboBox_port";
-			this->main_comboBox_port->Size = System::Drawing::Size(36, 21);
+			this->main_comboBox_port->Size = System::Drawing::Size(34, 21);
 			this->main_comboBox_port->TabIndex = 1;
 			this->main_comboBox_port->Text = L"4";
 			this->main_comboBox_port->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::main_comboBox_port_SelectedIndexChanged);
@@ -413,22 +421,21 @@ namespace robot_ui {
 			// main_checkBox_connect
 			// 
 			this->main_checkBox_connect->AutoSize = true;
-			this->main_checkBox_connect->Location = System::Drawing::Point(109, 12);
+			this->main_checkBox_connect->Location = System::Drawing::Point(91, 23);
 			this->main_checkBox_connect->Name = L"main_checkBox_connect";
-			this->main_checkBox_connect->Size = System::Drawing::Size(78, 17);
+			this->main_checkBox_connect->Size = System::Drawing::Size(15, 14);
 			this->main_checkBox_connect->TabIndex = 2;
-			this->main_checkBox_connect->Text = L"Connected";
 			this->main_checkBox_connect->UseVisualStyleBackColor = true;
 			this->main_checkBox_connect->CheckedChanged += gcnew System::EventHandler(this, &f1::main_checkBox_connect_CheckedChanged);
 			// 
 			// main_lbl_port
 			// 
 			this->main_lbl_port->AutoSize = true;
-			this->main_lbl_port->Location = System::Drawing::Point(5, 13);
+			this->main_lbl_port->Location = System::Drawing::Point(13, 24);
 			this->main_lbl_port->Name = L"main_lbl_port";
-			this->main_lbl_port->Size = System::Drawing::Size(56, 13);
+			this->main_lbl_port->Size = System::Drawing::Size(36, 13);
 			this->main_lbl_port->TabIndex = 3;
-			this->main_lbl_port->Text = L"COM Port:";
+			this->main_lbl_port->Text = L"Serial:";
 			// 
 			// tabControl1
 			// 
@@ -441,11 +448,11 @@ namespace robot_ui {
 			this->tabControl1->Controls->Add(this->map_tab);
 			this->tabControl1->Controls->Add(this->terminal_tab);
 			this->tabControl1->Controls->Add(this->log_tab);
-			this->tabControl1->Location = System::Drawing::Point(0, 51);
+			this->tabControl1->Location = System::Drawing::Point(0, 58);
 			this->tabControl1->Margin = System::Windows::Forms::Padding(0);
 			this->tabControl1->Name = L"tabControl1";
 			this->tabControl1->SelectedIndex = 0;
-			this->tabControl1->Size = System::Drawing::Size(1098, 657);
+			this->tabControl1->Size = System::Drawing::Size(1098, 649);
 			this->tabControl1->TabIndex = 4;
 			// 
 			// parameters_tab
@@ -456,7 +463,7 @@ namespace robot_ui {
 			this->parameters_tab->Location = System::Drawing::Point(4, 22);
 			this->parameters_tab->Name = L"parameters_tab";
 			this->parameters_tab->Padding = System::Windows::Forms::Padding(3);
-			this->parameters_tab->Size = System::Drawing::Size(1090, 631);
+			this->parameters_tab->Size = System::Drawing::Size(1090, 623);
 			this->parameters_tab->TabIndex = 2;
 			this->parameters_tab->Text = L"Parameters";
 			this->parameters_tab->UseVisualStyleBackColor = true;
@@ -510,7 +517,7 @@ namespace robot_ui {
 			this->parameters_dataGridView->Location = System::Drawing::Point(18, 16);
 			this->parameters_dataGridView->Name = L"parameters_dataGridView";
 			this->parameters_dataGridView->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
-			this->parameters_dataGridView->Size = System::Drawing::Size(630, 601);
+			this->parameters_dataGridView->Size = System::Drawing::Size(630, 593);
 			this->parameters_dataGridView->TabIndex = 3;
 			this->parameters_dataGridView->CellContentClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::parameters_dataGridView_CellContentClick);
 			this->parameters_dataGridView->CellContentDoubleClick += gcnew System::Windows::Forms::DataGridViewCellEventHandler(this, &f1::parameters_dataGridView_CellContentDoubleClick);
@@ -579,7 +586,7 @@ namespace robot_ui {
 			this->graphs_tab->Location = System::Drawing::Point(4, 22);
 			this->graphs_tab->Name = L"graphs_tab";
 			this->graphs_tab->Padding = System::Windows::Forms::Padding(3);
-			this->graphs_tab->Size = System::Drawing::Size(1090, 631);
+			this->graphs_tab->Size = System::Drawing::Size(1090, 623);
 			this->graphs_tab->TabIndex = 1;
 			this->graphs_tab->Text = L"Graphs";
 			this->graphs_tab->UseVisualStyleBackColor = true;
@@ -642,7 +649,7 @@ namespace robot_ui {
 			// 
 			this->graphs_checkBox_enable->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->graphs_checkBox_enable->AutoSize = true;
-			this->graphs_checkBox_enable->Location = System::Drawing::Point(1023, 592);
+			this->graphs_checkBox_enable->Location = System::Drawing::Point(1023, 584);
 			this->graphs_checkBox_enable->Name = L"graphs_checkBox_enable";
 			this->graphs_checkBox_enable->Size = System::Drawing::Size(59, 17);
 			this->graphs_checkBox_enable->TabIndex = 2;
@@ -682,7 +689,7 @@ namespace robot_ui {
 			series4->Name = L"Series 2";
 			this->graphs_chart->Series->Add(series3);
 			this->graphs_chart->Series->Add(series4);
-			this->graphs_chart->Size = System::Drawing::Size(894, 621);
+			this->graphs_chart->Size = System::Drawing::Size(894, 613);
 			this->graphs_chart->TabIndex = 0;
 			this->graphs_chart->Text = L"graphs_chart";
 			this->graphs_chart->AxisViewChanged += gcnew System::EventHandler<System::Windows::Forms::DataVisualization::Charting::ViewEventArgs^ >(this, &f1::graphs_chart_AxisViewChanged);
@@ -723,7 +730,7 @@ namespace robot_ui {
 			this->radar_tabPage->Location = System::Drawing::Point(4, 22);
 			this->radar_tabPage->Name = L"radar_tabPage";
 			this->radar_tabPage->Padding = System::Windows::Forms::Padding(3);
-			this->radar_tabPage->Size = System::Drawing::Size(1090, 631);
+			this->radar_tabPage->Size = System::Drawing::Size(1090, 623);
 			this->radar_tabPage->TabIndex = 4;
 			this->radar_tabPage->Text = L"\"Radar\"";
 			this->radar_tabPage->UseVisualStyleBackColor = true;
@@ -1049,7 +1056,7 @@ namespace robot_ui {
 			this->map_tab->Location = System::Drawing::Point(4, 22);
 			this->map_tab->Name = L"map_tab";
 			this->map_tab->Padding = System::Windows::Forms::Padding(3);
-			this->map_tab->Size = System::Drawing::Size(1090, 631);
+			this->map_tab->Size = System::Drawing::Size(1090, 623);
 			this->map_tab->TabIndex = 5;
 			this->map_tab->Text = L"Map";
 			this->map_tab->UseVisualStyleBackColor = true;
@@ -1063,7 +1070,7 @@ namespace robot_ui {
 			this->map_picture->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Zoom;
 			this->map_picture->Location = System::Drawing::Point(0, 0);
 			this->map_picture->Name = L"map_picture";
-			this->map_picture->Size = System::Drawing::Size(682, 631);
+			this->map_picture->Size = System::Drawing::Size(682, 623);
 			this->map_picture->TabIndex = 0;
 			this->map_picture->TabStop = false;
 			// 
@@ -1073,7 +1080,7 @@ namespace robot_ui {
 			this->terminal_tab->Location = System::Drawing::Point(4, 22);
 			this->terminal_tab->Name = L"terminal_tab";
 			this->terminal_tab->Padding = System::Windows::Forms::Padding(3);
-			this->terminal_tab->Size = System::Drawing::Size(1090, 631);
+			this->terminal_tab->Size = System::Drawing::Size(1090, 623);
 			this->terminal_tab->TabIndex = 0;
 			this->terminal_tab->Text = L"Terminal";
 			this->terminal_tab->UseVisualStyleBackColor = true;
@@ -1089,7 +1096,7 @@ namespace robot_ui {
 			this->terminal_txt->Multiline = true;
 			this->terminal_txt->Name = L"terminal_txt";
 			this->terminal_txt->ScrollBars = System::Windows::Forms::ScrollBars::Both;
-			this->terminal_txt->Size = System::Drawing::Size(1094, 635);
+			this->terminal_txt->Size = System::Drawing::Size(1094, 627);
 			this->terminal_txt->TabIndex = 4;
 			this->terminal_txt->WordWrap = false;
 			this->terminal_txt->TextChanged += gcnew System::EventHandler(this, &f1::terminal_txt_TextChanged);
@@ -1101,7 +1108,7 @@ namespace robot_ui {
 			this->log_tab->Location = System::Drawing::Point(4, 22);
 			this->log_tab->Name = L"log_tab";
 			this->log_tab->Padding = System::Windows::Forms::Padding(3);
-			this->log_tab->Size = System::Drawing::Size(1090, 631);
+			this->log_tab->Size = System::Drawing::Size(1090, 623);
 			this->log_tab->TabIndex = 3;
 			this->log_tab->Text = L"Log";
 			this->log_tab->UseVisualStyleBackColor = true;
@@ -1118,13 +1125,13 @@ namespace robot_ui {
 			this->log_txt->Multiline = true;
 			this->log_txt->Name = L"log_txt";
 			this->log_txt->ScrollBars = System::Windows::Forms::ScrollBars::Both;
-			this->log_txt->Size = System::Drawing::Size(1090, 631);
+			this->log_txt->Size = System::Drawing::Size(1090, 623);
 			this->log_txt->TabIndex = 0;
 			this->log_txt->WordWrap = false;
 			// 
 			// main_textBox_vbatt
 			// 
-			this->main_textBox_vbatt->Location = System::Drawing::Point(275, 21);
+			this->main_textBox_vbatt->Location = System::Drawing::Point(370, 25);
 			this->main_textBox_vbatt->Name = L"main_textBox_vbatt";
 			this->main_textBox_vbatt->ReadOnly = true;
 			this->main_textBox_vbatt->Size = System::Drawing::Size(59, 20);
@@ -1134,7 +1141,7 @@ namespace robot_ui {
 			// main_lbl_battery
 			// 
 			this->main_lbl_battery->AutoSize = true;
-			this->main_lbl_battery->Location = System::Drawing::Point(272, 5);
+			this->main_lbl_battery->Location = System::Drawing::Point(367, 9);
 			this->main_lbl_battery->Name = L"main_lbl_battery";
 			this->main_lbl_battery->Size = System::Drawing::Size(43, 13);
 			this->main_lbl_battery->TabIndex = 1;
@@ -1143,7 +1150,7 @@ namespace robot_ui {
 			// 
 			// main_textBox_keyb
 			// 
-			this->main_textBox_keyb->Location = System::Drawing::Point(524, 23);
+			this->main_textBox_keyb->Location = System::Drawing::Point(524, 26);
 			this->main_textBox_keyb->Name = L"main_textBox_keyb";
 			this->main_textBox_keyb->Size = System::Drawing::Size(77, 20);
 			this->main_textBox_keyb->TabIndex = 5;
@@ -1153,7 +1160,7 @@ namespace robot_ui {
 			// main_lbl_keyb
 			// 
 			this->main_lbl_keyb->AutoSize = true;
-			this->main_lbl_keyb->Location = System::Drawing::Point(521, 5);
+			this->main_lbl_keyb->Location = System::Drawing::Point(521, 8);
 			this->main_lbl_keyb->Name = L"main_lbl_keyb";
 			this->main_lbl_keyb->Size = System::Drawing::Size(80, 13);
 			this->main_lbl_keyb->TabIndex = 1;
@@ -1168,7 +1175,7 @@ namespace robot_ui {
 			this->main_btn_estop->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
 			this->main_btn_estop->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 12, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point, 
 				static_cast<System::Byte>(0)));
-			this->main_btn_estop->Location = System::Drawing::Point(1024, 5);
+			this->main_btn_estop->Location = System::Drawing::Point(1024, 8);
 			this->main_btn_estop->Name = L"main_btn_estop";
 			this->main_btn_estop->Size = System::Drawing::Size(67, 61);
 			this->main_btn_estop->TabIndex = 6;
@@ -1178,7 +1185,7 @@ namespace robot_ui {
 			// main_btn_up
 			// 
 			this->main_btn_up->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->main_btn_up->Location = System::Drawing::Point(948, 1);
+			this->main_btn_up->Location = System::Drawing::Point(948, 4);
 			this->main_btn_up->Name = L"main_btn_up";
 			this->main_btn_up->Size = System::Drawing::Size(25, 21);
 			this->main_btn_up->TabIndex = 7;
@@ -1188,7 +1195,7 @@ namespace robot_ui {
 			// main_btn_down
 			// 
 			this->main_btn_down->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->main_btn_down->Location = System::Drawing::Point(948, 47);
+			this->main_btn_down->Location = System::Drawing::Point(948, 50);
 			this->main_btn_down->Name = L"main_btn_down";
 			this->main_btn_down->Size = System::Drawing::Size(25, 21);
 			this->main_btn_down->TabIndex = 7;
@@ -1198,7 +1205,7 @@ namespace robot_ui {
 			// main_btn_left
 			// 
 			this->main_btn_left->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->main_btn_left->Location = System::Drawing::Point(920, 24);
+			this->main_btn_left->Location = System::Drawing::Point(920, 27);
 			this->main_btn_left->Name = L"main_btn_left";
 			this->main_btn_left->Size = System::Drawing::Size(25, 21);
 			this->main_btn_left->TabIndex = 7;
@@ -1208,7 +1215,7 @@ namespace robot_ui {
 			// main_btn_right
 			// 
 			this->main_btn_right->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->main_btn_right->Location = System::Drawing::Point(976, 24);
+			this->main_btn_right->Location = System::Drawing::Point(976, 27);
 			this->main_btn_right->Name = L"main_btn_right";
 			this->main_btn_right->Size = System::Drawing::Size(25, 21);
 			this->main_btn_right->TabIndex = 7;
@@ -1218,7 +1225,7 @@ namespace robot_ui {
 			// main_btn_stop
 			// 
 			this->main_btn_stop->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->main_btn_stop->Location = System::Drawing::Point(948, 24);
+			this->main_btn_stop->Location = System::Drawing::Point(948, 27);
 			this->main_btn_stop->Name = L"main_btn_stop";
 			this->main_btn_stop->Size = System::Drawing::Size(25, 21);
 			this->main_btn_stop->TabIndex = 7;
@@ -1235,7 +1242,7 @@ namespace robot_ui {
 			// main_lbl_behavior_control
 			// 
 			this->main_lbl_behavior_control->AutoSize = true;
-			this->main_lbl_behavior_control->Location = System::Drawing::Point(624, 5);
+			this->main_lbl_behavior_control->Location = System::Drawing::Point(624, 8);
 			this->main_lbl_behavior_control->Name = L"main_lbl_behavior_control";
 			this->main_lbl_behavior_control->Size = System::Drawing::Size(229, 13);
 			this->main_lbl_behavior_control->TabIndex = 8;
@@ -1246,7 +1253,7 @@ namespace robot_ui {
 			this->main_comboBox_behavior_id->FormattingEnabled = true;
 			this->main_comboBox_behavior_id->Items->AddRange(gcnew cli::array< System::Object^  >(16) {L"1", L"2", L"3", L"4", L"5", L"6", 
 				L"7", L"8", L"9", L"10", L"11", L"12", L"13", L"14", L"15", L"16"});
-			this->main_comboBox_behavior_id->Location = System::Drawing::Point(625, 24);
+			this->main_comboBox_behavior_id->Location = System::Drawing::Point(625, 27);
 			this->main_comboBox_behavior_id->Name = L"main_comboBox_behavior_id";
 			this->main_comboBox_behavior_id->Size = System::Drawing::Size(61, 21);
 			this->main_comboBox_behavior_id->TabIndex = 9;
@@ -1258,7 +1265,7 @@ namespace robot_ui {
 			this->main_comboBox_behavior_state->FormattingEnabled = true;
 			this->main_comboBox_behavior_state->Items->AddRange(gcnew cli::array< System::Object^  >(16) {L"1", L"2", L"3", L"4", L"5", 
 				L"6", L"7", L"8", L"9", L"10", L"11", L"12", L"13", L"14", L"15", L"16"});
-			this->main_comboBox_behavior_state->Location = System::Drawing::Point(712, 24);
+			this->main_comboBox_behavior_state->Location = System::Drawing::Point(712, 27);
 			this->main_comboBox_behavior_state->Name = L"main_comboBox_behavior_state";
 			this->main_comboBox_behavior_state->Size = System::Drawing::Size(61, 21);
 			this->main_comboBox_behavior_state->TabIndex = 9;
@@ -1266,7 +1273,7 @@ namespace robot_ui {
 			// 
 			// main_btn_start_beh
 			// 
-			this->main_btn_start_beh->Location = System::Drawing::Point(798, 21);
+			this->main_btn_start_beh->Location = System::Drawing::Point(798, 24);
 			this->main_btn_start_beh->Name = L"main_btn_start_beh";
 			this->main_btn_start_beh->Size = System::Drawing::Size(42, 23);
 			this->main_btn_start_beh->TabIndex = 10;
@@ -1276,7 +1283,7 @@ namespace robot_ui {
 			// 
 			// main_main_btn_stop_beh
 			// 
-			this->main_main_btn_stop_beh->Location = System::Drawing::Point(846, 21);
+			this->main_main_btn_stop_beh->Location = System::Drawing::Point(846, 24);
 			this->main_main_btn_stop_beh->Name = L"main_main_btn_stop_beh";
 			this->main_main_btn_stop_beh->Size = System::Drawing::Size(42, 23);
 			this->main_main_btn_stop_beh->TabIndex = 10;
@@ -1287,7 +1294,7 @@ namespace robot_ui {
 			// main_lbl_rate
 			// 
 			this->main_lbl_rate->AutoSize = true;
-			this->main_lbl_rate->Location = System::Drawing::Point(361, 5);
+			this->main_lbl_rate->Location = System::Drawing::Point(439, 8);
 			this->main_lbl_rate->Name = L"main_lbl_rate";
 			this->main_lbl_rate->Size = System::Drawing::Size(33, 13);
 			this->main_lbl_rate->TabIndex = 1;
@@ -1298,7 +1305,7 @@ namespace robot_ui {
 			// 
 			this->main_comboBox_rate->FormattingEnabled = true;
 			this->main_comboBox_rate->Items->AddRange(gcnew cli::array< System::Object^  >(5) {L"0", L"10", L"100", L"1000", L"2000"});
-			this->main_comboBox_rate->Location = System::Drawing::Point(364, 22);
+			this->main_comboBox_rate->Location = System::Drawing::Point(442, 25);
 			this->main_comboBox_rate->Name = L"main_comboBox_rate";
 			this->main_comboBox_rate->Size = System::Drawing::Size(61, 21);
 			this->main_comboBox_rate->TabIndex = 9;
@@ -1317,10 +1324,42 @@ namespace robot_ui {
 			this->ui_timer->Interval = 30;
 			this->ui_timer->Tick += gcnew System::EventHandler(this, &f1::ui_timer_Tick);
 			// 
+			// main_lbl_ip
+			// 
+			this->main_lbl_ip->AutoSize = true;
+			this->main_lbl_ip->Location = System::Drawing::Point(141, 25);
+			this->main_lbl_ip->Name = L"main_lbl_ip";
+			this->main_lbl_ip->Size = System::Drawing::Size(20, 13);
+			this->main_lbl_ip->TabIndex = 3;
+			this->main_lbl_ip->Text = L"IP:";
+			// 
+			// main_comboBox_ip
+			// 
+			this->main_comboBox_ip->FormattingEnabled = true;
+			this->main_comboBox_ip->Items->AddRange(gcnew cli::array< System::Object^  >(9) {L"4", L"7", L"8", L"9", L"10", L"11", L"12", 
+				L"13", L"55"});
+			this->main_comboBox_ip->Location = System::Drawing::Point(163, 21);
+			this->main_comboBox_ip->Name = L"main_comboBox_ip";
+			this->main_comboBox_ip->Size = System::Drawing::Size(77, 21);
+			this->main_comboBox_ip->TabIndex = 1;
+			this->main_comboBox_ip->Text = L"127.0.0.1";
+			this->main_comboBox_ip->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::main_comboBox_ip_SelectedIndexChanged);
+			// 
+			// main_checkBox_connect_ip
+			// 
+			this->main_checkBox_connect_ip->AutoSize = true;
+			this->main_checkBox_connect_ip->Location = System::Drawing::Point(246, 24);
+			this->main_checkBox_connect_ip->Name = L"main_checkBox_connect_ip";
+			this->main_checkBox_connect_ip->Size = System::Drawing::Size(15, 14);
+			this->main_checkBox_connect_ip->TabIndex = 2;
+			this->main_checkBox_connect_ip->UseVisualStyleBackColor = true;
+			this->main_checkBox_connect_ip->CheckedChanged += gcnew System::EventHandler(this, &f1::main_checkBox_connect_ip_CheckedChanged);
+			// 
 			// f1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
+			this->BackColor = System::Drawing::Color::DarkSeaGreen;
 			this->ClientSize = System::Drawing::Size(1096, 707);
 			this->Controls->Add(this->main_main_btn_stop_beh);
 			this->Controls->Add(this->main_btn_start_beh);
@@ -1336,8 +1375,11 @@ namespace robot_ui {
 			this->Controls->Add(this->main_btn_estop);
 			this->Controls->Add(this->main_textBox_keyb);
 			this->Controls->Add(this->tabControl1);
+			this->Controls->Add(this->main_lbl_ip);
 			this->Controls->Add(this->main_lbl_port);
+			this->Controls->Add(this->main_checkBox_connect_ip);
 			this->Controls->Add(this->main_checkBox_connect);
+			this->Controls->Add(this->main_comboBox_ip);
 			this->Controls->Add(this->main_comboBox_port);
 			this->Controls->Add(this->main_lbl_keyb);
 			this->Controls->Add(this->main_lbl_rate);

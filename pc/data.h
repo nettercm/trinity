@@ -33,6 +33,7 @@ typedef struct
 #pragma pack(1)
 typedef struct
 {
+	int connection; //0=not connected,  1=serial,   2=tcp
 	volatile HANDLE p;	//serial port
 	char port[64];
 	char msg[500];
