@@ -178,6 +178,7 @@
     <ClInclude Include="f1.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="ip.h" />
     <ClInclude Include="kalman.h" />
     <ClInclude Include="logic.h" />
     <ClInclude Include="resource.h" />
