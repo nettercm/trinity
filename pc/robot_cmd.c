@@ -69,6 +69,8 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 	size = serial_read(p,(char*)buffer,300);  
 	result = size >= sizeof(t_frame_to_pc) ? 1 : 0; 
 
+	if(size != sizeof(t_frame_to_pc)) log_printf("serial_receive(): size = %d instead of %d\n",size,sizeof(t_frame_to_pc));
+
 	if(result == 1)
 	{
 		//the last sizeof(t_inputs) number of bytes from the retrieved buffer contain the t_inputs message
@@ -213,7 +215,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 	uint8 buffer[500];
 
 	//wait for an incoming t_inputs message; data in buffer; inputs points to t_inputs payload 
-	if(s.connection==1) serial_receive(s.p,buffer);
+	if(s.connection==1) result = serial_receive(s.p,buffer);
 	else if(s.connection==2) result = tcp_receive(buffer);
 
 	if(result == 1)

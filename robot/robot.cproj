@@ -232,6 +232,9 @@
     <Compile Include="flame.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="fsm.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="globals.c">
       <SubType>compile</SubType>
     </Compile>
