@@ -252,7 +252,7 @@ namespace robot_ui
 
 		if(main_checkBox_connect_ip->Checked)
 		{
-			result = tcp_client_init("127.0.0.1",5555);
+			result = tcp_client_init("192.168.2.213",2000);
 			if(result >= 0)
 			{
 				log("TCP connection established!\r\n");

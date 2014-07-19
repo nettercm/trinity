@@ -8,7 +8,7 @@
 
 #pragma comment (lib, "Ws2_32.lib")
 
-#define DEFAULT_PORT 2007
+#define DEFAULT_PORT 2000
 // default TCP socket type
 #define DEFAULT_PROTO SOCK_STREAM
 

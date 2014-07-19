@@ -69,21 +69,13 @@ void UpdateControllerState(void)
 			if(abs(joystick_Ry_2)<=3) joystick_Ry_2=0;
 			if(joystick_Ry_2 != joystick_Ry_1) { joystick_changed_R++; joystick_Ry_1=joystick_Ry_2; }
 
-			joystick_Lx_2 =  g_Controllers[i].state.Gamepad.sThumbLX / -256;
+			joystick_Lx_2 =  g_Controllers[i].state.Gamepad.sThumbLX / -200;
 			if(abs(joystick_Lx_2)<=3) joystick_Lx_2=0;
-			if(joystick_Lx_2 != joystick_Lx_1) 
-			{ 
-				joystick_changed_L++; 	
-				joystick_Lx_1=(joystick_Lx_1+joystick_Lx_2)/2; 
-			}
+			if(joystick_Lx_2 != joystick_Lx_1) { joystick_changed_L++; 	joystick_Lx_1=(joystick_Lx_1+joystick_Lx_2)/2; 	}
 
 			joystick_Ly_2 = g_Controllers[i].state.Gamepad.sThumbLY / 256;
 			if(abs(joystick_Ly_2)<=3) joystick_Ly_2=0;
-			if(joystick_Ly_2 != joystick_Ly_1) 
-			{ 
-				joystick_changed_L++; 
-				joystick_Ly_1=(joystick_Ly_1+joystick_Ly_2)/2; 
-			}
+			if(joystick_Ly_2 != joystick_Ly_1) { joystick_changed_L++; 	joystick_Ly_1=(joystick_Ly_1+joystick_Ly_2)/2;  }
 		}
         else
 		{

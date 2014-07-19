@@ -103,17 +103,137 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 }
 
 
+
+t_frame_to_pc frame;
+
+int process_byte(uint8 byte)
+{
+	static int state=1;
+	static int size=0;
+	int result=0;
+	
+	//usb_printf("%02X ",byte);
+	
+	switch(state)
+	{
+		case 1: //waiting for 0xab
+		if(byte==0xab) 
+		{
+			((uint8*)(&frame))[size]=byte;
+			state=2;
+			size++;
+		}			
+		else
+		{
+			//usb_printf("%02X ",byte);
+			memset(&frame,0,sizeof(frame));
+		}
+		break;
+		
+		case 2: //waiting for 0xcd
+		if(byte==0xcd) 
+		{
+			((uint8*)(&frame))[size]=byte;
+			state=3;
+			size++;
+		}
+		else 
+		{ 
+			//log_printf("#\n");
+			state = 1; size=0; 
+			result = -2;
+			memset(&frame,0,sizeof(frame));
+		}
+		break;		
+		
+		case 3: //waiting for 0xdc @ the right position
+		((uint8*)(&frame))[size]=byte;
+		size++;
+		if( (size-1) == (sizeof(t_frame_to_pc)-2) )
+		{
+			if(byte==0xdc)
+			{
+				state=4;
+			}
+			else
+			{
+				//log_printf("$\n");
+				state=1;
+				size=0;
+				result=-3;
+				memset(&frame,0,sizeof(frame));
+			}
+		}
+		break;
+		
+		case 4:
+		((uint8*)(&frame))[size]=byte;
+		if(byte==0xba)
+		{
+			result=1;
+		}
+		else
+		{
+			//log_printf("%\n");
+			result = -4;
+			memset(&frame,0,sizeof(frame));
+		}
+		size=0;
+		state=1;
+		break;
+								
+		default:
+		break;
+	}	
+	return result;
+}
+
+
+#define RX_BUFFER_SIZE ((int)1000)
+
 int tcp_receive(unsigned char *buffer)
 {
-	int result,size;
+	int result,size,i;
+	static int state=0;
+	static int count=0;
+	static int wr_idx=0,rd_idx=0,r=0;
+	static uint8 ring_buffer[RX_BUFFER_SIZE+1];
 
-	size = tcp_recv((char*)buffer,300,0);  
-	result = size >= sizeof(t_frame_to_pc) ? 1 : 0; 
 
-	if(result == 1)
+	result = 0;
+	while(result==0)
+	{
+		//r1 is where the write point is now - that's where the next byte will be written to
+		//r2 is where the write pointer was last, i.e. that byte has not yet been consumed
+		size = tcp_recv((char*)buffer,200,0);  
+		if(size <= 0) break;
+		for(i=0; i<size;i++)
+		{
+			ring_buffer[wr_idx]=buffer[i];
+			wr_idx++;
+			if(wr_idx>=RX_BUFFER_SIZE) wr_idx=0;
+		}
+		while(wr_idx!=rd_idx)
+		{
+			result = process_byte(ring_buffer[rd_idx]);
+			rd_idx++;
+			if(rd_idx>=RX_BUFFER_SIZE) rd_idx=0;
+			if(result>0)
+			{
+				//log_printf("got one!\n");
+				break;
+			}
+			if(result<0)
+			{
+				//log_printf("e!\n");
+			}
+		}
+	}
+
+	if(result>0)
 	{
 		//the last sizeof(t_inputs) number of bytes from the retrieved buffer contain the t_inputs message
-		rx_buffer = (t_frame_to_pc*) &(buffer[size-sizeof(t_frame_to_pc)]);
+		rx_buffer = &frame; //(t_frame_to_pc*) &(buffer[size-sizeof(t_frame_to_pc)]);
 
 		if(rx_buffer->payload[1]==2)
 		{
@@ -212,7 +332,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 {
 	static int do_user_input=4;
 	int result=0;
-	uint8 buffer[500];
+	uint8 buffer[1024];
 
 	//wait for an incoming t_inputs message; data in buffer; inputs points to t_inputs payload 
 	if(s.connection==1) result = serial_receive(s.p,buffer);
@@ -237,7 +357,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 	}
 	else 
 	{
-		log_printf("\nError.  receive() failed with result=%d\n",result);
+		//log_printf("\nError.  receive() failed with result=%d\n",result);
 	}
 
 	if(!result) 

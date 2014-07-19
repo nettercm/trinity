@@ -139,7 +139,7 @@ void sim_task(u08 cmd, u08 *param)
 	m.rx_ring_buffer_size = 0;
 	m.rx_ring_buffer = NULL;
 
-	tcp_server_init("127.0.0.1",5555);
+	tcp_server_init("127.0.0.1",2000);
 
 	for(;;)
 	{
