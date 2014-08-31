@@ -1059,6 +1059,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_waiting_for_start) 
 			{
+				//TODO: should not be using low-level APIs here
 				pulse_in_stop();
 				pulse_in_start(pulseInPins,3);
 			}
