@@ -57,8 +57,6 @@ namespace robot_ui
 
 		log_printf("++ f1::f1(void)\n");
 
-		timeBeginPeriod(1);
-
 		ignore_parameter_changes = 1;
 
 		random = gcnew Random();
@@ -74,9 +72,16 @@ namespace robot_ui
 
 		InitializeParametersTab();
 
+		t1 = timeGetTime(); 	Sleep(0);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(0) = %lu\n",t2-t1);
 		t1 = timeGetTime(); 	Sleep(1);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(1) = %lu\n",t2-t1);
 		t1 = timeGetTime(); 	Sleep(2);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(2) = %lu\n",t2-t1);
 		t1 = timeGetTime(); 	Sleep(10);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(10) = %lu\n",t2-t1);
+		timeBeginPeriod(1);
+		t1 = timeGetTime(); 	Sleep(0);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(0) = %lu\n",t2-t1);
+		t1 = timeGetTime(); 	Sleep(1);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(1) = %lu\n",t2-t1);
+		t1 = timeGetTime(); 	Sleep(2);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(2) = %lu\n",t2-t1);
+		t1 = timeGetTime(); 	Sleep(10);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(10) = %lu\n",t2-t1);
+
 
 		g = radar_tabPage->CreateGraphics();
 		//
