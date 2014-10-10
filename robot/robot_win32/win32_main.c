@@ -7,3 +7,8 @@
 
 
 int us_data[100];
+
+void win32_main(void)
+{
+	timeBeginPeriod(1);
+}

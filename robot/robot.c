@@ -2139,6 +2139,9 @@ void test_task(u08 cmd, u08 *param)
 
 int main(void)
 {
+	#ifdef SVP_ON_WIN32
+	{ extern void win32_main(void); 	win32_main(); }
+	#endif
 	hardware_init();  //initialize hardware & pololu libraries
 	//i2c_init();
 
