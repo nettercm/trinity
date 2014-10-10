@@ -257,7 +257,9 @@ namespace robot_ui
 
 		if(main_checkBox_connect_ip->Checked)
 		{
-			result = tcp_client_init("192.168.2.213",2000);
+			char* str2 = (char*)(void*)Marshal::StringToHGlobalAnsi(main_comboBox_ip->Text);
+			result = tcp_client_init(str2,2000);
+			//Marshal::FreeHGlobal(str2);			
 			if(result >= 0)
 			{
 				log("TCP connection established!\r\n");
