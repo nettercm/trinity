@@ -143,7 +143,8 @@ void sim_task(u08 cmd, u08 *param)
 
 	for(;;)
 	{
-		task_wait(1);
+		task_wait(20);
+		{ extern void sim_step(void); sim_step(); }
 		sim_motors();
 		sim_serial();
 	}
