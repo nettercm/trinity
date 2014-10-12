@@ -62,21 +62,21 @@ void UpdateControllerState(void)
             g_Controllers[i].bConnected = 1;
 
 			joystick_Rx_2 =  ((joystick_Rx_2*2)+((g_Controllers[i].state.Gamepad.sThumbRX) / -256))/3;
-			//if(abs(joystick_Rx_2)<=3) joystick_Rx_2=0;
+			if(abs(joystick_Rx_2)<=3) joystick_Rx_2=0;
 			if(joystick_Rx_2 != joystick_Rx_1) { joystick_changed_R++; 	joystick_Rx_1=joystick_Rx_2; }
 
 			joystick_Ry_2 = ((joystick_Ry_2*2)+((g_Controllers[i].state.Gamepad.sThumbRY) / 256))/3;
-			//if(abs(joystick_Ry_2)<=3) joystick_Ry_2=0;
+			if(abs(joystick_Ry_2)<=3) joystick_Ry_2=0;
 			if(joystick_Ry_2 != joystick_Ry_1) { joystick_changed_R++; joystick_Ry_1=joystick_Ry_2; }
 
 			joystick_Lx_2 =  ((joystick_Lx_2*5)+((g_Controllers[i].state.Gamepad.sThumbLX) / -256))/6;;
 			joystick_Lx_2 += 3;
-			//if(abs(joystick_Lx_2)<=3) joystick_Lx_2=0;
-			if(joystick_Lx_2 != joystick_Lx_1) { joystick_changed_L++; 	joystick_Lx_1=(joystick_Lx_1+joystick_Lx_2)/2; 	}
+			if(abs(joystick_Lx_2)<=3) joystick_Lx_2=0;
+			if(joystick_Lx_2 != joystick_Lx_1) { joystick_changed_L++; 	joystick_Lx_1=joystick_Lx_2; } //(joystick_Lx_1+joystick_Lx_2)/2; 	}
 
 			joystick_Ly_2 = ((joystick_Ly_2*5)+((g_Controllers[i].state.Gamepad.sThumbLY) / 220))/6;;
-			//if(abs(joystick_Ly_2)<=3) joystick_Ly_2=0;
-			if(joystick_Ly_2 != joystick_Ly_1) { joystick_changed_L++; 	joystick_Ly_1=(joystick_Ly_1+joystick_Ly_2)/2;  }
+			if(abs(joystick_Ly_2)<=3) joystick_Ly_2=0;
+			if(joystick_Ly_2 != joystick_Ly_1) { joystick_changed_L++; 	joystick_Ly_1=joystick_Ly_2; } //(joystick_Ly_1+joystick_Ly_2)/2;  }
 		}
         else
 		{
