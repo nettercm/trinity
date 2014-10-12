@@ -8,6 +8,7 @@ typedef struct
 	u16 vbatt;
 	s16 m1;
 	s16 m2;
+	u16 servo[8];
 	s16 enc_ab;
 	s16 enc_cd;
 	SVPStatus svp_status;

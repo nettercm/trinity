@@ -240,8 +240,8 @@ unsigned char get_single_debounced_button_release(unsigned char buttons) { NOT_I
 unsigned char servos_start(const unsigned char servoPins[], unsigned char numPins) { NOT_IMPLEMENTED();  return 0; }
 unsigned char servos_start_extended(const unsigned char servoPins[], unsigned char numPins, const unsigned char servoPinsB[], unsigned char numPinsB) { NOT_IMPLEMENTED();  return 0; }
 unsigned int get_servo_position(unsigned char servoNum) { NOT_IMPLEMENTED();  return 0; }
-void set_servo_target(unsigned char servoNum, unsigned int pos_us) { NOT_IMPLEMENTED(); }
-unsigned int get_servo_target(unsigned char servoNum) { NOT_IMPLEMENTED();  return 0; }
+void set_servo_target(unsigned char servoNum, unsigned int pos_us) { m.servo[servoNum]=pos_us; }
+unsigned int get_servo_target(unsigned char servoNum) { return m.servo[servoNum]; }
 void set_servo_speed(unsigned char servoNum, unsigned int speed) { NOT_IMPLEMENTED(); }
 unsigned int get_servo_speed(unsigned char servoNum) { NOT_IMPLEMENTED();  return 0; }
 void servos_stop(void) { NOT_IMPLEMENTED(); }

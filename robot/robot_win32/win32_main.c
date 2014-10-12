@@ -14,6 +14,8 @@ static int clientID;
 
 static int lm;
 static int rm;
+static int pan;
+static int tilt;
 static int sensor;
 
 void sim_step(void)
@@ -22,8 +24,12 @@ void sim_step(void)
 
 	//simxGetJointPosition(clientID,lm,&(position[0]),simx_opmode_streaming);
 	//simxGetJointPosition(clientID,rm,&(position[1]),simx_opmode_streaming);
-	simxSetJointTargetVelocity(clientID,lm,((float) m.m2)/10.0f,simx_opmode_oneshot);			
-	simxSetJointTargetVelocity(clientID,rm,((float) m.m1)/10.0f,simx_opmode_oneshot);			
+	simxSetJointTargetVelocity(clientID,lm,((float) m.m2)/10.0f,simx_opmode_streaming);			
+	simxSetJointTargetVelocity(clientID,rm,((float) m.m1)/10.0f,simx_opmode_streaming);		
+
+	simxSetJointTargetPosition(clientID,pan,(((float)m.servo[1])-1350.0f)/353.0f,simx_opmode_streaming);
+	simxSetJointTargetPosition(clientID,tilt,(((float)m.servo[0])-1450.0f)/300.0f,simx_opmode_streaming);
+	//printf("0,1 = %5d,%5d\n",m.servo[0],m.servo[1]);
 
 	result = simxSynchronousTrigger(clientID);
 	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!\n");
@@ -51,9 +57,11 @@ void win32_main(void)
 	simxSynchronousTrigger(clientID);
 	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!\n");
 
-	simxGetObjectHandle(clientID,"remoteApiControlledBubbleRobLeftMotor",&lm,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"remoteApiControlledBubbleRobRightMotor",&rm,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"remoteApiControlledBubbleRobSensingNose",&sensor,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"left_motor",&lm,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"right_motor",&rm,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"pan_servo",&pan,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"tilt_servo",&tilt,simx_opmode_oneshot_wait);
+	//simxGetObjectHandle(clientID,"remoteApiControlledBubbleRobSensingNose",&sensor,simx_opmode_oneshot_wait);
 
 	simxGetPingTime(clientID,&pingTime);
 	printf("pingTime=%d\n",pingTime);
