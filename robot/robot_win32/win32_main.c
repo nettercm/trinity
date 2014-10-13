@@ -17,6 +17,7 @@ static int rm;
 static int pan;
 static int tilt;
 static int sensor;
+static float lp1,lp2,rp1,rp2;
 
 void sim_step(void)
 {
@@ -26,6 +27,14 @@ void sim_step(void)
 	//simxGetJointPosition(clientID,rm,&(position[1]),simx_opmode_streaming);
 	simxSetJointTargetVelocity(clientID,lm,((float) m.m2)/10.0f,simx_opmode_streaming);			
 	simxSetJointTargetVelocity(clientID,rm,((float) m.m1)/10.0f,simx_opmode_streaming);		
+
+	//1632.672 ticks per revolution
+	//259.84781924773094164045499171293  ticks per rad
+	simxGetJointPosition(clientID,lm,&lp1,simx_opmode_streaming);
+	simxGetJointPosition(clientID,rm,&rp1,simx_opmode_streaming);
+	printf("%10.8f,%10.8f\n",(lp1-lp2)*259.8478192477f,(rp1-rp2)*259.8478192477f);
+	lp2=lp1;
+	rp2=rp1;
 
 	simxSetJointTargetPosition(clientID,pan,(((float)m.servo[1])-1350.0f)/353.0f,simx_opmode_streaming);
 	simxSetJointTargetPosition(clientID,tilt,(((float)m.servo[0])-1450.0f)/300.0f,simx_opmode_streaming);
