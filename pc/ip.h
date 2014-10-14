@@ -14,6 +14,7 @@ extern int tcp_server_init(char *ip_address, unsigned short port);
 extern int tcp_server_accept(unsigned long nonblocking);
 extern int tcp_client_init(char *server_name, int port);
 extern void tcp_client_close(void);
+extern int tcp_is_alive(void);
 
 extern int udp_server_init(char *ip_address, unsigned short port);
 extern int udp_client_init(char *server_name, int port);

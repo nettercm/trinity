@@ -327,7 +327,8 @@ void process_user_input(void)
 		{
 			//CMD_set_motors(m_l_speed /* *1.015f*/ - ml_bias, m_r_speed * 1.07f); // for going straight:  80,79
 			//CMD_set_motors(m_l_speed , m_r_speed ); // for baby tracks
-			CMD_motor_command(7 , 1,1 , m_l_speed , m_r_speed);
+			//CMD_motor_command(7 , 1,1 , m_l_speed , m_r_speed);
+			CMD_motor_command(1 , 65000,65000 , m_l_speed , m_r_speed);
 			l=m_l_speed; r=m_r_speed;
 			update_required=1;
 		}

@@ -2189,7 +2189,9 @@ int main(void)
 	task_create( test_task,					 2,  NULL, 0, 0);
 
 	//task_create( lcd_update_fsm,			10,  NULL, 0, 0 );	//lcd is incompatible with servos	
-	task_create( analog_update_fsm,			11,  NULL, 0, 0 );	
+#ifndef SVP_ON_WIN32
+	task_create( analog_update_fsm,			11,  NULL, 0, 0 );	//dont' run this in simulation mode
+#endif
 	task_create( serial_send_fsm,			12 , NULL, 0, 0 );		
 	task_create( serial_receive_fsm,		13,  NULL, 0, 0);
 	task_create( commands_process_fsm,		14,  NULL, 0, 0);

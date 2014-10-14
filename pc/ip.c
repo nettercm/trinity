@@ -33,6 +33,11 @@ WSADATA wsaData;
 SOCKET listen_socket=INVALID_SOCKET, message_socket=INVALID_SOCKET;
 
 
+int tcp_is_alive(void)
+{
+	return (message_socket != INVALID_SOCKET);
+}
+
 
 int tcp_recv(char *buffer, int size, unsigned long nonblocking)
 {
@@ -197,7 +202,12 @@ int tcp_server_init(char *ip_address, unsigned short port)
 	int fromlen;
 	int i;
 
+	if(message_socket!=INVALID_SOCKET) closesocket(message_socket);
 	message_socket=INVALID_SOCKET;
+
+	if(listen_socket!=INVALID_SOCKET) closesocket(listen_socket);
+	listen_socket=INVALID_SOCKET;
+
 
 	// Request Winsock version 2.2
 	if ((retval = WSAStartup(0x202, &wsaData)) != 0)
@@ -323,7 +333,8 @@ int tcp_client_init(char *server_name, int port)
 	int result;
 
 	//socket_type = SOCK_DGRAM
-	message_socket = INVALID_SOCKET;
+	if(message_socket!=INVALID_SOCKET) closesocket(message_socket);
+	message_socket=INVALID_SOCKET;
 
 	if ((retval = WSAStartup(0x202, &wsaData)) != 0)
 	{

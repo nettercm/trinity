@@ -87,13 +87,23 @@ void sim_motors(void)
 
 void sim_serial(void)
 {
-	enum states { s_none=0, s_waiting=1, s_connected};
-	static enum states state=s_waiting;
+	enum states { s_none=0, s_init=1, s_waiting=2, s_connected};
+	static enum states state=s_init;
 	static enum states last_state=s_none;
 	static u32 t_entry=0;
 	int result;
 	
-	first_(s_waiting)
+	first_(s_init)
+	{
+		enter_(s_init)  //required!  this updates the "last_state" variable!
+		{
+			usb_printf("sim_serial(): initializing tcp server\n");
+			tcp_server_init("127.0.0.1",2000);
+		}
+		state = s_waiting;		
+	}
+
+	next_(s_waiting)
 	{
 		enter_(s_waiting)  //required!  this updates the "last_state" variable!
 		{  
@@ -119,6 +129,8 @@ void sim_serial(void)
 			NOP();
 		}
 
+		if(!tcp_is_alive()) state=s_init;
+
 		exit_(s_connected)  
 		{ 
 			NOP();
@@ -138,14 +150,13 @@ void sim_task(u08 cmd, u08 *param)
 	m.vbatt = 10000;
 	m.rx_ring_buffer_size = 0;
 	m.rx_ring_buffer = NULL;
-
-	tcp_server_init("127.0.0.1",2000);
+	s.inputs.vbatt=m.vbatt;
 
 	for(;;)
 	{
 		task_wait(20);
 		{ extern void sim_step(void); sim_step(); }
-		sim_motors();
+		//sim_motors();
 		sim_serial();
 	}
 	task_close();
