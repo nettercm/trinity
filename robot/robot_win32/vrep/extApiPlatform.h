@@ -42,7 +42,7 @@
 
 #define SOCKET_MAX_PACKET_SIZE 1300 /* in bytes. Keep between 200 and 30000 */
 #define SOCKET_HEADER_LENGTH 6 /* WORD0=1 (to detect endianness), WORD1=packetSize, WORD2=packetsLeftToRead */
-#define SOCKET_TIMEOUT_READ 10000 /* in ms */
+#define SOCKET_TIMEOUT_READ 180000 /* in ms */
 
 
 typedef char simxChar;				/* always 1 byte */

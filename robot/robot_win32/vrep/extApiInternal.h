@@ -34,7 +34,7 @@
 #define SIMX_INIT_BUFF_SIZE 500
 #define SIMX_MIN_BUFF_INCR 500
 
-#define _REPLY_WAIT_TIMEOUT_IN_MS 5000
+#define _REPLY_WAIT_TIMEOUT_IN_MS 180000
 #define _MIN_SPLIT_AMOUNT_IN_BYTES 100
 
 /* Out buffer for messages */

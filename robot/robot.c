@@ -351,7 +351,7 @@ void _os_tick(void)
 	}
 #else
 	t_last++;
-	if(t_last > 2)
+	if(t_last > 20)
 	{
 		//Sleep(1);
 		t_last = 0;
@@ -1737,6 +1737,10 @@ int check_for_start_signal()
 	static u08 start_button_state=0;
 	static u08 start_button_count=0;
 	t_now = get_ms();
+
+#ifdef SVP_ON_WIN32
+	//return 1;
+#endif
 
 	if(t_last==0) t_last=t_now;
 

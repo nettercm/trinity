@@ -15,7 +15,7 @@ static int clientID;
 //object handles
 static int lm,rm;
 static int pan,tilt;
-static int ir_left,ir_right;
+static int ir_left,ir_right,ir_front;
 
 
 static float lp1,lp2,lpd,rp1,rp2,rpd;
@@ -26,8 +26,24 @@ static float pi=3.1415926535897932384626433832795f;
 
 void sim_step(void)
 {
+	static int ir_update_countdown=2;
+	int pingTime=999;
 	int result;
-	int t;
+	static int t,t_last=0;
+	static u32 t_real_now, t_real_last=0; 
+
+	t = simxGetLastCmdTime(clientID);
+	t_real_now = timeGetTime();
+	//if(t_now-t_last >= 1000)
+	{
+		//printf("%d\n",t_now-t_last);
+		//simxGetPingTime(clientID,&pingTime);		
+		printf("dT(sim) = %d,  dT(real)=%d,   ping time = %d\n", t-t_last, t_real_now-t_real_last, pingTime);
+		t_real_last=t_real_now;
+		t_last=t;
+	}
+
+
 
 	simxSetJointTargetVelocity(clientID,lm,(((float) m.m2)/1.83f)/5.19695f,simx_opmode_streaming);			
 	simxSetJointTargetVelocity(clientID,rm,(((float) m.m1)/1.83f)/5.19695f,simx_opmode_streaming);		
@@ -70,31 +86,62 @@ void sim_step(void)
 	simxSetJointTargetPosition(clientID,tilt,(((float)m.servo[0])-1450.0f)/300.0f,simx_opmode_streaming);
 	//printf("0,1 = %5d,%5d\n",m.servo[0],m.servo[1]);
 
+	//sharp ir sensors update about once every 30ms;  so let's just say once every 40ms, i.e. every other simulation time step
+	ir_update_countdown--;
+	if(ir_update_countdown<1)
 	{
 		unsigned char state;
 		float point[3],surface[3];
-		u16 distance;
+		float distance;
 		int handle;
+		float noise;
+
+		ir_update_countdown=2;
+
 		result = simxReadProximitySensor(clientID,ir_left,&state,&(point[0]),&handle,&(surface[0]),simx_opmode_streaming);
-		//printf("%7d:    result=%3d,  state=%2d,  point=%5f,%5f,%5f,  handle=%3d,   surface=%5f,%5f,%5f\n",t, result, state,point[0],point[1],point[2],handle,surface[0],surface[1],surface[2]);
 		distance = 300;
-		if(state) distance=((point[2]*100.0f)/2.54f)*10.0f;
-		s.inputs.ir[0] = s.ir[AI_IR_NW]	= distance;
+		if(state) 
+		{
+			distance=((point[2]*100.0f)/2.54f)*10.0f;
+			if(distance < 40) distance = 40 + (40-distance);
+			noise = 100 - (rand() % 200);
+			noise = noise*0.0003f;
+			distance += distance * noise;
+		}
+		s.inputs.ir[0] = s.ir[AI_IR_NW]	= (u16)distance;
+
 
 		result = simxReadProximitySensor(clientID,ir_right,&state,&(point[0]),&handle,&(surface[0]),simx_opmode_streaming);
 		//printf("%7d:    result=%3d,  state=%2d,  point=%5f,%5f,%5f,  handle=%3d,   surface=%5f,%5f,%5f\n",t, result, state,point[0],point[1],point[2],handle,surface[0],surface[1],surface[2]);
 		distance = 300;
-		if(state) distance=((point[2]*100.0f)/2.54f)*10.0f;
+		if(state) 
+		{
+			distance=((point[2]*100.0f)/2.54f)*10.0f;
+			if(distance < 40) distance = 40 + (40-distance);
+			noise = 100 - (rand() % 200);
+			noise = noise*0.0003f;
+			distance += distance * noise;
+		}
 		s.inputs.ir[2] = s.ir[AI_IR_NE]	= distance;
 
-		s.inputs.ir[1] = s.ir[AI_IR_N]		= 300;
-		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= 600;
+		result = simxReadProximitySensor(clientID,ir_front,&state,&(point[0]),&handle,&(surface[0]),simx_opmode_streaming);
+		distance = 300;
+		if(state) 
+		{
+			distance=((point[2]*100.0f)/2.54f)*10.0f;
+			if(distance < 40) distance = 40 + (40-distance);
+			noise = 100 - (rand() % 200);
+			noise = noise*0.0003f;
+			distance += distance * noise;
+		}
+		s.inputs.ir[1] = s.ir[AI_IR_N]		= distance;
 
+		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= 600;
 	}
 
 
 	result = simxSynchronousTrigger(clientID);
-	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!\n");
+	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!  t=%7d\n",t);
 }
 
 
@@ -104,30 +151,42 @@ void win32_main(void)
 	int pingTime;
 	timeBeginPeriod(1);
 
+	srand(0);
+
 	clientID=simxStart((simxChar*)"127.0.0.1",19997,1,1,2000,1);
 	printf("clientID=%d\n",clientID);
 
 	result = simxStopSimulation(clientID,simx_opmode_oneshot_wait);
 	if(result != simx_return_ok) printf("simxStopSimulation() failed!\n");
-	Sleep(100);
+
+	simxGetObjectHandle(clientID,"left_motor",&lm,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"right_motor",&rm,simx_opmode_oneshot_wait);
+
+	simxGetObjectHandle(clientID,"pan_servo",&pan,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"tilt_servo",&tilt,simx_opmode_oneshot_wait);
+
+	simxGetObjectHandle(clientID,"ir_left",&ir_left,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir_right",&ir_right,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir_front",&ir_front,simx_opmode_oneshot_wait);
+
 	result = simxStartSimulation(clientID,simx_opmode_oneshot_wait);
 	if(result != simx_return_ok) printf("simxStartSimulation() failed!\n");
 
 	result = simxSynchronous(clientID,1);
 	if(result != simx_return_ok) printf("simxSynchronous() failed!\n");
 
+	simxSetJointTargetVelocity(clientID,lm,0,simx_opmode_streaming);			
+	simxSetJointTargetVelocity(clientID,rm,0,simx_opmode_streaming);		
+	simxSetJointTargetPosition(clientID,pan,0,simx_opmode_streaming);
+	simxSetJointTargetPosition(clientID,tilt,0,simx_opmode_streaming);
+
+
 	printf("sim time = %d\n", simxGetLastCmdTime(clientID));
 	simxSynchronousTrigger(clientID);
 	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!\n");
 	printf("sim time = %d\n", simxGetLastCmdTime(clientID));
 
-	simxGetObjectHandle(clientID,"left_motor",&lm,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"right_motor",&rm,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"pan_servo",&pan,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"tilt_servo",&tilt,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"ir_left",&ir_left,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"ir_right",&ir_right,simx_opmode_oneshot_wait);
-	//simxGetObjectHandle(clientID,"remoteApiControlledBubbleRobSensingNose",&sensor,simx_opmode_oneshot_wait);
+
 
 	printf("sim time = %d\n", simxGetLastCmdTime(clientID));
 	simxGetPingTime(clientID,&pingTime);
