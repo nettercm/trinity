@@ -16,6 +16,7 @@ static int clientID;
 static int lm,rm;
 static int pan,tilt;
 static int ir_left,ir_right,ir_front;
+static int line_left,line_right;
 
 
 static float lp1,lp2,lpd,rp1,rp2,rpd;
@@ -31,6 +32,9 @@ void sim_step(void)
 	int result;
 	static int t,t_last=0;
 	static u32 t_real_now, t_real_last=0; 
+	float *auxValues=NULL;
+	int *auxValuesCount=NULL;
+	u08 state;
 
 	t = simxGetLastCmdTime(clientID);
 	t_real_now = timeGetTime();
@@ -38,12 +42,31 @@ void sim_step(void)
 	{
 		//printf("%d\n",t_now-t_last);
 		//simxGetPingTime(clientID,&pingTime);		
-		printf("dT(sim) = %d,  dT(real)=%d,   ping time = %d\n", t-t_last, t_real_now-t_real_last, pingTime);
+		//printf("dT(sim) = %d,  dT(real)=%d,   ping time = %d\n", t-t_last, t_real_now-t_real_last, pingTime);
 		t_real_last=t_real_now;
 		t_last=t;
 	}
 
+	s.inputs.analog[AI_FLAME_N]=255;
 
+	result = simxReadVisionSensor(clientID,line_left,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
+	if(result==0)
+	{
+		//printf("aVC[0]=%d, aVC[1]=%d, av[0]=%f,av[10]=%f,\n",auxValuesCount[0],auxValuesCount[1],auxValues[0],auxValues[10]);
+		s.line[LEFT_LINE] = (1.0f-auxValues[10])*255;
+	}
+	if(auxValues)simxReleaseBuffer((simxUChar*)auxValues);
+	if(auxValuesCount)simxReleaseBuffer((simxUChar*)auxValuesCount);
+
+	result = simxReadVisionSensor(clientID,line_right,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
+	if(result==0)
+	{
+		//printf("aVC[0]=%d, aVC[1]=%d, av[0]=%f,av[10]=%f,\n",auxValuesCount[0],auxValuesCount[1],auxValues[0],auxValues[10]);
+		s.line[RIGHT_LINE] = (1.0f-auxValues[10])*255;
+	}
+	if(auxValues)simxReleaseBuffer((simxUChar*)auxValues);
+	if(auxValuesCount)simxReleaseBuffer((simxUChar*)auxValuesCount);
+	//printf("%3d,%3d\n",s.line[LEFT_LINE],s.line[RIGHT_LINE]);
 
 	simxSetJointTargetVelocity(clientID,lm,(((float) m.m2)/1.83f)/5.19695f,simx_opmode_streaming);			
 	simxSetJointTargetVelocity(clientID,rm,(((float) m.m1)/1.83f)/5.19695f,simx_opmode_streaming);		
@@ -168,6 +191,9 @@ void win32_main(void)
 	simxGetObjectHandle(clientID,"ir_left",&ir_left,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"ir_right",&ir_right,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"ir_front",&ir_front,simx_opmode_oneshot_wait);
+
+	simxGetObjectHandle(clientID,"line_left",&line_left,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"line_right",&line_right,simx_opmode_oneshot_wait);
 
 	result = simxStartSimulation(clientID,simx_opmode_oneshot_wait);
 	if(result != simx_return_ok) printf("simxStartSimulation() failed!\n");
