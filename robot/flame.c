@@ -97,11 +97,11 @@ t_scan_result find_path_in_scan(t_scan *data, u16 number_of_points, u16 threasho
 
 t_scan_result find_flame_in_scan(t_scan *data, u16 number_of_points, uint8 threashold)
 {
-	uint8 min,max;
-	uint16 i;
-	uint8 value;
+	uint8 min=255,max=0;
+	uint16 i=0;
+	uint8 value=0;
 	u16 position1=0,position2=0;
-	s16 rising_edge_abs_angle,falling_edge_abs_angle;
+	s16 rising_edge_abs_angle=0,falling_edge_abs_angle=0;
 	t_scan_result result = {0,0,0,0,0,0,0,0,0}; //initialize w/ values that indicate that we did not find a peak
 	
 	min=255;
