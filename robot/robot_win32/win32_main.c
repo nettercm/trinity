@@ -2,6 +2,8 @@
 #include <Windows.h>
 #include <timeapi.h>
 #include <stdio.h>
+#include <conio.h>
+#include <stdarg.h>
 #include "cocoos/cocoos.h"
 
 #include "standard_includes.h"
@@ -18,6 +20,9 @@ static int pan,tilt;
 static int ir_left,ir_right,ir_front;
 static int line_left,line_right;
 
+float *auxValues=NULL;
+int *auxValuesCount=NULL;
+u08 state;
 
 static float lp1,lp2,lpd,rp1,rp2,rpd;
 static float lticks,rticks;
@@ -30,25 +35,26 @@ void sim_step(void)
 	static int ir_update_countdown=2;
 	int pingTime=999;
 	int result;
-	static int t,t_last=0;
+	static int t_sim,t_sim_last=0;
 	static u32 t_real_now, t_real_last=0; 
-	float *auxValues=NULL;
-	int *auxValuesCount=NULL;
-	u08 state;
+	static u32 t_m,t_m_last=0;
 
-	t = simxGetLastCmdTime(clientID);
+	t_sim = simxGetLastCmdTime(clientID);
 	t_real_now = timeGetTime();
+	t_m=m.elapsed_milliseconds;
 	//if(t_now-t_last >= 1000)
 	{
 		//printf("%d\n",t_now-t_last);
-		//simxGetPingTime(clientID,&pingTime);		
-		//printf("dT(sim) = %d,  dT(real)=%d,   ping time = %d\n", t-t_last, t_real_now-t_real_last, pingTime);
+		simxGetPingTime(clientID,&pingTime);		
+		printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
 		t_real_last=t_real_now;
-		t_last=t;
+		t_sim_last=t_sim;
+		t_m_last=t_m;
 	}
 
 	s.inputs.analog[AI_FLAME_N]=255;
 
+	auxValues = NULL; auxValuesCount = NULL;
 	result = simxReadVisionSensor(clientID,line_left,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
 	if(result==0)
 	{
@@ -58,6 +64,7 @@ void sim_step(void)
 	if(auxValues)simxReleaseBuffer((simxUChar*)auxValues);
 	if(auxValuesCount)simxReleaseBuffer((simxUChar*)auxValuesCount);
 
+	auxValues = NULL; auxValuesCount = NULL;
 	result = simxReadVisionSensor(clientID,line_right,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
 	if(result==0)
 	{
@@ -75,7 +82,7 @@ void sim_step(void)
 	simxGetJointPosition(clientID,lm,&lp1,simx_opmode_streaming);
 	simxGetJointPosition(clientID,rm,&rp1,simx_opmode_streaming);
 
-	t=simxGetLastCmdTime(clientID);
+	t_sim=simxGetLastCmdTime(clientID);
 
 	if( (lp1 < -2.0f) && (lp2 > 2.0f) ) 
 	{
@@ -162,9 +169,22 @@ void sim_step(void)
 		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= 600;
 	}
 
-
 	result = simxSynchronousTrigger(clientID);
-	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!  t=%7d\n",t);
+	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!  t=%7d\n",t_sim);
+
+
+	if(_kbhit())
+	{
+		int c;
+		c = _getch();
+		if(c==0x1b)
+		{
+			simxStopSimulation(clientID,simx_opmode_oneshot_wait);
+			simxFinish(clientID);
+			exit(0);
+		}
+	}
+
 }
 
 
@@ -211,11 +231,31 @@ void win32_main(void)
 	simxSynchronousTrigger(clientID);
 	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!\n");
 	printf("sim time = %d\n", simxGetLastCmdTime(clientID));
-
-
+	
 
 	printf("sim time = %d\n", simxGetLastCmdTime(clientID));
 	simxGetPingTime(clientID,&pingTime);
 	printf("pingTime=%d\n",pingTime);
 
+	//the following is just to test how fast the simulation can run with this "V-REM Remote API client" driving it via the trigger.  k
+	while(0)
+	{
+		static int t,t_last=0;
+		static u32 t_real_now, t_real_last=0; 
+
+		simxGetJointPosition(clientID,lm,&lp1,simx_opmode_streaming);
+		simxGetJointPosition(clientID,rm,&rp1,simx_opmode_streaming);
+		simxReadVisionSensor(clientID,line_left,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
+
+		t = simxGetLastCmdTime(clientID);
+		t_real_now = timeGetTime();
+		if(t_real_now-t_real_last >= 1000)
+		{
+			simxGetPingTime(clientID,&pingTime);		
+			printf("dT(sim) = %d,  dT(real)=%d,   ping time = %d\n", t-t_last, t_real_now-t_real_last, pingTime);
+			t_real_last=t_real_now;
+			t_last=t;
+		}
+		result = simxSynchronousTrigger(clientID);
+	}
 }
