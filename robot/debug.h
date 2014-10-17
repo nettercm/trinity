@@ -153,11 +153,11 @@ if(marker)							\
 //////////////////////////////////////////////////////////////////////////////
 #if SIM
 
-extern int	SIM_printf(const char *__fmt, ...);
-extern uint8 SIM_serial_get_received_bytes(void);
+extern int	AVRSIM_printf(const char *__fmt, ...);
+extern uint8 AVRSIM_serial_get_received_bytes(void);
 
 #define serial_receive_ring(a,b,c)
-#define serial_get_received_bytes(a) SIM_serial_get_received_bytes()
+#define serial_get_received_bytes(a) AVRSIM_serial_get_received_bytes()
 
 #define set_analog_mode(a)
 #define svp_set_mode(a)
@@ -168,7 +168,7 @@ extern uint8 SIM_serial_get_received_bytes(void);
 
 #define set_motors(a,b)
 
-#define printf SIM_printf
+#define printf AVRSIM_printf
 
 #endif
 //////////////////////////////////////////////////////////////////////////////

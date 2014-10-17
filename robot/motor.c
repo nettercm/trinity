@@ -4,11 +4,6 @@
 volatile uint16 l_enc_cp=0,r_enc_cp=0;
 
 
-//float odo_cml= 0.1346671682494093856046448480279;
-//float odo_cmr= 0.1346671682494093856046448480279;
-//float odo_b = 165.0; //87.0; //(89.69375) * 1.0;
-
-
 //290us (for absolute pos only)
 void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, float odo_b)
 {
@@ -49,6 +44,8 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	if(s.dtheta < -2.0*PI) s.dtheta += 2.0f*PI;
 }
 
+
+
 //t=theta is in degrees;  a value of NO_CHANGE_IN_POSITION (999999.0) indicates "don't make a change"
 void odometry_update_postion(float x, float y, float t)
 {
@@ -72,6 +69,7 @@ void motors_hardware_init(void)
 }
 
 
+
 void encoders_reset(void)
 {
 	svp_get_counts_and_reset_ab();
@@ -82,10 +80,14 @@ void encoders_reset(void)
 	s.dx = s.dy = s.dtheta = s.dU = 0.0f;
 }
 
+
+
 void odometry_set_checkpoint(void)
 {
 	s.dx = s.dy = s.dtheta = s.dU =  0.0f;
 }
+
+
 
 //returns the change in orientation in degrees 
 float odometry_get_rotation_since_checkpoint(void)
@@ -93,10 +95,14 @@ float odometry_get_rotation_since_checkpoint(void)
 	return s.dtheta * K_rad_to_deg; //(s.dtheta/(2*PI))*360.0;
 }
 
+
+
 float odometry_get_distance_since_checkpoint(void)
 {
 	return s.dx;
 }
+
+
 
 void encoders_set_checkpoint()
 {
@@ -105,10 +111,12 @@ void encoders_set_checkpoint()
 }
 
 
+
 sint16 encoders_get_distance_since_checkpoint()
 {
 	return ( abs(s.inputs.encoders[0] - l_enc_cp) + abs(s.inputs.encoders[1]) - r_enc_cp ) / 2;
 }
+
 
 
 void motors_reapply_target_speed()

@@ -17,6 +17,7 @@
 
 #include "..\pc\messages.h"
 #include "..\pc\commands.h"
+#include "flame.h"
 
 typedef struct
 {
@@ -64,6 +65,8 @@ typedef struct
 //extern t_outputs o;
 extern t_state s;
 extern uint32 main_iterations;
+
+extern t_scan scan_data[];
 
 
 

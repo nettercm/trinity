@@ -13,18 +13,15 @@ void commands_process(void)
 		
 	c  = (uint8*) &(s.commands);
 	end= c+sizeof(t_commands);
-	usb_printf("%08ld: commands_process(end=0x%02x, c=0x%02x:  ",get_ms(),end,c);
-	for(i=0;i<sizeof(t_commands);i++)
-	{
-		usb_printf("%02x ",c[i]);
-	}
-	usb_printf(")\n");
+	//usb_printf("%08ld: commands_process(end=0x%02x, c=0x%02x:  ",get_ms(),end,c);
+	//for(i=0;i<sizeof(t_commands);i++)	{	usb_printf("%02x ",c[i]); 	}
+	//usb_printf(")\n");
 
 	c = &(s.commands.d[0]);
 	
 	while( (cmd=*c)!=0 )  //0 means no more commands
 	{
-		usb_printf("0x%04x: 0x%02x\n",c,cmd);
+		//usb_printf("0x%04x: 0x%02x\n",c,cmd);
 		c++;
 		switch(cmd)
 		{

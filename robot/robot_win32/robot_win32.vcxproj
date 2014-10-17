@@ -114,15 +114,20 @@
     <ClInclude Include="..\globals.h" />
     <ClInclude Include="..\hardware.h" />
     <ClInclude Include="..\i2c.h" />
+    <ClInclude Include="..\line.h" />
     <ClInclude Include="..\lookup.h" />
+    <ClInclude Include="..\motion.h" />
     <ClInclude Include="..\motor.h" />
     <ClInclude Include="..\parameters.h" />
     <ClInclude Include="..\pid.h" />
     <ClInclude Include="..\serial.h" />
+    <ClInclude Include="..\servo.h" />
     <ClInclude Include="..\sharpir.h" />
     <ClInclude Include="..\sim.h" />
     <ClInclude Include="..\sonar.h" />
     <ClInclude Include="..\standard_includes.h" />
+    <ClInclude Include="..\start_signal.h" />
+    <ClInclude Include="..\testing.h" />
     <ClInclude Include="..\typedefs.h" />
     <ClInclude Include="..\vector.h" />
     <ClInclude Include="..\wall_follow.h" />
@@ -131,7 +136,12 @@
     <ClCompile Include="..\..\pc\ip.c" />
     <ClCompile Include="..\commands.c" />
     <ClCompile Include="..\fsm.c" />
+    <ClCompile Include="..\line.c" />
+    <ClCompile Include="..\motion.c" />
+    <ClCompile Include="..\servo.c" />
     <ClCompile Include="..\sim.c" />
+    <ClCompile Include="..\start_signal.c" />
+    <ClCompile Include="..\testing.c" />
     <ClCompile Include="port\pololu\orangutan.c">
       <FileType>CppHeader</FileType>
     </ClCompile>

@@ -78,7 +78,7 @@ int	dbg_printf(const char *__fmt, ...)
 }
 
 
-uint8 SIM_serial_get_received_bytes(void)
+uint8 AVRSIM_serial_get_received_bytes(void)
 {
 	static uint8 first_call=1;
 	static uint8 i=0;
@@ -96,7 +96,7 @@ uint8 SIM_serial_get_received_bytes(void)
 }
 
 
-int	SIM_printf(const char *__fmt, ...)
+int	AVRSIM_printf(const char *__fmt, ...)
 {
 	return 0;	
 }
