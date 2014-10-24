@@ -12,7 +12,6 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 	static enum states state=s_disabled;
 	static enum states last_state=s_disabled;
 	static u32 t_entry=0;
-	
 	s16 error=0, e1=0, e2=0, correction=0;
 	u08 at_limit_flag=0;
 	static s16 target_speed=0;
@@ -32,28 +31,32 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 	
 	static s16 integral=0;
 	static s16 last_error=invalid_error_value;
+	static u08 initialized=0;
 	
 
 	//coder here gets executing every time this "task" runs
-
-
+	
 	//code that comes after this resumes where it left off
-	task_open();
+	//task_open();
 
-	usb_printf("wall_follow_fsm()\n");
+	if(!initialized)
+	{
+		initialized=1;
+		usb_printf("wall_follow_fsm()\n");
 	
-	PREPARE_CFG2(interval);					PREPARE_CFG2(nominal_speed);
-	PREPARE_CFG2(target_distance);			PREPARE_CFG2(max_error);
-	PREPARE_CFG2(max_correction);			PREPARE_CFG2(Kp);
-	PREPARE_CFG2(Ki);						PREPARE_CFG2(Kd);
-	PREPARE_CFG2(min_speed);				PREPARE_CFG2(up_ramp);
-	PREPARE_CFG2(down_ramp);				PREPARE_CFG2(use_corner_logic);
-	PREPARE_CFG2(corner_distance);			PREPARE_CFG2(corner_speed);
-	PREPARE_CFG2(integral_limit);			PREPARE_CFG2(lost_wall_distance);
-	PREPARE_CFG2(found_wall_distance);		PREPARE_CFG2(corner_radius);
-	PREPARE_CFG2(sharp_corner_radius);
-	
-	while(1)
+		PREPARE_CFG2(interval);					PREPARE_CFG2(nominal_speed);
+		PREPARE_CFG2(target_distance);			PREPARE_CFG2(max_error);
+		PREPARE_CFG2(max_correction);			PREPARE_CFG2(Kp);
+		PREPARE_CFG2(Ki);						PREPARE_CFG2(Kd);
+		PREPARE_CFG2(min_speed);				PREPARE_CFG2(up_ramp);
+		PREPARE_CFG2(down_ramp);				PREPARE_CFG2(use_corner_logic);
+		PREPARE_CFG2(corner_distance);			PREPARE_CFG2(corner_speed);
+		PREPARE_CFG2(integral_limit);			PREPARE_CFG2(lost_wall_distance);
+		PREPARE_CFG2(found_wall_distance);		PREPARE_CFG2(corner_radius);
+		PREPARE_CFG2(sharp_corner_radius);
+	}
+
+	//while(1)
 	{
 		UPDATE_CFG2(interval);					UPDATE_CFG2(nominal_speed);
 		UPDATE_CFG2(target_distance);			UPDATE_CFG2(max_error);
@@ -206,10 +209,10 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		s.inputs.watch[2]=correction;
 		*/
 		s.inputs.watch[3]=state;
-		task_wait(interval);
+		//task_wait(interval);
 	}
 	
-	task_close();
+	//task_close();
 }
 
 

@@ -7,7 +7,7 @@ const unsigned char pulseInPins[] = { IO_US_ECHO_AND_PING_1 , IO_US_ECHO_AND_PIN
 extern void commands_process_fsm(u08 cmd, u08 *param);
 extern void lcd_update_fsm(u08 cmd, u08 *param);
 extern void analog_update_fsm(u08 cmd, u08 *param);
-
+extern u08 line_alignment_fsm_v2(u08 cmd, u08 *param);
 
 char buffer[128];
 
@@ -15,6 +15,7 @@ uint32 t_last_output_update = 0;
 
 const char welcome[] PROGMEM = ">g32>>c32";
 
+u08 ml_tid;
 
 
 	
@@ -129,20 +130,7 @@ void scan(u08 cmd, u16 moving_avg)
 
 
 
-/*
-#define move(speed,distance) \
-	odometry_set_checkpoint(); \
-	motor_command(cmd,accel,decel,(speed),(speed)); \
-	while ( abs(odometry_get_distance_since_checkpoint()) < (distance) ) { task_wait(10); } \
-	motor_command(cmd,accel,decel,0,0)
 
-
-#define turn(speed,angle) \
-	odometry_set_checkpoint(); \
-	motor_command(cmd,accel,decel,(speed),-(speed)); \
-	while ( abs(odometry_get_rotation_since_checkpoint()) < angle ) { task_wait(10); } \
-	motor_command(cmd,accel,decel,0,0)
-*/
 #pragma region Master Logic FSM
 void master_logic_fsm(u08 fsm_cmd, u08 *param)
 {
@@ -422,8 +410,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				s.current_room = 3;
 			}
 
-			event_signal(line_alignment_start_evt); 
-			event_wait(line_alignment_done_evt);
+			//event_signal(line_alignment_start_evt); 
+			//event_wait(line_alignment_done_evt);
+			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			odometry_update_postion( ((float)(s.ir[AI_IR_NW]))/16.0f , 65.0f, 90.0f);
 
@@ -441,21 +430,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) //TODO: make the minimum flame value a parameter
 			{
-				/* move this logic to another state 
-				if(scan_result.center_abs_angle > 270)
-				{
-					TURN_IN_PLACE( turn_speed, -(room3_turn_2+room3_turn_1) );
-					MOVE(turn_speed, room3_enter);
-					TURN_IN_PLACE( turn_speed, scan_result.center_abs_angle - s.inputs.theta );
-				}
-				else
-				*/
-				{
-					//turn into the direction where we saw the peak
-					//TODO: (low priority) move the "turn into the direction of the flame" logic into the "move to candle" state
-					TURN_IN_PLACE( turn_speed, -(room3_turn_2-scan_result.center_angle) );
-					//TODO: now confirm that we are still seeing the flame
-				}
+				//turn into the direction where we saw the peak
+				TURN_IN_PLACE( turn_speed, -(room3_turn_2-scan_result.center_angle) );
+				//TODO: now confirm that we are still seeing the flame
 				switch_(s_searching_room_3, s_move_to_candle);
 			}
 
@@ -521,8 +498,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_searching_room_2) { s.current_room = 2;}
 
-			event_signal(line_alignment_start_evt);
-			event_wait(line_alignment_done_evt);
+			//event_signal(line_alignment_start_evt); 
+			//event_wait(line_alignment_done_evt);
+			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			odometry_update_postion(27.0f, ((float)(s.ir[AI_IR_NW]))/16.0f , 180.0f);
 
@@ -538,19 +516,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
-				/*
-				if(scan_result.center_abs_angle < 90)
-				{
-					TURN_IN_PLACE( turn_speed, -(room2_turn_2+room2_turn_1) );
-					MOVE(turn_speed, room2_enter);
-					TURN_IN_PLACE( turn_speed, scan_result.center_abs_angle - s.inputs.theta );
-				}
-				else
-				*/
-				{
-					//turn into the direction where we saw the peak
-					TURN_IN_PLACE( turn_speed, -(room2_turn_2-scan_result.center_angle) );
-				}
+				//turn into the direction where we saw the peak
+				TURN_IN_PLACE( turn_speed, -(room2_turn_2-scan_result.center_angle) );
 				//we are looging straight at the candle - proceed with extinguishing
 				switch_(s_searching_room_2, s_move_to_candle);
 			}
@@ -609,8 +576,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_searching_room_1) { s.current_room = 1; }
 
-			event_signal(line_alignment_start_evt);
-			event_wait(line_alignment_done_evt);
+			//event_signal(line_alignment_start_evt); 
+			//event_wait(line_alignment_done_evt);
+			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			//which door are we enterhing through?
 			if(s.inputs.y > (18.0f*25.4f))  odometry_update_postion(47.0f, 36.0f - ((float)(s.ir[AI_IR_NW]))/16.0f, 0.0f);
@@ -628,19 +596,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
-				/*
-				if(scan_result.center_abs_angle > 90)
-				{
-					TURN_IN_PLACE( turn_speed, -(room1_turn_2+room1_turn_1) );
-					MOVE(turn_speed, room1_enter);
-					TURN_IN_PLACE( turn_speed, scan_result.center_abs_angle - s.inputs.theta );
-				}
-				else
-				*/
-				{
-					//turn into the direction where we saw the peak
-					TURN_IN_PLACE( turn_speed, -(room1_turn_2-scan_result.center_angle) );
-				}
+				//turn into the direction where we saw the peak
+				TURN_IN_PLACE( turn_speed, -(room1_turn_2-scan_result.center_angle) );
 				switch_(s_searching_room_1, s_move_to_candle);
 			}
 
@@ -680,8 +637,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			HARD_STOP();
 			
 			//now we are on the line that marks the north-side door of Room #1 - let's align ourselves to that line so that we are facing North
-			event_signal(line_alignment_start_evt);
-			event_wait(line_alignment_done_evt);
+			//event_signal(line_alignment_start_evt); 
+			//event_wait(line_alignment_done_evt);
+			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 			//TODO: make a note how far away we are from the wall on the right, because it affects a maneuver further down. (but watch out for mirrors!)
 
 			odometry_update_postion(89.0f, ((float)(s.ir[AI_IR_NE]))/16.0f, 90.0f);
@@ -807,8 +765,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_searching_room_4) { s.current_room = 4; }
 
-			event_signal(line_alignment_start_evt);
-			event_wait(line_alignment_done_evt);
+			//event_signal(line_alignment_start_evt); 
+			//event_wait(line_alignment_done_evt);
+			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			if(s.inputs.theta < (180.0f*K_deg_to_rad)) 	odometry_update_postion(57.0f, 56.0f, 90.0f);
 			else odometry_update_postion(66.0f, 76.0f, 270.0f);
@@ -867,7 +826,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			RESET_LINE_DETECTION();
 
 			play_frequency(440,25000,15);
-			task_wait(500);
+			//task_wait(500);
 			FAN_ON(); 
 
 
@@ -879,7 +838,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			{
 				s.inputs.watch[0] = 2;
 				motor_command(6,1,1,30-bias,30+bias);		
-				task_wait(50);
+				OS_SCHEDULE;
 				if(s.ir[AI_IR_NE] < 70) bias=10;
 				else if(s.ir[AI_IR_NW] < 70) bias=-10;
 				else bias=0;
@@ -895,23 +854,23 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				//just comment out the following 2 if() statements if we are not doing "arbitrary candle locaction"
 				if ((!stop) && (bias < 0) )
 				{
-					s.inputs.watch[0] = 3; task_wait(25);
+					s.inputs.watch[0] = 3; OS_SCHEDULE;
 					//wall on the left!
 					dbg_printf("wall on the left!\n");
 					HARD_STOP();
-					s.inputs.watch[0] = 4; task_wait(25);
+					s.inputs.watch[0] = 4; OS_SCHEDULE;
 					TURN_IN_PLACE(30,-90);
-					s.inputs.watch[0] = 5; task_wait(25);
+					s.inputs.watch[0] = 5; OS_SCHEDULE;
 					MOVE(30,100);
-					s.inputs.watch[0] = 6; task_wait(25);
+					s.inputs.watch[0] = 6; OS_SCHEDULE;
 					TURN_IN_PLACE_AND_SCAN(turn_speed, 180, flame_scan_filter);
-					s.inputs.watch[0] = 7; task_wait(25);
+					s.inputs.watch[0] = 7; OS_SCHEDULE;
 					scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 					if(scan_result.flame_center_value > flame_found_threashold) 
 					{
-							s.inputs.watch[0] = 8; task_wait(25);
-							TURN_IN_PLACE( turn_speed, -(180-scan_result.center_angle) );
-							s.inputs.watch[0] = 9; task_wait(25);
+						s.inputs.watch[0] = 8; OS_SCHEDULE;
+						TURN_IN_PLACE( turn_speed, -(180-scan_result.center_angle) );
+						s.inputs.watch[0] = 9; OS_SCHEDULE;
 					}
 					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
 					bias=0;
@@ -919,23 +878,23 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				}
 				if( (!stop) && (bias > 0) )
 				{
-					s.inputs.watch[0] = 10; task_wait(25);
+					s.inputs.watch[0] = 10; OS_SCHEDULE;
 					//wall on the right!
 					dbg_printf("wall on the right!\n");
 					HARD_STOP();
-					s.inputs.watch[0] = 11; task_wait(25);
+					s.inputs.watch[0] = 11; OS_SCHEDULE;
 					TURN_IN_PLACE(30, 90);
-					s.inputs.watch[0] = 12; task_wait(25);
+					s.inputs.watch[0] = 12; OS_SCHEDULE;
 					MOVE(30,100);
-					s.inputs.watch[0] = 13; task_wait(25);
+					s.inputs.watch[0] = 13; OS_SCHEDULE;
 					TURN_IN_PLACE_AND_SCAN(turn_speed, -180, flame_scan_filter);
-					s.inputs.watch[0] = 14; task_wait(25);
+					s.inputs.watch[0] = 14; OS_SCHEDULE;
 					scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 					if(scan_result.flame_center_value > flame_found_threashold) 
 					{
-						s.inputs.watch[0] = 15; task_wait(25);
-							TURN_IN_PLACE( turn_speed, (180+scan_result.center_angle) );
-						s.inputs.watch[0] = 16; task_wait(25);
+						s.inputs.watch[0] = 15; OS_SCHEDULE;
+						TURN_IN_PLACE( turn_speed, (180+scan_result.center_angle) );
+						s.inputs.watch[0] = 16; OS_SCHEDULE;
 					}
 					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
 					bias=0;
@@ -945,29 +904,29 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			}
 			dbg_printf("stopped! reason: 0x%02x\n",stop);
 			HARD_STOP();
-			s.inputs.watch[0] = 17; task_wait(25);
+			s.inputs.watch[0] = 17; OS_SCHEDULE;
 			FAN_ON(); 
 
 
 			TURN_IN_PLACE(turn_speed, -45);
-			s.inputs.watch[0] = 18; task_wait(25);
+			s.inputs.watch[0] = 18; OS_SCHEDULE;
 			TURN_IN_PLACE_AND_SCAN(turn_speed, 90, flame_scan_filter);
-			s.inputs.watch[0] = 19; task_wait(25);
+			s.inputs.watch[0] = 19; OS_SCHEDULE;
 			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
 			if(scan_result.flame_center_value > flame_found_threashold) 
 			{
-				s.inputs.watch[0] = 20; task_wait(25);
+				s.inputs.watch[0] = 20; OS_SCHEDULE;
 				TURN_IN_PLACE( turn_speed, -(90-scan_result.center_angle) );
-				s.inputs.watch[0] = 21; task_wait(25);
+				s.inputs.watch[0] = 21; OS_SCHEDULE;
 			}
 
-			s.inputs.watch[0] = 22; task_wait(25);
+			s.inputs.watch[0] = 22; OS_SCHEDULE;
 			while( (s.inputs.sonar[0] > 70) && (s.ir[AI_IR_N] > 70) )
 			{
 				motor_command(7,1,1,10,10);
 				OS_SCHEDULE;
 			}
-			s.inputs.watch[0] = 23; task_wait(25);
+			s.inputs.watch[0] = 23; OS_SCHEDULE;
 			HARD_STOP();
 
 
@@ -994,7 +953,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		s.inputs.watch[2]=state;
 		if(state!=last_state) dbg_printf("ML:state: %d->%d\n", last_state,state);
 
-		task_wait(25);
+		//task_wait(25);
+ 		OS_SCHEDULE;
 	}
 
 	task_close();
@@ -1002,6 +962,64 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 #pragma endregion
 
 
+
+void main_loop(void)
+{
+	u08 currently_running_tid;
+
+	//incoming communication, i.e. commands
+	serial_receive_fsm(0,0); //includes processing of commands
+
+	//sample and process inputs
+	//analog_update_fsm(0,0);  //we don't want this when running on the PC and/or in simulation mode
+	{ extern void sim_inputs(void); sim_inputs(); }
+	line_detection_fsm_v2(0,0);
+
+	//behaviors
+	currently_running_tid=running_tid;	
+	running_tid=ml_tid;  
+	master_logic_fsm(0,0); 
+	running_tid=currently_running_tid;
+	wall_follow_fsm(0,0);
+	line_alignment_fsm_v2(0,0);
+
+	//outputs
+	motor_command_fsm(0,0);
+	servo_task(0,0);
+
+	//ui
+	//lcd_update_fsm(0,0);	//lcd is incompatible with servos; also, not yet converted from task back to pure fsm	
+
+	//outgoing communication
+	serial_send_fsm(0,0);
+	{ extern void sim_outputs(void); sim_outputs(); }
+
+	sim_task(0,0);
+}
+
+
+
+
+void main_loop_task(u08 cmd, u08 *param)
+{
+
+	task_open_1();
+	//code between _1() and _2() will get executed every time the scheduler resumes this task
+
+	task_open_2();
+	//execution below this point will resume wherever it left off when a context switch happens
+
+	usb_printf("main_loop_task()\n");
+
+
+	while(1)
+	{
+		main_loop();
+		task_wait(20);
+	}
+
+	task_close();
+}
 
 
 
@@ -1045,40 +1063,43 @@ int main(void)
 
 
 	os_init();  //initialize the cooperative multitasking subsystem and start all tasks
-#if 1
+
+
+#if 0
+	task_create( fsm_test_task,				1,   NULL, 0, 0 );
+#else
+
 	serial_cmd_evt = event_create();
 	line_alignment_start_evt = event_create();
 	line_alignment_done_evt = event_create();
 
 #ifdef SVP_ON_WIN32
-	task_create( sim_task,					 1,  NULL, 0, 0);
+	//task_create( sim_task,					 1,  NULL, 0, 0);
 #endif
-
-	task_create( test_task,					 2,  NULL, 0, 0);
+	task_create( main_loop_task,			 2,  NULL, 0, 0);
+	//task_create( test_task,					 3,  NULL, 0, 0);
 
 	//task_create( lcd_update_fsm,			10,  NULL, 0, 0 );	//lcd is incompatible with servos	
-#ifndef SVP_ON_WIN32
-	task_create( analog_update_fsm,			11,  NULL, 0, 0 );	//dont' run this in simulation mode
-#endif
-	task_create( serial_send_fsm,			12 , NULL, 0, 0 );		
-	task_create( serial_receive_fsm,		13,  NULL, 0, 0);
-	task_create( commands_process_fsm,		14,  NULL, 0, 0);
-	task_create( motor_command_fsm,			15,  NULL, 0, 0);
-	task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
+	//task_create( analog_update_fsm,			11,  NULL, 0, 0 );	//dont' run this in simulation mode
+	//task_create( serial_send_fsm,			12 , NULL, 0, 0 );		
+	//task_create( serial_receive_fsm,		13,  NULL, 0, 0);
+	//task_create( commands_process_fsm,		14,  NULL, 0, 0);
+	//task_create( motor_command_fsm,			15,  NULL, 0, 0);
+	//task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
 	//task_create( debug_fsm,				17, NULL, 0, 0);   //not used right now
-	task_create( wall_follow_fsm,			18,  NULL, 0, 0);
-	task_create( master_logic_fsm,			19,  NULL, 0, 0);
+	//task_create( wall_follow_fsm,			18,  NULL, 0, 0);
+	ml_tid = task_create( master_logic_fsm,			19,  NULL, 0, 0);
 	//task_create( line_detection_fsm,		20,  NULL, 0, 0);
-	task_create( line_alignment_fsm,		21,  NULL, 0, 0);
-	task_create( line_detection_fsm_v2,		22,  NULL, 0, 0);
-	task_create( servo_task,				23,  NULL, 0, 0);
+	//task_create( line_alignment_fsm,		21,  NULL, 0, 0);
+	//task_create( line_detection_fsm_v2,		22,  NULL, 0, 0);
+	//task_create( servo_task,				23,  NULL, 0, 0);
 	//task_create( busy_task,				24,  NULL, 0, 0);
 	//task_create( idle_task,				25,  NULL, 0, 0);
-	task_create( fsm_test_task,				29,   NULL, 0, 0 );
-
-#else
-	task_create( fsm_test_task,				1,   NULL, 0, 0 );
+	//task_create( fsm_test_task,				29,   NULL, 0, 0 );
 #endif
+
+	os_task_suspend(ml_tid);
+
 	os_start();
 	
 	//won't ever get here...

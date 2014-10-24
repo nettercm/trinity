@@ -41,6 +41,58 @@ static float pi=3.1415926535897932384626433832795f;
 
 void sim_step(void)
 {
+	int result;
+	static int t_sim,t_sim_last=0;
+	static u32 t_real_now, t_real_last=0; 
+	static u32 t_m,t_m_last=0;
+	int pingTime;
+
+	t_sim = simxGetLastCmdTime(clientID);
+	t_real_now = timeGetTime();
+	t_m=m.elapsed_milliseconds;
+	if(t_real_now-t_real_last >= 1000)
+	{
+		simxGetPingTime(clientID,&pingTime);		
+		printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
+		t_real_last=t_real_now;
+		t_sim_last=t_sim;
+	}
+
+	result = simxSynchronousTrigger(clientID);
+	//if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!  t=%7d\n",t_sim);
+
+
+	if(_kbhit())
+	{
+		int c;
+		c = _getch();
+		if(c==0x1b)
+		{
+			simxStopSimulation(clientID,simx_opmode_oneshot_wait);
+			simxFinish(clientID);
+			exit(0);
+		}
+	}
+}
+
+
+
+void sim_outputs(void)
+{
+	//motors
+	simxSetJointTargetVelocity(clientID,lm,((((float) m.m2)/1.83f)/5.19695f)*1.1f,simx_opmode_streaming);			
+	simxSetJointTargetVelocity(clientID,rm,(((float) m.m1)/1.83f)/5.19695f,simx_opmode_streaming);		
+
+	//servos
+	simxSetJointTargetPosition(clientID,pan,(((float)m.servo[1])-1350.0f)/353.0f,simx_opmode_streaming);
+	simxSetJointTargetPosition(clientID,tilt,(((float)m.servo[0])-1450.0f)/300.0f,simx_opmode_streaming);
+	//printf("0,1 = %5d,%5d\n",m.servo[0],m.servo[1]);
+
+}
+
+
+void sim_inputs(void)
+{
 	static int ir_update_countdown=2;
 	int pingTime=999;
 	int result;
@@ -85,8 +137,6 @@ void sim_step(void)
 	if(auxValuesCount)simxReleaseBuffer((simxUChar*)auxValuesCount);
 	//printf("%3d,%3d\n",s.line[LEFT_LINE],s.line[RIGHT_LINE]);
 
-	simxSetJointTargetVelocity(clientID,lm,((((float) m.m2)/1.83f)/5.19695f)*1.1f,simx_opmode_streaming);			
-	simxSetJointTargetVelocity(clientID,rm,(((float) m.m1)/1.83f)/5.19695f,simx_opmode_streaming);		
 
 	//34.014:1 gear with 48cpr encoder =>  1632.672 ticks per revolution   =>   259.84781924773094164045499171293  ticks per rad
 	simxGetJointPosition(clientID,lm,&lp1,simx_opmode_streaming);
@@ -122,9 +172,6 @@ void sim_step(void)
 	rp2=rp1;
 	//printf("%7d:  %10.6f,%10.6f\n",t,lticks,rticks);
 
-	simxSetJointTargetPosition(clientID,pan,(((float)m.servo[1])-1350.0f)/353.0f,simx_opmode_streaming);
-	simxSetJointTargetPosition(clientID,tilt,(((float)m.servo[0])-1450.0f)/300.0f,simx_opmode_streaming);
-	//printf("0,1 = %5d,%5d\n",m.servo[0],m.servo[1]);
 
 	//sharp ir sensors update about once every 30ms;  so let's just say once every 40ms, i.e. every other simulation time step
 	ir_update_countdown--;
@@ -182,25 +229,7 @@ void sim_step(void)
 
 	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_streaming);
 	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,simx_opmode_streaming);
-	printf("%6.2f,%6.2f\n",sim_state.robot_position[0],sim_state.robot_position[1]);
-
-
-	result = simxSynchronousTrigger(clientID);
-	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!  t=%7d\n",t_sim);
-
-
-	if(_kbhit())
-	{
-		int c;
-		c = _getch();
-		if(c==0x1b)
-		{
-			simxStopSimulation(clientID,simx_opmode_oneshot_wait);
-			simxFinish(clientID);
-			exit(0);
-		}
-	}
-
+	//printf("%6.2f,%6.2f\n",sim_state.robot_position[0],sim_state.robot_position[1]);
 }
 
 

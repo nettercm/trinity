@@ -4,6 +4,7 @@
 
 void servo_task(u08 cmd, u08 *param)
 {
+	static u08 initialized=0;
 	DEFINE_CFG2(u16,s1_speed,15,1);					
 	DEFINE_CFG2(u16,s2_speed,15,2);					
 	DEFINE_CFG2(u16,s3_speed,15,3);					
@@ -14,29 +15,34 @@ void servo_task(u08 cmd, u08 *param)
 	DEFINE_CFG2(u16,s4_pos,15,8);					
 	const unsigned char demuxPins[] = {IO_B0, IO_B1, IO_B2}; // eight servos
 
-	task_open_1();
+	//task_open_1();
 	//code between _1() and _2() will get executed every time the scheduler resumes this task
 
+	if(!initialized)
+	{
+		initialized=1;
 
-	task_open_2();
+		usb_printf("servo_task()\n");
+
+		servos_start(demuxPins, sizeof(demuxPins));
+	
+		PREPARE_CFG2(s1_speed);					
+		PREPARE_CFG2(s2_speed);					
+		PREPARE_CFG2(s3_speed);					
+		PREPARE_CFG2(s4_speed);					
+		PREPARE_CFG2(s1_pos);					
+		PREPARE_CFG2(s2_pos);					
+		PREPARE_CFG2(s3_pos);					
+		PREPARE_CFG2(s4_pos);					
+	}
+
+	//task_open_2();
 	//execution below this point will resume wherever it left off when a context switch happens
 
-	usb_printf("servo_task()\n");
 
-	servos_start(demuxPins, sizeof(demuxPins));
-	
-	PREPARE_CFG2(s1_speed);					
-	PREPARE_CFG2(s2_speed);					
-	PREPARE_CFG2(s3_speed);					
-	PREPARE_CFG2(s4_speed);					
-	PREPARE_CFG2(s1_pos);					
-	PREPARE_CFG2(s2_pos);					
-	PREPARE_CFG2(s3_pos);					
-	PREPARE_CFG2(s4_pos);					
-
-	while(1)
+	//while(1)
 	{
-		task_wait(20);
+		//task_wait(20);
 		UPDATE_CFG2(s1_speed);					
 		UPDATE_CFG2(s2_speed);					
 		UPDATE_CFG2(s3_speed);					
@@ -55,5 +61,5 @@ void servo_task(u08 cmd, u08 *param)
 		set_servo_target(3, s4_pos*10);	
 	}
 
-	task_close();
+	//task_close();
 }

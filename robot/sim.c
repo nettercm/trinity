@@ -97,24 +97,30 @@ void sim_task(u08 cmd, u08 *param)
 {
 	static u08 initialized=0;
 
+	//task_open();
 
-	task_open();
-
-	usb_printf("sim_task()\n");
-
-	m.vbatt = 10000;
-	m.rx_ring_buffer_size = 0;
-	m.rx_ring_buffer = NULL;
-	s.inputs.vbatt=m.vbatt;
-
-	for(;;)
+	if(!initialized)
 	{
-		task_wait(20);
+		initialized=1;
+
+		usb_printf("sim_task()\n");
+
+		m.vbatt = 10000;
+		m.rx_ring_buffer_size = 0;
+		m.rx_ring_buffer = NULL;
+		s.inputs.vbatt=m.vbatt;
+	}
+
+
+
+	//for(;;)
+	{
+		//task_wait(20);
 		{ extern void sim_step(void); sim_step(); }
 		//sim_motors();
 		sim_serial();
 	}
-	task_close();
+	//task_close();
 }
 
 

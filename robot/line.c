@@ -50,18 +50,24 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 	static u08 l_crossed=0;
 	static u08 r_crossed=0;
 	static u32 t_crossed=0;
+	static u08 initialized=0;
 	
-	task_open();
+	//task_open();
 
-	usb_printf("line_detection_fsm_v2()\n");
+	if(!initialized)
+	{
+		initialized=1;
 
-	PREPARE_CFG2(black);					
-	PREPARE_CFG2(white);					
+		usb_printf("line_detection_fsm_v2()\n");
 
-	UPDATE_CFG2(black);					
-	UPDATE_CFG2(white);
+		PREPARE_CFG2(black);					
+		PREPARE_CFG2(white);					
 
-	while(1)
+		UPDATE_CFG2(black);					
+		UPDATE_CFG2(white);
+	}
+
+	//while(1)
 	{
 		if(l_state==0) //current on black...
 		{
@@ -138,14 +144,82 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 		}
 		*/
 
-		OS_SCHEDULE;
+		//OS_SCHEDULE;
 		s.inputs.watch[1]=lines_crossed;
 	}
-	task_close();
+	//task_close();
 }
 
 
+u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
+{
+	enum states { s_disabled=0 };
+	static enum states state=s_disabled;
+	static enum states last_state=s_disabled;
+	static u32 t_entry=0;
+	static u32 t_now=0;
 
+	if(cmd==1)
+	{
+		state++;
+	}
+
+	first_(s_disabled)
+	{
+	}
+	next_(1)
+	{
+		if(s.line[RIGHT_LINE] <= white)
+		{
+			motor_command(7,0,0,0,20);
+		}
+		else 
+		{
+			state++;
+			motor_command(7,0,0,0,0);
+		}
+	}
+	next_(2)
+	{
+		if(s.line[RIGHT_LINE] > white)
+		{
+			motor_command(7,0,0,0,-20);
+		}
+		else 
+		{
+			state++;
+			motor_command(7,0,0,0,0);
+		}
+	}
+	next_(3)
+	{
+		if(s.line[LEFT_LINE] <= white)
+		{
+			motor_command(7,0,0,20,0);
+		}
+		else 
+		{
+			state++;
+			motor_command(7,0,0,0,0);
+		}
+	}
+	next_(4)
+	{
+		if(s.line[LEFT_LINE] > white)
+		{
+			motor_command(7,0,0,-20,0);
+		}
+		else 
+		{
+			state=s_disabled;
+			motor_command(7,0,0,0,0);
+		}
+	}
+	return state;
+}
+
+
+#if 0
 void line_alignment_fsm(u08 cmd, u08 *param)
 {
 	task_open();
@@ -165,3 +239,4 @@ void line_alignment_fsm(u08 cmd, u08 *param)
 
 	task_close();
 }
+#endif

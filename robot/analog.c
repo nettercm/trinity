@@ -17,22 +17,28 @@ void analog_update_fsm(u08 cmd, u08 *param)
 	s16 short_filter_amount;
 	s16 long_filter_threashold;
 	s16 long_filter_amount;
+	static u08 initialized=0;
 
-	task_open();
+	//task_open();
 
-	usb_printf("analog_update_fsm()\n");
+	if(!initialized)
+	{
+		initialized = 1;
 
-	for(i=0;i<=7;i++) s.inputs.analog[i] = (analog_read(i))>>2;
-	s.inputs.vbatt = read_battery_millivolts_svp();
-	vbatt = read_battery_millivolts_svp();
+		usb_printf("analog_update_fsm()\n");
+
+		for(i=0;i<=7;i++) s.inputs.analog[i] = (analog_read(i))>>2;
+		s.inputs.vbatt = read_battery_millivolts_svp();
+		vbatt = read_battery_millivolts_svp();
 	
-	cfg_idx_interval					= cfg_get_index_by_grp_and_id(1,4);
-	cfg_idx_short_filter_threashold		= cfg_get_index_by_grp_and_id(2,1);
-	cfg_idx_short_filter_amount			= cfg_get_index_by_grp_and_id(2,2);
-	cfg_idx_long_filter_threashold		= cfg_get_index_by_grp_and_id(2,3);
-	cfg_idx_long_filter_amount			= cfg_get_index_by_grp_and_id(2,4);
+		cfg_idx_interval					= cfg_get_index_by_grp_and_id(1,4);
+		cfg_idx_short_filter_threashold		= cfg_get_index_by_grp_and_id(2,1);
+		cfg_idx_short_filter_amount			= cfg_get_index_by_grp_and_id(2,2);
+		cfg_idx_long_filter_threashold		= cfg_get_index_by_grp_and_id(2,3);
+		cfg_idx_long_filter_amount			= cfg_get_index_by_grp_and_id(2,4);
+	}
 	
-	while(1)
+	//while(1)
 	{
 		interval					= cfg_get_u08_by_index(cfg_idx_interval);
 		short_filter_threashold		= cfg_get_u16_by_index(cfg_idx_short_filter_threashold);
@@ -71,10 +77,10 @@ void analog_update_fsm(u08 cmd, u08 *param)
 			s.inputs.vbatt = (uint16)vbatt;
 		}
 
-		task_wait(interval);
+		//task_wait(interval);
 	}
 
-	task_close();
+	//task_close();
 }
 
 

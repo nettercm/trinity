@@ -481,7 +481,7 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 	if( (s.motor_command_state != last_state) ) //|| (cmd != 0) )
 	{
 		//the intent here is to only do a printf if something changes and not for udpates, but tasks like "wall following" will continuously issue 'new' motor commands
-		usb_printf("%08ld: motor_command(cmd=%d,%d,%d,lm=%d,rm=%d) lst,st=%d,%d\r\n", t_now, cmd, p1, p2, lm_speed, rm_speed, last_state,s.motor_command_state);
+		//usb_printf("%08ld: motor_command(cmd=%d,%d,%d,lm=%d,rm=%d) lst,st=%d,%d\r\n", t_now, cmd, p1, p2, lm_speed, rm_speed, last_state,s.motor_command_state);
 		last_state = s.motor_command_state;
 	}
 
@@ -499,17 +499,23 @@ void motor_command_fsm(u08 cmd, u08 *param)
 	DEFINE_CFG(flt,odo_cml,5,1);
 	DEFINE_CFG(flt,odo_cmr,5,2);
 	DEFINE_CFG(flt,odo_b,5,3);
+	static u08 initialized=0;
 		
-	task_open();
+	//task_open();
 
-	usb_printf("motor_command_fsm()\n");
+	if(!initialized)
+	{
+		initialized=1;
+		
+		usb_printf("motor_command_fsm()\n");
 	
-	PREPARE_CFG(u08,update_rate);
-	PREPARE_CFG(flt,odo_cml);
-	PREPARE_CFG(flt,odo_cmr);
-	PREPARE_CFG(flt,odo_b);
-	
-	while(1)
+		PREPARE_CFG(u08,update_rate);
+		PREPARE_CFG(flt,odo_cml);
+		PREPARE_CFG(flt,odo_cmr);
+		PREPARE_CFG(flt,odo_b);
+	}
+
+	//while(1)
 	{
 		UPDATE_CFG(u08,update_rate);
 		UPDATE_CFG(flt,odo_cml);
@@ -517,10 +523,10 @@ void motor_command_fsm(u08 cmd, u08 *param)
 		UPDATE_CFG(flt,odo_b);
 		motor_command(0,0,0,0,0);
 		odometry_update(s.inputs.actual_speed[0], s.inputs.actual_speed[1], odo_cml, odo_cmr, odo_b);
-		task_wait(update_rate); //OS_SCHEDULE;
+		//task_wait(update_rate); //OS_SCHEDULE;
 	}
 	
-	task_close();
+	//task_close();
 }
 
 

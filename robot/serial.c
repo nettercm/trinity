@@ -7,6 +7,8 @@
 
 #include "standard_includes.h"
 
+extern void commands_process(void);
+
 uint8 rx_buffer[RX_BUFFER_SIZE];
 //uint8 tx_buffer[128];
 t_frame_to_pc tx_buffer;
@@ -57,32 +59,29 @@ void serial_hardware_init(void)
 
 void serial_send_fsm(u08 cmd, u08 *param)
 {
-	//static uint8 state=0;
-	//static uint32 t_last=0, t_now=0;
 	static uint8 seq=0;
-	static uint8 interval_cfg_idx;
-	uint8 serial_send_interval;
+	//static uint8 interval_cfg_idx;
+	//uint8 serial_send_interval;
 	static uint8 p_r=0;
 	static uint8 iterations;
 	u08 i;
+	static u08 initialized=0;
 
-	task_open();
+	//task_open();
 
-	usb_printf("serial_send_fsm()\n");
-	
-	interval_cfg_idx	= cfg_get_index_by_grp_and_id(1,1);
-
-	p_r = packets_received;
-	
-	while(1)
+	if(!initialized)
 	{
-		serial_send_interval = cfg_get_u08_by_index(interval_cfg_idx);
-		iterations=0;
-		//while( (packets_received==0) && (iterations<5) )
-		//{
-			task_wait(serial_send_interval); 
-		//	iterations++;
-		//}
+		initialized=1;
+		usb_printf("serial_send_fsm()\n");
+		//interval_cfg_idx	= cfg_get_index_by_grp_and_id(1,1);
+		p_r = packets_received;
+	}
+	
+	//while(1)
+	{
+		//serial_send_interval = cfg_get_u08_by_index(interval_cfg_idx);
+		//iterations=0;
+		//task_wait(serial_send_interval); 
 		tx_buffer.seq = seq; seq++; //=get_ms();
 		tx_buffer.ack = packets_received;
 		//packets_received = p_r = 0;
@@ -115,7 +114,7 @@ void serial_send_fsm(u08 cmd, u08 *param)
 		_serial_send(UART_PC,(char*)&tx_buffer,sizeof(t_frame_to_pc)); //seems to work
 	}
 	
-	task_close();
+	//task_close();
 }
 
 
@@ -211,17 +210,21 @@ void serial_receive_fsm(u08 cmd, u08 *param)
 	uint8 result = 0;
 	t_commands* c;
 	t_frame_from_pc *f;
+	static u08 initialized=0;
 
-	task_open();
+	//task_open();
 
-	usb_printf("serial_receive_fsm()\n");
-	
-	memset(rx_buffer,0,RX_BUFFER_SIZE);
-	serial_receive_ring(UART_PC, (char*) rx_buffer, RX_BUFFER_SIZE);
-
-	while(1)
+	if(!initialized)
 	{
-		OS_SCHEDULE;
+		initialized=1;
+		usb_printf("serial_receive_fsm()\n");
+		memset(rx_buffer,0,RX_BUFFER_SIZE);
+		serial_receive_ring(UART_PC, (char*) rx_buffer, RX_BUFFER_SIZE);
+	}
+
+	//while(1)
+	{
+		//OS_SCHEDULE;
 		//r1 is where the write point is now - that's where the next byte will be written to
 		//r2 is where the write pointer was last, i.e. that byte has not yet been consumed
 		wr_idx=serial_get_received_bytes(UART_PC);
@@ -234,8 +237,9 @@ void serial_receive_fsm(u08 cmd, u08 *param)
 				memcpy(&(s.commands),(uint8*)(&frame)+6,sizeof(t_commands));
 				packets_received++;
 				//tx_buffer.ack=packets_received; //frame.seq;
-				event_signal(serial_cmd_evt);
-				OS_SCHEDULE;
+				//event_signal(serial_cmd_evt);
+				//OS_SCHEDULE;
+				commands_process();
 			}
 			rd_idx++;
 			if(rd_idx>=RX_BUFFER_SIZE) 
@@ -247,7 +251,7 @@ void serial_receive_fsm(u08 cmd, u08 *param)
 		}
 	}
 	
-	task_close();
+	//task_close();
 }
 
 
