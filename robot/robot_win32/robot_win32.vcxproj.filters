@@ -309,6 +309,15 @@
     <ClCompile Include="..\start_signal.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\ui.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\analog.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\os.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\.gitattributes" />

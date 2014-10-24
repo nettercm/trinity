@@ -134,14 +134,17 @@
     <ClInclude Include="port\avr\interrupt.h" />
     <ClInclude Include="port\avr\io.h" />
     <ClCompile Include="..\..\pc\ip.c" />
+    <ClCompile Include="..\analog.c" />
     <ClCompile Include="..\commands.c" />
     <ClCompile Include="..\fsm.c" />
     <ClCompile Include="..\line.c" />
     <ClCompile Include="..\motion.c" />
+    <ClCompile Include="..\os.c" />
     <ClCompile Include="..\servo.c" />
     <ClCompile Include="..\sim.c" />
     <ClCompile Include="..\start_signal.c" />
     <ClCompile Include="..\testing.c" />
+    <ClCompile Include="..\ui.c" />
     <ClCompile Include="port\pololu\orangutan.c">
       <FileType>CppHeader</FileType>
     </ClCompile>

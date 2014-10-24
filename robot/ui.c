@@ -1,0 +1,116 @@
+
+#include "standard_includes.h"
+
+void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
+{
+	static uint8 state=0;
+	static uint32 t_last=0, t_now=0;
+	static uint8 result = 0;
+	static u08 button_state=0;
+	static int us_n=0,us_w=0,us_e=0,us_nw=0,us_ne=0,us_sw=0,us_se=0;
+	static uint8 count=0;
+	static uint8 update_rate_cfg_idx;
+	static uint16 update_rate;
+	
+	task_open();
+
+	usb_printf("lcd_update_fsm()\n");
+
+	update_rate_cfg_idx = cfg_get_index_by_grp_and_id(1,2);
+	
+	while(1)
+	{
+		update_rate = cfg_get_u16_by_index(update_rate_cfg_idx);
+		task_wait(update_rate);
+		count++;
+
+
+		/***************************************************************************
+		// switch between LCD screen modes
+		***************************************************************************/
+		if(button_is_pressed(MIDDLE_BUTTON))
+		{
+			button_state = 1;
+		}
+		else if(button_state ==1) //button is getting released.....
+		{
+			play_note(A(4), 50, 10);
+			button_state = 0;
+			s.lcd_screen ++;
+			if(s.lcd_screen > 4) s.lcd_screen = 0;
+		}
+
+
+		/***************************************************************************
+		// control behavior state via buttons
+		***************************************************************************/
+		if(button_is_pressed(TOP_BUTTON))
+		{
+			play_note(A(3), 50, 10);
+			//START_BEHAVIOR(FOLLOW_WALL, LEFT_WALL); 
+			START_BEHAVIOR(MASTER_LOGIC,9); 
+		}
+		if(button_is_pressed(BOTTOM_BUTTON))
+		{
+			play_note(A(3), 50, 10);
+			START_BEHAVIOR(MASTER_LOGIC,1); 
+		}
+
+
+		/***************************************************************************
+		// display the selected screen
+		***************************************************************************/
+		if(s.lcd_screen==0)
+		{
+			clear();  
+			lcd_goto_xy(0,0);
+			lcd_printf("L: %3d %3d", s.inputs.analog[AI_LINE_RIGHT],s.inputs.analog[AI_LINE_LEFT]); 
+			OS_SCHEDULE;
+			lcd_goto_xy(0,1); 	
+			lcd_printf("F: %03d  V: %3d", s.inputs.analog[AI_FLAME_N],s.inputs.vbatt/10); 
+		}
+		else if(s.lcd_screen==1)
+		{
+			clear();  
+			lcd_goto_xy(0,0); 
+			lcd_printf("U: %4d %4d",  s.inputs.sonar[0],s.inputs.sonar[1]); 
+			OS_SCHEDULE;
+			lcd_goto_xy(0,1); 
+			lcd_printf("AVG: %4d %4d",  s.us_avg[0], s.us_avg[1]);
+		}
+		else if(s.lcd_screen==2)
+		{
+			clear();  
+			lcd_goto_xy(0,0); 
+			lcd_printf("i%03d %03d %03d %03d",s.ir[AI_IR_NE], s.ir[AI_IR_N_long], s.ir[AI_IR_N], s.ir[AI_IR_NW]); 
+			OS_SCHEDULE;
+			lcd_goto_xy(0,1); 
+			lcd_printf("u%03d %03d %03d",  us_nw, us_n, us_ne); 
+		}
+		else if(s.lcd_screen==3)
+		{
+			clear();  
+			lcd_goto_xy(0,0);   task_wait(5);
+			lcd_printf("V=%5d",	read_battery_millivolts_svp());     task_wait(5);
+			lcd_goto_xy(0,1);   task_wait(5);
+			lcd_printf("V=%5d,  %5d",	s.inputs.vbatt, count);     task_wait(5);
+		}
+		else if(s.lcd_screen==4)
+		{
+			clear();  
+			lcd_goto_xy(0,0);   task_wait(5);
+			lcd_printf("Hz=%ld  ssc=%d",frequency_in_hz,sound_start_count);  task_wait(5);
+			lcd_goto_xy(0,1);   task_wait(5);
+			lcd_printf("cssc=%d",consecutive_sound_start_count);     task_wait(5);
+		}
+		else if(s.lcd_screen==255) 
+		{
+			//allow another task to update the screen, i.e. don't clear the screen
+		}
+	}
+	task_close();
+}
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
