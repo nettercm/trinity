@@ -19,6 +19,15 @@ static int lm,rm;
 static int pan,tilt;
 static int ir_left,ir_right,ir_front;
 static int line_left,line_right;
+static int robot;
+
+typedef struct
+{
+	float robot_position[3];
+	float robot_orientation[3];
+} t_simulation_state;
+
+t_simulation_state sim_state;
 
 float *auxValues=NULL;
 int *auxValuesCount=NULL;
@@ -43,9 +52,10 @@ void sim_step(void)
 	t_real_now = timeGetTime();
 	t_m=m.elapsed_milliseconds;
 	//if(t_now-t_last >= 1000)
+	if(0)
 	{
 		//printf("%d\n",t_now-t_last);
-		simxGetPingTime(clientID,&pingTime);		
+		pingTime=-1;//simxGetPingTime(clientID,&pingTime);		
 		printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
 		t_real_last=t_real_now;
 		t_sim_last=t_sim;
@@ -75,7 +85,7 @@ void sim_step(void)
 	if(auxValuesCount)simxReleaseBuffer((simxUChar*)auxValuesCount);
 	//printf("%3d,%3d\n",s.line[LEFT_LINE],s.line[RIGHT_LINE]);
 
-	simxSetJointTargetVelocity(clientID,lm,(((float) m.m2)/1.83f)/5.19695f,simx_opmode_streaming);			
+	simxSetJointTargetVelocity(clientID,lm,((((float) m.m2)/1.83f)/5.19695f)*1.1f,simx_opmode_streaming);			
 	simxSetJointTargetVelocity(clientID,rm,(((float) m.m1)/1.83f)/5.19695f,simx_opmode_streaming);		
 
 	//34.014:1 gear with 48cpr encoder =>  1632.672 ticks per revolution   =>   259.84781924773094164045499171293  ticks per rad
@@ -125,6 +135,7 @@ void sim_step(void)
 		float distance;
 		int handle;
 		float noise;
+		float noise_factor = 0.0008f; //  +/- 8%
 
 		ir_update_countdown=2;
 
@@ -135,7 +146,7 @@ void sim_step(void)
 			distance=((point[2]*100.0f)/2.54f)*10.0f;
 			if(distance < 40) distance = 40 + (40-distance);
 			noise = 100 - (rand() % 200);
-			noise = noise*0.0003f;
+			noise = noise*noise_factor;
 			distance += distance * noise;
 		}
 		s.inputs.ir[0] = s.ir[AI_IR_NW]	= (u16)distance;
@@ -149,7 +160,7 @@ void sim_step(void)
 			distance=((point[2]*100.0f)/2.54f)*10.0f;
 			if(distance < 40) distance = 40 + (40-distance);
 			noise = 100 - (rand() % 200);
-			noise = noise*0.0003f;
+			noise = noise*noise_factor;
 			distance += distance * noise;
 		}
 		s.inputs.ir[2] = s.ir[AI_IR_NE]	= distance;
@@ -161,13 +172,18 @@ void sim_step(void)
 			distance=((point[2]*100.0f)/2.54f)*10.0f;
 			if(distance < 40) distance = 40 + (40-distance);
 			noise = 100 - (rand() % 200);
-			noise = noise*0.0003f;
+			noise = noise*noise_factor;
 			distance += distance * noise;
 		}
 		s.inputs.ir[1] = s.ir[AI_IR_N]		= distance;
 
 		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= 600;
 	}
+
+	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_streaming);
+	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,simx_opmode_streaming);
+	printf("%6.2f,%6.2f\n",sim_state.robot_position[0],sim_state.robot_position[1]);
+
 
 	result = simxSynchronousTrigger(clientID);
 	if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!  t=%7d\n",t_sim);
@@ -215,16 +231,19 @@ void win32_main(void)
 	simxGetObjectHandle(clientID,"line_left",&line_left,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"line_right",&line_right,simx_opmode_oneshot_wait);
 
+	simxGetObjectHandle(clientID,"Robot",&robot,simx_opmode_oneshot_wait);
+
 	result = simxStartSimulation(clientID,simx_opmode_oneshot_wait);
 	if(result != simx_return_ok) printf("simxStartSimulation() failed!\n");
 
 	result = simxSynchronous(clientID,1);
 	if(result != simx_return_ok) printf("simxSynchronous() failed!\n");
 
-	simxSetJointTargetVelocity(clientID,lm,0,simx_opmode_streaming);			
-	simxSetJointTargetVelocity(clientID,rm,0,simx_opmode_streaming);		
-	simxSetJointTargetPosition(clientID,pan,0,simx_opmode_streaming);
-	simxSetJointTargetPosition(clientID,tilt,0,simx_opmode_streaming);
+	simxSetJointTargetVelocity(clientID,lm,0,simx_opmode_oneshot_wait);			
+	simxSetJointTargetVelocity(clientID,rm,0,simx_opmode_oneshot_wait);		
+	simxSetJointTargetPosition(clientID,pan,0,simx_opmode_oneshot_wait);
+	simxSetJointTargetPosition(clientID,tilt,0,simx_opmode_oneshot_wait);
+
 
 
 	printf("sim time = %d\n", simxGetLastCmdTime(clientID));
@@ -238,6 +257,19 @@ void win32_main(void)
 	printf("pingTime=%d\n",pingTime);
 
 	//the following is just to test how fast the simulation can run with this "V-REM Remote API client" driving it via the trigger.  k
+
+	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_oneshot_wait);
+
+	//when playing back previously recorded data, we need to programmatically move the robot, but to do this, it must not be dynamic.
+	if(0)
+	{
+		int prop;
+		result = simxGetModelProperty(clientID,robot,&prop,simx_opmode_oneshot_wait);
+		prop |= sim_modelproperty_not_dynamic;
+		prop |= sim_modelproperty_not_respondable;
+		result = simxSetModelProperty(clientID,robot,prop,simx_opmode_oneshot_wait);
+	}
+
 	while(0)
 	{
 		static int t,t_last=0;
@@ -246,6 +278,9 @@ void win32_main(void)
 		simxGetJointPosition(clientID,lm,&lp1,simx_opmode_streaming);
 		simxGetJointPosition(clientID,rm,&rp1,simx_opmode_streaming);
 		simxReadVisionSensor(clientID,line_left,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
+
+		simxSetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_streaming);
+		sim_state.robot_position[1]-=0.002;
 
 		t = simxGetLastCmdTime(clientID);
 		t_real_now = timeGetTime();
@@ -256,6 +291,19 @@ void win32_main(void)
 			t_real_last=t_real_now;
 			t_last=t;
 		}
+
 		result = simxSynchronousTrigger(clientID);
+
+		if(_kbhit())
+		{
+			int c;
+			c = _getch();
+			if(c==0x1b)
+			{
+				simxStopSimulation(clientID,simx_opmode_oneshot_wait);
+				simxFinish(clientID);
+				exit(0);
+			}
+		}
 	}
 }
