@@ -1,6 +1,8 @@
 
 #include "standard_includes.h"
 
+extern void scan(u08 cmd, u16 moving_avg);
+
 
 void test_task(u08 cmd, u08 *param)
 {

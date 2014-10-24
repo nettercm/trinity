@@ -160,6 +160,9 @@
     </ToolchainSettings>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="analog.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="cocoos\cocoos.h">
       <SubType>compile</SubType>
     </Compile>
@@ -247,10 +250,22 @@
     <Compile Include="hardware.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="line.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="motion.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="motor.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="motor.h">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="os.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="servo.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="sim.c">
@@ -283,6 +298,12 @@
     <Compile Include="standard_includes.h">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="start_signal.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="testing.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="typedefs.h">
       <SubType>compile</SubType>
     </Compile>
@@ -302,6 +323,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="robot.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="ui.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="vector.c">

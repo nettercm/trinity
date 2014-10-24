@@ -66,7 +66,7 @@ typedef struct
 extern t_state s;
 extern uint32 main_iterations;
 
-extern t_scan scan_data[];
+extern t_scan scan_data[360];
 
 
 
