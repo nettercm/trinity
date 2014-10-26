@@ -971,8 +971,11 @@ void main_loop(void)
 	serial_receive_fsm(0,0); //includes processing of commands
 
 	//sample and process inputs
-	//analog_update_fsm(0,0);  //we don't want this when running on the PC and/or in simulation mode
+#ifndef SVP_ON_WIN32	
+	analog_update_fsm(0,0);  //we don't want this when running on the PC and/or in simulation mode
+#else	
 	{ extern void sim_inputs(void); sim_inputs(); }
+#endif
 	line_detection_fsm_v2(0,0);
 
 	//behaviors
@@ -992,9 +995,10 @@ void main_loop(void)
 
 	//outgoing communication
 	serial_send_fsm(0,0);
+#ifdef SVP_ON_WIN32
 	{ extern void sim_outputs(void); sim_outputs(); }
-
 	sim_task(0,0);
+#endif	
 }
 
 
@@ -1015,7 +1019,9 @@ void main_loop_task(u08 cmd, u08 *param)
 	while(1)
 	{
 		main_loop();
+#ifndef SVP_ON_WIN32
 		task_wait(20);
+#endif
 	}
 
 	task_close();
@@ -1034,6 +1040,9 @@ int main(void)
 	//clear(); lcd_goto_xy(0,0); printf("V=%d",	read_battery_millivolts_svp()); delay_ms(100);
 
 	play_from_program_space(welcome);
+	delay_ms(500);
+	
+	usb_printf("robot.c::main()\n");
 
 
 	//--------  initialize misc support libraries  -----------

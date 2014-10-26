@@ -49,6 +49,7 @@ void sim_step(void)
 
 	t_sim = simxGetLastCmdTime(clientID);
 	t_real_now = timeGetTime();
+	m.elapsed_milliseconds=t_sim;
 	t_m=m.elapsed_milliseconds;
 	if(t_real_now-t_real_last >= 1000)
 	{
@@ -56,6 +57,7 @@ void sim_step(void)
 		printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
 		t_real_last=t_real_now;
 		t_sim_last=t_sim;
+		t_m_last=t_m;
 	}
 
 	result = simxSynchronousTrigger(clientID);
