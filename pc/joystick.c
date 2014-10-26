@@ -107,7 +107,7 @@ void ParseRawInput(PRAWINPUT pRawInput)
 	hHeap          = GetProcessHeap();
 
 	count++;
-	t2=GetTickCount();
+	t2=timeGetTime();
 	if(t2-t1>=1000)
 	{
 		t1=t2;

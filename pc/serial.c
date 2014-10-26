@@ -32,7 +32,7 @@ int serial_write(HANDLE p,char *message,DWORD size)
 	if(0)
 	{
 		int i;
-		log_printf("%7lu: ",GetTickCount());
+		log_printf("%7lu: ",timeGetTime());
 		for(i=0;i<size;i++)	log_printf("%02X,",(unsigned char)message[i]);
 		log_printf(" \n");
 	}
@@ -302,7 +302,7 @@ HANDLE serial_init(char* port, int baud, int stopbits)
 
 #if 1
 	timeouts.ReadIntervalTimeout		=	MAXDWORD; //1;
-	timeouts.ReadTotalTimeoutConstant	=	10; //1;
+	timeouts.ReadTotalTimeoutConstant	=	1; //10;
 	timeouts.ReadTotalTimeoutMultiplier	=	MAXDWORD; //0;
 #else
 	timeouts.ReadIntervalTimeout		=	1;

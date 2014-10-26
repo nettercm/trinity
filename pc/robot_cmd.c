@@ -285,8 +285,8 @@ void display_inputs_and_state(t_inputs *inputs)
 	u32 t_now,t_delta;
 	static u08 watch[4] = {0,0,0,0};
 
-	if(t_last==0) t_last=GetTickCount();
-	t_now = GetTickCount();
+	if(t_last==0) t_last=timeGetTime();
+	t_now = timeGetTime();
 	t_delta = t_now-t_last;
 	t_delta_avg = (t_delta_avg*19.0f + t_delta)/20.0f;
 

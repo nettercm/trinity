@@ -77,7 +77,7 @@ namespace robot_ui {
 			static unsigned long t1=0,t2,count=0;
 
 			count++;
-			t2=GetTickCount();
+			t2=timeGetTime(); //GetTickCount();
 			if(t2-t1>=1000)
 			{
 				t1=t2;

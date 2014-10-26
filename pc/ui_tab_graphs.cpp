@@ -210,7 +210,7 @@ namespace robot_ui
 
 		y1 = s.inputs->watch[0]; //actual_speed[0]; //ir[0];
 		y2 = s.inputs->watch[1]; //ir[2]; //ir[1];
-		t = GetTickCount();
+		t = timeGetTime();
 
 		graphs_chart->Series["Series 1"]->Points->AddXY(x,y1);
 		graphs_chart->Series["Series 2"]->Points->AddXY(x,y2);

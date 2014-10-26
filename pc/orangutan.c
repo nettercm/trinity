@@ -36,7 +36,7 @@ extern void lcd_init_printf(void) {}
 extern void clear(void) {}
 extern void set_motors(s16 left, s16 right) {}
 extern void pulse_in_start(const u08 pins[], u08 numpins) {}
-extern u32 get_ms(void) { return GetTickCount(); }
+extern u32 get_ms(void) { return timeGetTime(); }
 extern u16 analog_read(u08 channel) {return 0x0001;}
 extern u08 button_is_pressed(u08 button) { return 0; }
 extern void lcd_goto_xy(u08 x, u08 y) {}
