@@ -15,7 +15,7 @@ uint32 t_last_output_update = 0;
 
 const char welcome[] PROGMEM = ">g32>>c32";
 
-u08 ml_tid;
+u08 ml_tid,us_tid;
 
 
 	
@@ -1096,7 +1096,7 @@ int main(void)
 	//task_create( serial_receive_fsm,		13,  NULL, 0, 0);
 	//task_create( commands_process_fsm,		14,  NULL, 0, 0);
 	//task_create( motor_command_fsm,			15,  NULL, 0, 0);
-	//task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
+	us_tid = task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
 	//task_create( debug_fsm,				17, NULL, 0, 0);   //not used right now
 	//task_create( wall_follow_fsm,			18,  NULL, 0, 0);
 	ml_tid = task_create( master_logic_fsm,			19,  NULL, 0, 0);
