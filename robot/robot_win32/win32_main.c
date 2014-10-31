@@ -74,6 +74,10 @@ void sim_step(void)
 			simxFinish(clientID);
 			exit(0);
 		}
+		if(c=='s')
+		{
+			m.start_signal=1;
+		}
 	}
 }
 

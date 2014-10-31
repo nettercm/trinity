@@ -15,6 +15,7 @@ typedef struct
 	u32 elapsed_milliseconds;
 	u08* rx_ring_buffer;
 	u08 rx_ring_buffer_size;
+	u08 start_signal;
 
 	//world state
 	float x,y,theta;
