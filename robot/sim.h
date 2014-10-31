@@ -9,8 +9,8 @@ typedef struct
 	s16 m1;
 	s16 m2;
 	u16 servo[8];
-	s16 enc_ab;
-	s16 enc_cd;
+	double enc_ab;
+	double enc_cd;
 	SVPStatus svp_status;
 	u32 elapsed_milliseconds;
 	u08* rx_ring_buffer;

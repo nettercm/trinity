@@ -34,10 +34,10 @@ int *auxValuesCount=NULL;
 u08 state;
 
 static float lp1,lp2,lpd,rp1,rp2,rpd;
-static float lticks,rticks;
+static double lticks=0,rticks=0;
 
-static float pix2=6.283185307179586476925286766559f;
-static float pi=3.1415926535897932384626433832795f;
+static double pix2=6.283185307179586476925286766559;
+static double pi=3.1415926535897932384626433832795;
 
 void sim_step(void)
 {
@@ -86,7 +86,7 @@ void sim_step(void)
 void sim_outputs(void)
 {
 	//motors
-	simxSetJointTargetVelocity(clientID,lm,((((float) m.m2)/1.83f)/5.19695f)*1.1f,simx_opmode_streaming);			
+	simxSetJointTargetVelocity(clientID,lm,((((float) m.m2)/1.83f)/5.19695f)*1.0f,simx_opmode_streaming);			
 	simxSetJointTargetVelocity(clientID,rm,(((float) m.m1)/1.83f)/5.19695f,simx_opmode_streaming);		
 
 	//servos
@@ -114,7 +114,7 @@ void sim_inputs(void)
 	{
 		//printf("%d\n",t_now-t_last);
 		pingTime=-1;//simxGetPingTime(clientID,&pingTime);		
-		printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
+		//printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
 		t_real_last=t_real_now;
 		t_sim_last=t_sim;
 		t_m_last=t_m;
@@ -172,12 +172,18 @@ void sim_inputs(void)
 
 	lticks = (lpd)*259.8478192477f;
 	rticks = (rpd)*259.8478192477f;
-	m.enc_ab += (s16)lticks;
-	m.enc_cd += (s16)rticks;
+	m.enc_ab += lticks;
+	m.enc_cd += rticks;
 	lp2=lp1;
 	rp2=rp1;
 	//printf("%7d:  %10.6f,%10.6f\n",t,lticks,rticks);
-
+	if(0)
+	{
+		static s16 enc_ab=0, enc_cd=0;
+		enc_ab += lticks;
+		enc_cd += rticks;
+		printf("l=%d, r=%d\n",enc_ab,enc_cd);
+	}
 
 	//sharp ir sensors update about once every 30ms;  so let's just say once every 40ms, i.e. every other simulation time step
 	ir_update_countdown--;
@@ -235,7 +241,7 @@ void sim_inputs(void)
 
 	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_streaming);
 	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,simx_opmode_streaming);
-	//printf("%6.2f,%6.2f\n",sim_state.robot_position[0],sim_state.robot_position[1]);
+	printf("x,y,theta = %7.4f, %7.4f, %7.4f\n",sim_state.robot_position[0],sim_state.robot_position[1],sim_state.robot_orientation[2]);
 }
 
 
