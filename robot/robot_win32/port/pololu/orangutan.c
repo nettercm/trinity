@@ -94,9 +94,9 @@ void pulse_in_stop(void) { NOT_IMPLEMENTED(); }
 
 // Encoder Functions
 int svp_get_counts_ab(void) { return (s16) m.enc_ab; }
-int svp_get_counts_and_reset_ab(void) { s16 ab=(s16)m.enc_ab;  m.enc_ab -= (float)ab; return ab; }
+int svp_get_counts_and_reset_ab(void) { s16 ab=(s16)m.enc_ab;  m.enc_ab -= (double)ab; return ab; }
 int svp_get_counts_cd(void) { return (s16) m.enc_cd; }
-int svp_get_counts_and_reset_cd(void) { s16 cd=(s16)m.enc_cd;  m.enc_cd -= (float)cd; return cd; }
+int svp_get_counts_and_reset_cd(void) { s16 cd=(s16)m.enc_cd;  m.enc_cd -= (double)cd; return cd; }
 unsigned char svp_check_error_ab(void) { return 0; }
 unsigned char svp_check_error_cd(void) { return 0; }
 

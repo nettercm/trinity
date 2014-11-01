@@ -170,8 +170,8 @@ void sim_inputs(void)
 	}
 	else rpd=rp1-rp2;
 
-	lticks = (lpd)*259.8478192477f;
-	rticks = (rpd)*259.8478192477f;
+	lticks = (lpd)*259.8478192477;
+	rticks = (rpd)*259.8478192477;
 	m.enc_ab += lticks;
 	m.enc_cd += rticks;
 	lp2=lp1;
@@ -194,7 +194,7 @@ void sim_inputs(void)
 		float distance;
 		int handle;
 		float noise;
-		float noise_factor = 0.0008f; //  +/- 8%
+		float noise_factor = 0.0002f; //  +/- 2%
 
 		ir_update_countdown=2;
 
@@ -236,7 +236,7 @@ void sim_inputs(void)
 		}
 		s.inputs.ir[1] = s.ir[AI_IR_N]		= distance;
 
-		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= 600;
+		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= distance; //600;
 	}
 
 	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_streaming);
