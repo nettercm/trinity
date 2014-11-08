@@ -65,7 +65,11 @@ void analog_update_fsm(u08 cmd, u08 *param)
 		value = SHARPIR_get_real_value(AI_IR_N_long,s.inputs.analog[AI_IR_N_long]);
 		if(value > long_filter_threashold) value = ((s.ir[AI_IR_N_long]*long_filter_amount) + value)/(long_filter_amount+1);
 		s.inputs.ir[3] = s.ir[AI_IR_N_long]		= value;
-
+		
+		//if IR_N is unplugged (tied to 5V), just use the IR_N_Long reading and vice a versa
+		if(s.inputs.analog[AI_IR_N]>240)		s.inputs.ir[1] = s.ir[AI_IR_N]		= s.ir[AI_IR_N_long];
+		if(s.inputs.analog[AI_IR_N_long]>240)	s.inputs.ir[3] = s.ir[AI_IR_N_long] = s.ir[AI_IR_N];
+		
 		s.line[RIGHT_LINE] = s.inputs.analog[AI_LINE_RIGHT];
 		s.line[LEFT_LINE] = s.inputs.analog[AI_LINE_LEFT];
 

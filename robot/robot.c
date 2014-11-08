@@ -972,8 +972,9 @@ void main_loop(void)
 {
 	u08 currently_running_tid;
 
+#ifdef SVP_ON_WIN32
 	sim_task(0,0); //needs to run first, because it initializes some things.
-
+#endif
 	//incoming communication, i.e. commands
 	serial_receive_fsm(0,0); //includes processing of commands
 
