@@ -28,9 +28,9 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	//TODO: limit theta to +/- 180 degrees
 
 	s.inputs.theta = s.inputs.theta + d_theta;
-	if(s.inputs.theta > 2.0f*PI) s.inputs.theta -= 2.0f*PI;
+	if(s.inputs.theta > 1.0f*PI) s.inputs.theta -= 2.0f*PI;
 	//if(s.inputs.theta < -2.0f*PI) s.inputs.theta += 2.0f*PI;
-	if(s.inputs.theta < 0.0f) s.inputs.theta = 2.0f*PI+s.inputs.theta;
+	if(s.inputs.theta < -1.0f*PI) s.inputs.theta += 2.0f*PI;
 
 	//TODO: find a smarter way to do "checkpoints" (actually this way may be better once we start to adjust our absolute position using map matching)
 	//update relative position change since the last "checkpoint"
