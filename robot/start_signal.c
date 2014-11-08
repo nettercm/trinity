@@ -26,7 +26,8 @@ int check_for_start_signal()
 	t_now = get_ms();
 
 #ifdef SVP_ON_WIN32
-	return m.start_signal;
+	if(m.start_signal)	{ m.start_signal = 0; return 1; }
+	else return 0;
 #endif
 
 	if(t_last==0) t_last=t_now;

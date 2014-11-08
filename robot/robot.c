@@ -932,15 +932,20 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//now turn on the fan and sweep left and right for some time
 			FAN_ON(); 
-			task_wait(1000);
+			//task_wait(1000);
+			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
 			TURN_IN_PLACE(5,-10); 
-			task_wait(1000);
+			//task_wait(1000);
+			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
 			TURN_IN_PLACE(5, 10);
-			task_wait(1000);
+			//task_wait(1000);
+			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
 			TURN_IN_PLACE(5, 10);
-			task_wait(1000);
+			//task_wait(1000);
+			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
 			TURN_IN_PLACE(5,-10);
-			task_wait(1000);
+			//task_wait(1000);
+			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
 			FAN_OFF(); 
 
 			//TODO: go back to the home circle (optional)
@@ -985,6 +990,7 @@ void main_loop(void)
 	running_tid=ml_tid;  
 	master_logic_fsm(0,0); 
 	running_tid=currently_running_tid;
+
 	wall_follow_fsm(0,0);
 	line_alignment_fsm_v2(0,0);
 
