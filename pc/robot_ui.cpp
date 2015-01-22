@@ -84,6 +84,7 @@ namespace robot_ui
 
 
 		g = radar_tabPage->CreateGraphics();
+		log_printf("g-> X,Y,Width,Height = %f,%f,%f,%f\n",g->VisibleClipBounds.X,g->VisibleClipBounds.Y,g->VisibleClipBounds.Width,g->VisibleClipBounds.Height);
 		//
 		//TODO: Add the constructor code here
 		//

@@ -289,15 +289,15 @@ namespace robot_ui {
 		void InitializeComponent(void)
 		{
 			this->components = (gcnew System::ComponentModel::Container());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle1 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle4 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle2 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle3 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea1 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea2 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::Legend^  legend1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle17 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle20 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle18 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle19 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea9 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea10 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Legend^  legend5 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series9 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series10 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(f1::typeid));
 			this->main_serial_thread = (gcnew System::ComponentModel::BackgroundWorker());
 			this->graphs_timer = (gcnew System::Windows::Forms::Timer(this->components));
@@ -493,27 +493,27 @@ namespace robot_ui {
 			this->parameters_dataGridView->AllowUserToDeleteRows = false;
 			this->parameters_dataGridView->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left));
-			dataGridViewCellStyle1->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			dataGridViewCellStyle1->BackColor = System::Drawing::SystemColors::Control;
-			dataGridViewCellStyle1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+			dataGridViewCellStyle17->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			dataGridViewCellStyle17->BackColor = System::Drawing::SystemColors::Control;
+			dataGridViewCellStyle17->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle1->ForeColor = System::Drawing::SystemColors::WindowText;
-			dataGridViewCellStyle1->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle1->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle1->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
-			this->parameters_dataGridView->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+			dataGridViewCellStyle17->ForeColor = System::Drawing::SystemColors::WindowText;
+			dataGridViewCellStyle17->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle17->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle17->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
+			this->parameters_dataGridView->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle17;
 			this->parameters_dataGridView->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
 			this->parameters_dataGridView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(7) {this->Group, 
 				this->id, this->name, this->Type, this->val, this->inc, this->dec});
-			dataGridViewCellStyle4->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
-			dataGridViewCellStyle4->BackColor = System::Drawing::SystemColors::Window;
-			dataGridViewCellStyle4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+			dataGridViewCellStyle20->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
+			dataGridViewCellStyle20->BackColor = System::Drawing::SystemColors::Window;
+			dataGridViewCellStyle20->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle4->ForeColor = System::Drawing::SystemColors::ControlText;
-			dataGridViewCellStyle4->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle4->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle4->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
-			this->parameters_dataGridView->DefaultCellStyle = dataGridViewCellStyle4;
+			dataGridViewCellStyle20->ForeColor = System::Drawing::SystemColors::ControlText;
+			dataGridViewCellStyle20->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle20->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle20->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
+			this->parameters_dataGridView->DefaultCellStyle = dataGridViewCellStyle20;
 			this->parameters_dataGridView->Location = System::Drawing::Point(18, 16);
 			this->parameters_dataGridView->Name = L"parameters_dataGridView";
 			this->parameters_dataGridView->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
@@ -525,8 +525,8 @@ namespace robot_ui {
 			// 
 			// Group
 			// 
-			dataGridViewCellStyle2->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->Group->DefaultCellStyle = dataGridViewCellStyle2;
+			dataGridViewCellStyle18->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->Group->DefaultCellStyle = dataGridViewCellStyle18;
 			this->Group->HeaderText = L"Group";
 			this->Group->Name = L"Group";
 			this->Group->ReadOnly = true;
@@ -541,8 +541,8 @@ namespace robot_ui {
 			// 
 			// name
 			// 
-			dataGridViewCellStyle3->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->name->DefaultCellStyle = dataGridViewCellStyle3;
+			dataGridViewCellStyle19->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->name->DefaultCellStyle = dataGridViewCellStyle19;
 			this->name->HeaderText = L"Name";
 			this->name->Name = L"name";
 			this->name->ReadOnly = true;
@@ -664,31 +664,31 @@ namespace robot_ui {
 				| System::Windows::Forms::AnchorStyles::Right));
 			this->graphs_chart->AntiAliasing = System::Windows::Forms::DataVisualization::Charting::AntiAliasingStyles::None;
 			this->graphs_chart->BorderlineColor = System::Drawing::Color::RoyalBlue;
-			chartArea1->AxisX->MajorGrid->Enabled = false;
-			chartArea1->Name = L"ChartArea1";
-			chartArea2->AxisX->MajorGrid->Enabled = false;
-			chartArea2->Name = L"ChartArea2";
-			this->graphs_chart->ChartAreas->Add(chartArea1);
-			this->graphs_chart->ChartAreas->Add(chartArea2);
-			legend1->Name = L"Legend1";
-			this->graphs_chart->Legends->Add(legend1);
+			chartArea9->AxisX->MajorGrid->Enabled = false;
+			chartArea9->Name = L"ChartArea1";
+			chartArea10->AxisX->MajorGrid->Enabled = false;
+			chartArea10->Name = L"ChartArea2";
+			this->graphs_chart->ChartAreas->Add(chartArea9);
+			this->graphs_chart->ChartAreas->Add(chartArea10);
+			legend5->Name = L"Legend1";
+			this->graphs_chart->Legends->Add(legend5);
 			this->graphs_chart->Location = System::Drawing::Point(-5, -1);
 			this->graphs_chart->Margin = System::Windows::Forms::Padding(0);
 			this->graphs_chart->Name = L"graphs_chart";
-			series1->ChartArea = L"ChartArea1";
-			series1->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series1->IsXValueIndexed = true;
-			series1->Legend = L"Legend1";
-			series1->MarkerSize = 1;
-			series1->Name = L"Series 1";
-			series1->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
-			series2->ChartArea = L"ChartArea2";
-			series2->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series2->IsXValueIndexed = true;
-			series2->Legend = L"Legend1";
-			series2->Name = L"Series 2";
-			this->graphs_chart->Series->Add(series1);
-			this->graphs_chart->Series->Add(series2);
+			series9->ChartArea = L"ChartArea1";
+			series9->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series9->IsXValueIndexed = true;
+			series9->Legend = L"Legend1";
+			series9->MarkerSize = 1;
+			series9->Name = L"Series 1";
+			series9->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
+			series10->ChartArea = L"ChartArea2";
+			series10->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series10->IsXValueIndexed = true;
+			series10->Legend = L"Legend1";
+			series10->Name = L"Series 2";
+			this->graphs_chart->Series->Add(series9);
+			this->graphs_chart->Series->Add(series10);
 			this->graphs_chart->Size = System::Drawing::Size(894, 613);
 			this->graphs_chart->TabIndex = 0;
 			this->graphs_chart->Text = L"graphs_chart";
@@ -788,7 +788,7 @@ namespace robot_ui {
 			this->radar_txt_calib_ne_theta->Name = L"radar_txt_calib_ne_theta";
 			this->radar_txt_calib_ne_theta->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_ne_theta->TabIndex = 6;
-			this->radar_txt_calib_ne_theta->Text = L"-39";
+			this->radar_txt_calib_ne_theta->Text = L"-45";
 			// 
 			// radar_txt_calib_ne_y
 			// 
@@ -797,7 +797,7 @@ namespace robot_ui {
 			this->radar_txt_calib_ne_y->Name = L"radar_txt_calib_ne_y";
 			this->radar_txt_calib_ne_y->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_ne_y->TabIndex = 6;
-			this->radar_txt_calib_ne_y->Text = L"-5";
+			this->radar_txt_calib_ne_y->Text = L"-50";
 			// 
 			// radar_txt_calib_nw_theta
 			// 
@@ -806,7 +806,7 @@ namespace robot_ui {
 			this->radar_txt_calib_nw_theta->Name = L"radar_txt_calib_nw_theta";
 			this->radar_txt_calib_nw_theta->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_nw_theta->TabIndex = 6;
-			this->radar_txt_calib_nw_theta->Text = L"47";
+			this->radar_txt_calib_nw_theta->Text = L"45";
 			// 
 			// radar_txt_calib_nw_y
 			// 
@@ -815,7 +815,7 @@ namespace robot_ui {
 			this->radar_txt_calib_nw_y->Name = L"radar_txt_calib_nw_y";
 			this->radar_txt_calib_nw_y->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_nw_y->TabIndex = 6;
-			this->radar_txt_calib_nw_y->Text = L"-10";
+			this->radar_txt_calib_nw_y->Text = L"50";
 			// 
 			// radar_txt_calib_fn_theta
 			// 
@@ -824,7 +824,7 @@ namespace robot_ui {
 			this->radar_txt_calib_fn_theta->Name = L"radar_txt_calib_fn_theta";
 			this->radar_txt_calib_fn_theta->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_fn_theta->TabIndex = 6;
-			this->radar_txt_calib_fn_theta->Text = L"-13.0";
+			this->radar_txt_calib_fn_theta->Text = L"0";
 			// 
 			// radar_txt_calib_ne_x
 			// 
@@ -833,7 +833,8 @@ namespace robot_ui {
 			this->radar_txt_calib_ne_x->Name = L"radar_txt_calib_ne_x";
 			this->radar_txt_calib_ne_x->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_ne_x->TabIndex = 6;
-			this->radar_txt_calib_ne_x->Text = L"-3";
+			this->radar_txt_calib_ne_x->Text = L"50";
+			this->radar_txt_calib_ne_x->TextChanged += gcnew System::EventHandler(this, &f1::radar_txt_calib_ne_x_TextChanged);
 			// 
 			// radar_txt_calib_fn_y
 			// 
@@ -842,7 +843,7 @@ namespace robot_ui {
 			this->radar_txt_calib_fn_y->Name = L"radar_txt_calib_fn_y";
 			this->radar_txt_calib_fn_y->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_fn_y->TabIndex = 6;
-			this->radar_txt_calib_fn_y->Text = L"20";
+			this->radar_txt_calib_fn_y->Text = L"0";
 			// 
 			// radar_txt_calib_nw_x
 			// 
@@ -851,7 +852,7 @@ namespace robot_ui {
 			this->radar_txt_calib_nw_x->Name = L"radar_txt_calib_nw_x";
 			this->radar_txt_calib_nw_x->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_nw_x->TabIndex = 6;
-			this->radar_txt_calib_nw_x->Text = L"3";
+			this->radar_txt_calib_nw_x->Text = L"50";
 			// 
 			// radar_txt_calib_n_theta
 			// 
@@ -860,7 +861,7 @@ namespace robot_ui {
 			this->radar_txt_calib_n_theta->Name = L"radar_txt_calib_n_theta";
 			this->radar_txt_calib_n_theta->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_n_theta->TabIndex = 6;
-			this->radar_txt_calib_n_theta->Text = L"3.0";
+			this->radar_txt_calib_n_theta->Text = L"0";
 			// 
 			// radar_txt_calib_fn_x
 			// 
@@ -869,7 +870,7 @@ namespace robot_ui {
 			this->radar_txt_calib_fn_x->Name = L"radar_txt_calib_fn_x";
 			this->radar_txt_calib_fn_x->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_fn_x->TabIndex = 6;
-			this->radar_txt_calib_fn_x->Text = L"30";
+			this->radar_txt_calib_fn_x->Text = L"60";
 			// 
 			// radar_txt_calib_n_y
 			// 
@@ -887,7 +888,7 @@ namespace robot_ui {
 			this->radar_txt_calib_n_x->Name = L"radar_txt_calib_n_x";
 			this->radar_txt_calib_n_x->Size = System::Drawing::Size(41, 20);
 			this->radar_txt_calib_n_x->TabIndex = 6;
-			this->radar_txt_calib_n_x->Text = L"15";
+			this->radar_txt_calib_n_x->Text = L"60";
 			// 
 			// label6
 			// 
@@ -1440,6 +1441,8 @@ private: System::Void ui_timer_Tick(System::Object^  sender, System::EventArgs^ 
 				 s[i]=0;
 				 log_txt->AppendText(gcnew String(s));
 			 }
+		 }
+private: System::Void radar_txt_calib_ne_x_TextChanged(System::Object^  sender, System::EventArgs^  e) {
 		 }
 };
 
