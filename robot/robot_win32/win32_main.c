@@ -17,7 +17,7 @@ static int clientID;
 //object handles
 static int lm,rm;
 static int pan,tilt;
-static int ir_left,ir_right,ir_front;
+static int ir_left,ir_right,ir_front,ir_left_rear,ir_right_rear;
 static int line_left,line_right;
 static int flame_sensor;
 static int sonar_front;
@@ -41,6 +41,10 @@ static double lticks=0,rticks=0;
 static double pix2=6.283185307179586476925286766559;
 static double pi=3.1415926535897932384626433832795;
 
+
+#define STREAMING_MODE (simx_opmode_streaming+5)
+//#define STREAMING_MODE simx_opmode_oneshot_wait
+
 void sim_step(void)
 {
 	int result;
@@ -48,13 +52,14 @@ void sim_step(void)
 	static u32 t_real_now, t_real_last=0; 
 	static u32 t_m,t_m_last=0;
 	static int use_actual_position=0;
+	static int inter_step_delay=0;
 	int pingTime;
 
 	t_sim = simxGetLastCmdTime(clientID);
 	t_real_now = timeGetTime();
 	m.elapsed_milliseconds=t_sim;
 	t_m=m.elapsed_milliseconds;
-	if(t_real_now-t_real_last >= 1000)
+	if(0)//(t_real_now-t_real_last >= 1000)
 	{
 		simxGetPingTime(clientID,&pingTime);		
 		printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
@@ -66,33 +71,48 @@ void sim_step(void)
 	result = simxSynchronousTrigger(clientID);
 	//if(result != simx_return_ok) printf("simxSynchronousTrigger() failed!  t=%7d\n",t_sim);
 
-	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_streaming);
-	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,simx_opmode_streaming);
+	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,STREAMING_MODE);
+	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,STREAMING_MODE);
 
 
 	if(_kbhit())
 	{
 		int c;
 		c = _getch();
+
 		if(c==0x1b)
 		{
 			simxStopSimulation(clientID,simx_opmode_oneshot_wait);
 			simxFinish(clientID);
 			exit(0);
 		}
+
+		if(c=='r')
+		{
+			simxStopSimulation(clientID,simx_opmode_oneshot_wait);
+			simxStartSimulation(clientID,simx_opmode_oneshot_wait);
+		}
+
 		if(c=='s')
 		{
 			m.start_signal=1;
 		}
+
 		if(c=='x')
 		{
 			s.inputs.x =	sim_state.robot_position[0]*1000;
 			s.inputs.y =	sim_state.robot_position[1]*1000;
 			s.inputs.theta= sim_state.robot_orientation[2];
 		}
+
 		if(c=='X')
 		{
 			use_actual_position = !use_actual_position;
+		}
+
+		if(c==' ')
+		{
+			inter_step_delay = !inter_step_delay;
 		}
 	}
 
@@ -102,6 +122,8 @@ void sim_step(void)
 		s.inputs.y =	sim_state.robot_position[1]*1000;
 		s.inputs.theta= sim_state.robot_orientation[2];
 	}
+
+	if(inter_step_delay) Sleep(500);
 }
 
 
@@ -109,12 +131,12 @@ void sim_step(void)
 void sim_outputs(void)
 {
 	//motors
-	simxSetJointTargetVelocity(clientID,lm,((((float) m.m2)/1.83f)/5.19695f)*1.0f,simx_opmode_streaming);			
-	simxSetJointTargetVelocity(clientID,rm,(((float) m.m1)/1.83f)/5.19695f,simx_opmode_streaming);		
+	simxSetJointTargetVelocity(clientID,lm,((((float) m.m2)/1.83f)/5.19695f)*1.0f,STREAMING_MODE);			
+	simxSetJointTargetVelocity(clientID,rm,(((float) m.m1)/1.83f)/5.19695f,STREAMING_MODE);		
 
 	//servos
-	simxSetJointTargetPosition(clientID,pan,(((float)m.servo[1])-1350.0f)/353.0f,simx_opmode_streaming);
-	simxSetJointTargetPosition(clientID,tilt,(((float)m.servo[0])-1450.0f)/300.0f,simx_opmode_streaming);
+	simxSetJointTargetPosition(clientID,pan,(((float)m.servo[1])-1350.0f)/353.0f,STREAMING_MODE);
+	simxSetJointTargetPosition(clientID,tilt,(((float)m.servo[0])-1450.0f)/300.0f,STREAMING_MODE);
 	//printf("0,1 = %5d,%5d\n",m.servo[0],m.servo[1]);
 
 }
@@ -147,8 +169,8 @@ void sim_inputs(void)
 	//initialize un-modeled sensors as if there was not detection
 	//s.inputs.sonar[0] = 4000; //north
 	s.inputs.sonar[1] = 4000;
-	s.inputs.sonar[2] = 4000;
-	s.inputs.sonar[3] = 4000;
+	//s.inputs.sonar[2] = 4000;
+	//s.inputs.sonar[3] = 4000;
 	/*
 	s.inputs.analog[AI_FLAME_N]=255;
 	s.line[LEFT_LINE] = 255;
@@ -163,7 +185,7 @@ void sim_inputs(void)
 	//------------------------------------------------------------------------------------------------------------------------------------
 	//down-facing line sensors
 	auxValues = NULL; auxValuesCount = NULL;
-	result = simxReadVisionSensor(clientID,line_left,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
+	result = simxReadVisionSensor(clientID,line_left,&state,&auxValues,&auxValuesCount,STREAMING_MODE);
 	if(result==0)
 	{
 		//printf("aVC[0]=%d, aVC[1]=%d, av[0]=%f,av[10]=%f,\n",auxValuesCount[0],auxValuesCount[1],auxValues[0],auxValues[10]);
@@ -173,7 +195,7 @@ void sim_inputs(void)
 	if(auxValuesCount)simxReleaseBuffer((simxUChar*)auxValuesCount);
 
 	auxValues = NULL; auxValuesCount = NULL;
-	result = simxReadVisionSensor(clientID,line_right,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
+	result = simxReadVisionSensor(clientID,line_right,&state,&auxValues,&auxValuesCount,STREAMING_MODE);
 	if(result==0)
 	{
 		//printf("aVC[0]=%d, aVC[1]=%d, av[0]=%f,av[10]=%f,\n",auxValuesCount[0],auxValuesCount[1],auxValues[0],auxValues[10]);
@@ -189,7 +211,7 @@ void sim_inputs(void)
 	//------------------------------------------------------------------------------------------------------------------------------------
 	//Flame sensor
 	auxValues = NULL; auxValuesCount = NULL;
-	result = simxReadVisionSensor(clientID,flame_sensor,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
+	result = simxReadVisionSensor(clientID,flame_sensor,&state,&auxValues,&auxValuesCount,STREAMING_MODE);
 	if(result==0)
 	{
 		float flame;
@@ -197,7 +219,7 @@ void sim_inputs(void)
 		flame = (auxValues[13]*1020.0f);
 		if(flame > 255.0f) flame=255.0f;
 		s.inputs.analog[AI_FLAME_N] = 255 - (u08)flame;
-		printf("auxValues[13]=%f    s.inputs.analog[AI_FLAME_N]=%d\n",auxValues[13],s.inputs.analog[AI_FLAME_N]);
+		//printf("auxValues[13]=%f    s.inputs.analog[AI_FLAME_N]=%d\n",auxValues[13],s.inputs.analog[AI_FLAME_N]);
 	}
 	if(auxValues)simxReleaseBuffer((simxUChar*)auxValues);
 	if(auxValuesCount)simxReleaseBuffer((simxUChar*)auxValuesCount);
@@ -208,8 +230,8 @@ void sim_inputs(void)
 	//------------------------------------------------------------------------------------------------------------------------------------
 	//encoders
 	//34.014:1 gear with 48cpr encoder =>  1632.672 ticks per revolution   =>   259.84781924773094164045499171293  ticks per rad
-	simxGetJointPosition(clientID,lm,&lp1,simx_opmode_streaming);
-	simxGetJointPosition(clientID,rm,&rp1,simx_opmode_streaming);
+	simxGetJointPosition(clientID,lm,&lp1,STREAMING_MODE);
+	simxGetJointPosition(clientID,rm,&rp1,STREAMING_MODE);
 	if( (lp1 < -2.0f) && (lp2 > 2.0f) ) 
 	{
 		lpd=(lp1-lp2)+pix2;
@@ -232,17 +254,29 @@ void sim_inputs(void)
 
 	lticks = (lpd)*259.8478192477;
 	rticks = (rpd)*259.8478192477;
+	if(abs(lticks)<0.05) lticks=0.0;
+	if(abs(rticks)<0.05) rticks=0.0;
 	m.enc_ab += lticks;
 	m.enc_cd += rticks;
 	lp2=lp1;
 	rp2=rp1;
 	//printf("%7d:  %10.6f,%10.6f\n",t,lticks,rticks);
+
+	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,STREAMING_MODE);
+	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,STREAMING_MODE);
+
 	if(0)
 	{
-		static s16 enc_ab=0, enc_cd=0;
+		static double enc_ab=0, enc_cd=0;
 		enc_ab += lticks;
 		enc_cd += rticks;
-		printf("l=%d, r=%d\n",enc_ab,enc_cd);
+		//printf("l=%d, r=%d\n",enc_ab,enc_cd);
+
+		printf("actual x,y,theta = %7.4f, %7.4f, %7.4f   l,r=%7.3f,%7.3f   ab,cd=%7.3f,%7.3f   calc x,y,theta = %7.4f, %7.4f, %7.4f\n",
+			sim_state.robot_position[0],sim_state.robot_position[1], sim_state.robot_orientation[2] * (180.0f/3.1415926535897932384626433832795f),
+			lticks,rticks,enc_ab,enc_cd,
+			s.inputs.x, s.inputs.y, s.inputs.theta * (180.0f/3.1415926535897932384626433832795f)
+		);	
 	}
 	//------------------------------------------------------------------------------------------------------------------------------------
 
@@ -263,7 +297,7 @@ void sim_inputs(void)
 
 		ir_update_countdown=2;
 
-		result = simxReadProximitySensor(clientID,ir_left,&state,&(point[0]),&handle,&(surface[0]),simx_opmode_streaming);
+		result = simxReadProximitySensor(clientID,ir_left,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
 		distance = 300;
 		if(state) 
 		{
@@ -276,7 +310,7 @@ void sim_inputs(void)
 		s.inputs.ir[0] = s.ir[AI_IR_NW]	= (u16)distance;
 
 
-		result = simxReadProximitySensor(clientID,ir_right,&state,&(point[0]),&handle,&(surface[0]),simx_opmode_streaming);
+		result = simxReadProximitySensor(clientID,ir_right,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
 		//printf("%7d:    result=%3d,  state=%2d,  point=%5f,%5f,%5f,  handle=%3d,   surface=%5f,%5f,%5f\n",t, result, state,point[0],point[1],point[2],handle,surface[0],surface[1],surface[2]);
 		distance = 300;
 		if(state) 
@@ -289,7 +323,7 @@ void sim_inputs(void)
 		}
 		s.inputs.ir[2] = s.ir[AI_IR_NE]	= distance;
 
-		result = simxReadProximitySensor(clientID,ir_front,&state,&(point[0]),&handle,&(surface[0]),simx_opmode_streaming);
+		result = simxReadProximitySensor(clientID,ir_front,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
 		distance = 300;
 		if(state) 
 		{
@@ -302,8 +336,53 @@ void sim_inputs(void)
 		s.inputs.ir[1] = s.ir[AI_IR_N]		= distance;
 
 		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= distance; //600;
+
+		result = simxReadProximitySensor(clientID,ir_left_rear,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
+		distance = 300;
+		if(state) 
+		{
+			distance=((point[2]*100.0f)/2.54f)*10.0f;
+			if(distance < 40) distance = 40 + (40-distance);
+			noise = 100 - (rand() % 200);
+			noise = noise*noise_factor;
+			distance += distance * noise;
+		}
+		s.inputs.sonar[2] = distance;
+
+		result = simxReadProximitySensor(clientID,ir_right_rear,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
+		distance = 300;
+		if(state) 
+		{
+			distance=((point[2]*100.0f)/2.54f)*10.0f;
+			if(distance < 40) distance = 40 + (40-distance);
+			noise = 100 - (rand() % 200);
+			noise = noise*noise_factor;
+			distance += distance * noise;
+		}
+		s.inputs.sonar[3] = distance;
+
 	}
 	//------------------------------------------------------------------------------------------------------------------------------------
+
+
+	if(0)
+	{
+		float d,x1,y1,t1,t2,x2,y2,x3,y3;
+		d=((float)s.ir[AI_IR_NE]/10.0)*25.4;
+		x1=50;
+		y1=-50;
+		t1=-45.0*(PI/180);
+		t2= sim_state.robot_orientation[2]; //67.0*(PI/180);
+		x2=x1+d*cos(t1);
+		y2=y1+d*sin(t1);
+		x3=x2*cos(t2)-y2*sin(t2);
+		y3=x2*sin(t2)+y2*cos(t2);
+		x3+=sim_state.robot_position[0]*1000;
+		y3+=sim_state.robot_position[1]*1000;
+		printf("d,x2,y2,x3,y3=%f   %f,%f   %f,%f\n",d,x2,y2,x3,y3);
+
+
+	}
 
 
 	//------------------------------------------------------------------------------------------------------------------------------------
@@ -320,7 +399,7 @@ void sim_inputs(void)
 
 		sonar_update_countdown=2;
 
-		result = simxReadProximitySensor(clientID,sonar_front,&state,&(point[0]),&handle,&(surface[0]),simx_opmode_streaming);
+		result = simxReadProximitySensor(clientID,sonar_front,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
 		distance = 4000;
 		if(state) 
 		{
@@ -336,14 +415,7 @@ void sim_inputs(void)
 
 
 
-	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_streaming);
-	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,simx_opmode_streaming);
-	/*
-	printf("actual x,y,theta = %7.4f, %7.4f, %7.4f    calc x,y,theta = %7.4f, %7.4f, %7.4f\n",
-		sim_state.robot_position[0],sim_state.robot_position[1], sim_state.robot_orientation[2] * (180.0f/3.1415926535897932384626433832795f),
-		s.inputs.x, s.inputs.y, s.inputs.theta * (180.0f/3.1415926535897932384626433832795f)
-	);
-	*/
+	
 }
 
 
@@ -370,6 +442,8 @@ void win32_main(void)
 	simxGetObjectHandle(clientID,"ir_left",&ir_left,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"ir_right",&ir_right,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"ir_front",&ir_front,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir_right_rear",&ir_right_rear,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir_left_rear",&ir_left_rear,simx_opmode_oneshot_wait);
 
 	simxGetObjectHandle(clientID,"line_left",&line_left,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"line_right",&line_right,simx_opmode_oneshot_wait);
@@ -421,11 +495,11 @@ void win32_main(void)
 		static int t,t_last=0;
 		static u32 t_real_now, t_real_last=0; 
 
-		simxGetJointPosition(clientID,lm,&lp1,simx_opmode_streaming);
-		simxGetJointPosition(clientID,rm,&rp1,simx_opmode_streaming);
-		simxReadVisionSensor(clientID,line_left,&state,&auxValues,&auxValuesCount,simx_opmode_streaming);
+		simxGetJointPosition(clientID,lm,&lp1,STREAMING_MODE);
+		simxGetJointPosition(clientID,rm,&rp1,STREAMING_MODE);
+		simxReadVisionSensor(clientID,line_left,&state,&auxValues,&auxValuesCount,STREAMING_MODE);
 
-		simxSetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_streaming);
+		simxSetObjectPosition(clientID,robot,-1,sim_state.robot_position,STREAMING_MODE);
 		sim_state.robot_position[1]-=0.002;
 
 		t = simxGetLastCmdTime(clientID);
