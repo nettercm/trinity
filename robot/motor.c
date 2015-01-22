@@ -49,6 +49,7 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 //t=theta is in degrees;  a value of NO_CHANGE_IN_POSITION (999999.0) indicates "don't make a change"
 void odometry_update_postion(float x, float y, float t)
 {
+#if 0
 	dbg_printf("odo_upd_pos(): x,y,t:  %d=>%d, %d=>%d, %d=>%d\n", 
 		(int)(s.inputs.x / 25.4f), (int)x,
 		(int)(s.inputs.y / 25.4f), (int)y,
@@ -56,6 +57,7 @@ void odometry_update_postion(float x, float y, float t)
 	if(x<NO_CHANGE_IN_POSITION) s.inputs.x = x*25.4f;
 	if(y<NO_CHANGE_IN_POSITION) s.inputs.y = y*25.4f;
 	if(t<NO_CHANGE_IN_POSITION) s.inputs.theta = t * K_deg_to_rad;
+#endif
 }
 
 
