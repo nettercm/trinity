@@ -55,7 +55,7 @@ typedef struct
 	uint8 magic1[2]; 			//0xabcd
 	uint8 seq;
 	uint8 ack;					//seq number of the last packet received from the PC
-	uint8  payload[74];
+	uint8  payload[80];
 	uint8 magic2[2]; 			//0xdcba
 }  __attribute__((__packed__)) t_frame_to_pc; //80 bytes
 #ifdef WIN32
@@ -88,7 +88,7 @@ typedef struct
 	uint8 analog[8];		//8
 
 	uint16 sonar[4];		//8
-	uint16 ir[4];			//8
+	uint16 ir[8];			//8
 
 	sint16 encoders[2];		//4
 	sint16 actual_speed[2];	//4
