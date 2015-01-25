@@ -17,7 +17,7 @@ static int clientID;
 //object handles
 static int lm,rm;
 static int pan,tilt;
-static int ir_left,ir_right,ir_front,ir_left_rear,ir_right_rear;
+static int ir0,ir1,ir2,ir3,ir4,ir5,ir6,ir7;
 static int line_left,line_right;
 static int flame_sensor;
 static int sonar_front;
@@ -139,6 +139,30 @@ void sim_outputs(void)
 	simxSetJointTargetPosition(clientID,tilt,(((float)m.servo[0])-1450.0f)/300.0f,STREAMING_MODE);
 	//printf("0,1 = %5d,%5d\n",m.servo[0],m.servo[1]);
 
+}
+
+
+
+int read_ir(int handle,int min, int max, float noise_factor)
+{
+		unsigned char state;
+		float point[3],surface[3];
+		float distance;
+		float noise;
+		//float noise_factor = 0.0002f; //  +/- 2%
+		int result;
+
+		result = simxReadProximitySensor(clientID,handle,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
+		distance = max;
+		if(state) 
+		{
+			distance=((point[2]*100.0f)/2.54f)*10.0f;
+			if(distance < min) distance = min + (min-distance);
+			noise = 100 - (rand() % 200);
+			noise = noise*noise_factor;
+			distance += distance * noise;
+		}
+		return distance;
 }
 
 
@@ -288,79 +312,17 @@ void sim_inputs(void)
 	ir_update_countdown--;
 	if(ir_update_countdown<1)
 	{
-		unsigned char state;
-		float point[3],surface[3];
-		float distance;
-		int handle;
-		float noise;
-		float noise_factor = 0.0002f; //  +/- 2%
-
 		ir_update_countdown=2;
 
-		result = simxReadProximitySensor(clientID,ir_left,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
-		distance = 300;
-		if(state) 
-		{
-			distance=((point[2]*100.0f)/2.54f)*10.0f;
-			if(distance < 40) distance = 40 + (40-distance);
-			noise = 100 - (rand() % 200);
-			noise = noise*noise_factor;
-			distance += distance * noise;
-		}
-		s.inputs.ir[0] = s.ir[AI_IR_NW]	= (u16)distance;
+		s.inputs.ir[0] = s.ir[AI_IR_NW]		= (u16)read_ir(ir7,40,300,0.0002);
+		s.inputs.ir[2] = s.ir[AI_IR_NE]		= (u16)read_ir(ir1,40,300,0.0002);
+		s.inputs.ir[1] = s.ir[AI_IR_N]		= (u16)read_ir(ir0,60,600,0.0002);
+		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= (u16)read_ir(ir0,60,600,0.0002);
 
-
-		result = simxReadProximitySensor(clientID,ir_right,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
-		//printf("%7d:    result=%3d,  state=%2d,  point=%5f,%5f,%5f,  handle=%3d,   surface=%5f,%5f,%5f\n",t, result, state,point[0],point[1],point[2],handle,surface[0],surface[1],surface[2]);
-		distance = 300;
-		if(state) 
-		{
-			distance=((point[2]*100.0f)/2.54f)*10.0f;
-			if(distance < 40) distance = 40 + (40-distance);
-			noise = 100 - (rand() % 200);
-			noise = noise*noise_factor;
-			distance += distance * noise;
-		}
-		s.inputs.ir[2] = s.ir[AI_IR_NE]	= distance;
-
-		result = simxReadProximitySensor(clientID,ir_front,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
-		distance = 300;
-		if(state) 
-		{
-			distance=((point[2]*100.0f)/2.54f)*10.0f;
-			if(distance < 40) distance = 40 + (40-distance);
-			noise = 100 - (rand() % 200);
-			noise = noise*noise_factor;
-			distance += distance * noise;
-		}
-		s.inputs.ir[1] = s.ir[AI_IR_N]		= distance;
-
-		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= distance; //600;
-
-		result = simxReadProximitySensor(clientID,ir_left_rear,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
-		distance = 300;
-		if(state) 
-		{
-			distance=((point[2]*100.0f)/2.54f)*10.0f;
-			if(distance < 40) distance = 40 + (40-distance);
-			noise = 100 - (rand() % 200);
-			noise = noise*noise_factor;
-			distance += distance * noise;
-		}
-		s.inputs.sonar[2] = distance;
-
-		result = simxReadProximitySensor(clientID,ir_right_rear,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
-		distance = 300;
-		if(state) 
-		{
-			distance=((point[2]*100.0f)/2.54f)*10.0f;
-			if(distance < 40) distance = 40 + (40-distance);
-			noise = 100 - (rand() % 200);
-			noise = noise*noise_factor;
-			distance += distance * noise;
-		}
-		s.inputs.sonar[3] = distance;
-
+		s.inputs.ir[4]						= (u16)read_ir(ir2,40,400,0.0002);
+		s.inputs.ir[5]						= (u16)read_ir(ir3,40,400,0.0002);
+		s.inputs.ir[6]						= (u16)read_ir(ir5,40,400,0.0002);
+		s.inputs.ir[7]						= (u16)read_ir(ir6,40,400,0.0002);
 	}
 	//------------------------------------------------------------------------------------------------------------------------------------
 
@@ -439,11 +401,14 @@ void win32_main(void)
 	simxGetObjectHandle(clientID,"pan_servo",&pan,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"tilt_servo",&tilt,simx_opmode_oneshot_wait);
 
-	simxGetObjectHandle(clientID,"ir_left",&ir_left,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"ir_right",&ir_right,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"ir_front",&ir_front,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"ir_right_rear",&ir_right_rear,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"ir_left_rear",&ir_left_rear,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir0",&ir0,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir1",&ir1,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir2",&ir2,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir3",&ir3,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir4",&ir4,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir5",&ir5,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir6",&ir6,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"ir7",&ir7,simx_opmode_oneshot_wait);
 
 	simxGetObjectHandle(clientID,"line_left",&line_left,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"line_right",&line_right,simx_opmode_oneshot_wait);
