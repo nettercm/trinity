@@ -1037,6 +1037,36 @@ void main_loop_task(u08 cmd, u08 *param)
 }
 
 
+void update_grid( int ir_sensor_index,float x1, float y1, float t1)
+{
+	float d,t2,x2,y2,x3,y3,x4,y4;
+
+	d=((float)s.inputs.ir[ir_sensor_index]/10.0)*25.4;
+	t2= s.inputs.theta;
+	x2=x1+d*cos(t1);
+	y2=y1+d*sin(t1);
+	x3=x2*cos(t2)-y2*sin(t2);
+	y3=x2*sin(t2)+y2*cos(t2);
+	x3+=s.inputs.x;
+	y3+=s.inputs.y;
+	x4=x1*cos(t2)-y1*sin(t2);
+	y4=x1*sin(t2)+y1*cos(t2);
+	x4+=s.inputs.x;
+	y4+=s.inputs.y;
+
+	if(d<750)
+	{
+		//plotLine((int)(x4/25.4),(int)(y4/25.4), (int)(x3/25.4),(int)(y3/25.4) , -1);
+		//grid[(int)(x3/25.4)][(int)(y3/25.4)]+=2;
+		volatile float a,b;
+		a=x3;
+		b=y3;
+		a=x4;
+		b=y4;
+	}
+}
+	
+	
 
 int main(void)
 {
@@ -1047,6 +1077,10 @@ int main(void)
 	//i2c_init();
 
 	//clear(); lcd_goto_xy(0,0); printf("V=%d",	read_battery_millivolts_svp()); delay_ms(100);
+	
+	//odometry_update(120,100,100.0f,100.0f,160.0f);  //440us
+	s.inputs.ir[1]=200;
+	update_grid(1,60.0f,50.0f,30.0f); //480us (math only - no grid update)
 
 	play_from_program_space(welcome);
 	delay_ms(500);

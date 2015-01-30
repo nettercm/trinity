@@ -4,7 +4,7 @@
 volatile uint16 l_enc_cp=0,r_enc_cp=0;
 
 
-//290us (for absolute pos only)
+//250-290us (for absolute pos only); 450us for the whole thing
 void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, float odo_b)
 {
 	float d_theta, d_x, d_y, l, r;
