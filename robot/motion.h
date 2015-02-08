@@ -15,8 +15,8 @@
 #define HARD_STOP()					motor_command(2,0,0,0,0);OS_SCHEDULE;
 #define SOFT_STOP()					motor_command(6,5,5,0,0);OS_SCHEDULE;
 
-#define FAN_ON()					set_digital_output(FAN_PIN,0)
-#define FAN_OFF()					set_digital_output(FAN_PIN,1)
+#define FAN_ON()					set_digital_output(FAN_PIN,1)
+#define FAN_OFF()					set_digital_output(FAN_PIN,0)
 
 #define RESET_LINE_DETECTION()		last_lines_crossed = lines_crossed;
 #define WAIT_FOR_LINE_DETECTION()	while(lines_crossed == last_lines_crossed) {OS_SCHEDULE;}

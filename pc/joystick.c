@@ -42,9 +42,10 @@ volatile LONG joystick_Lx_1, joystick_Lx_2;
 volatile LONG joystick_Ly_1, joystick_Ly_2;
 volatile LONG joystick_Rx_1, joystick_Rx_2;   //right stick - left/right, i.e X axis
 volatile LONG joystick_Ry_1, joystick_Ry_2; //right stick - up/down, i.e. Y axis
+volatile WORD joystick_Buttons, joystick_Buttons_2;
 volatile LONG lHat_1, lHat_2;
 volatile INT  g_NumberOfButtons;
-volatile LONG joystick_changed_R=0,joystick_changed_L=0;
+volatile LONG joystick_changed_R=0,joystick_changed_L=0,joystick_changed_B=0;
 
 
 //-----------------------------------------------------------------------------
@@ -60,6 +61,14 @@ void UpdateControllerState(void)
         if( dwResult == ERROR_SUCCESS )
 		{
             g_Controllers[i].bConnected = 1;
+
+			joystick_Buttons_2 = g_Controllers[i].state.Gamepad.wButtons;
+			if(joystick_Buttons_2!=joystick_Buttons) 
+			{
+				joystick_Buttons = joystick_Buttons_2;
+				joystick_changed_B++;
+			}
+
 
 			joystick_Rx_2 =  ((joystick_Rx_2*2)+((g_Controllers[i].state.Gamepad.sThumbRX) / -256))/3;
 			if(abs(joystick_Rx_2)<=3) joystick_Rx_2=0;

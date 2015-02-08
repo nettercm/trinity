@@ -34,7 +34,7 @@ int hardware_init(void)
 
 	//Make SSbar be an output so it does not interfere with SPI communication.
 	//SSbar == FAN_PIN
-	set_digital_output(FAN_PIN, HIGH);
+	set_digital_output(FAN_PIN, LOW);
 
 	set_digital_input(SOUND_START_PIN, PULL_UP_ENABLED);
 	set_digital_input(BUTTON_START_PIN, PULL_UP_ENABLED);
@@ -968,6 +968,41 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 
 
+void test_fsm(u08 cmd, u08 *param)
+{
+	enum states { s_disabled=0, s_tracking_wall=1, s_lost_wall=2, s_turning_corner=3, s_turning_sharp_corner=4 };
+	static enum states state=s_disabled;
+	static enum states last_state=s_disabled;
+	
+	static u08 initialized=0;
+	
+
+	if(!initialized)
+	{
+		initialized=1;
+		usb_printf("wall_follow_fsm()\n");
+	}
+
+	if(s.behavior_state[TEST_LOGIC]==1) 
+	{
+		FAN_ON();
+		s.behavior_state[TEST_LOGIC]=0;
+	}
+
+	if(s.behavior_state[TEST_LOGIC]==2) 
+	{
+		FAN_OFF();
+		s.behavior_state[TEST_LOGIC]=0;
+	}
+
+	if(s.behavior_state[TEST_LOGIC]==3) 
+	{
+		dbg_printf("start = %d\n",is_digital_input_high(IO_B3));
+		s.behavior_state[TEST_LOGIC]=0;
+	}
+}
+
+
 void main_loop(void)
 {
 	u08 currently_running_tid;
@@ -998,6 +1033,9 @@ void main_loop(void)
 	//outputs
 	motor_command_fsm(0,0);
 	servo_task(0,0);
+
+	//testing
+	test_fsm(0,0);
 
 	//ui
 	//lcd_update_fsm(0,0);	//lcd is incompatible with servos; also, not yet converted from task back to pure fsm	

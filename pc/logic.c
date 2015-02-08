@@ -338,9 +338,19 @@ void process_user_input(void)
 
 #ifdef WIN32UI
 	{
-		extern volatile s32 joystick_changed_R,joystick_changed_L, joystick_Ry_1,joystick_Rx_1, joystick_Ly_1,joystick_Lx_1;
-		static u32 jcR=0;
-		static u32 jcL=0;
+		extern volatile s32 joystick_changed_R,joystick_changed_L, joystick_changed_B,joystick_Ry_1,joystick_Rx_1, joystick_Ly_1,joystick_Lx_1;
+		extern volatile u16 joystick_Buttons;
+		static u32 jcR=0,jcL=0,jcB=0;
+
+		if(jcB != joystick_changed_B)
+		{
+			jcB = joystick_changed_B;
+
+			log_printf("joystick buttons:  0x%04x\n",joystick_Buttons);
+
+			if(joystick_Buttons & 0x4000) { CMD_set_behavior_state(11,1); CMD_send(); }
+			if(joystick_Buttons & 0x2000) { CMD_set_behavior_state(11,2); CMD_send(); }
+		}
 
 		if(jcL != joystick_changed_L)
 		{
