@@ -19,13 +19,11 @@ void _os_tick(void)
 		os_task_tick(0,(unsigned short)t_delta);
 	}
 #else
-	t_last++;
-	if(t_last > 20)
+	if(t_last != m.elapsed_milliseconds) 
 	{
-		//Sleep(1);
-		t_last = 0;
-		t_delta = 1;
-		delay_ms(1); //this will update elapsed_milliseconds and issue a Sleep(1) to make sure PC does not get bogged down
+		t_delta = m.elapsed_milliseconds - t_last;
+		t_last = m.elapsed_milliseconds;
+		//delay_ms(1); //this will update elapsed_milliseconds and issue a Sleep(1) to make sure PC does not get bogged down
 		os_task_tick(0,(unsigned short)t_delta);
 	}
 #endif
