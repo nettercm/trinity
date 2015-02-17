@@ -90,8 +90,7 @@ void sim_step(void)
 
 		if(c=='r')
 		{
-			simxStopSimulation(clientID,simx_opmode_oneshot_wait);
-			simxStartSimulation(clientID,simx_opmode_oneshot_wait);
+			s.behavior_state[FOLLOW_WALL]=2;
 		}
 
 		if(c=='s')
