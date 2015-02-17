@@ -38,12 +38,6 @@ typedef struct
 	char port[64];
 	char msg[500];
 	t_inputs *inputs;
-	t_outputs outputs;
-	t_ir_sensor_state ir_NN_state;
-	t_ir_sensor_state ir_NW_state;
-	t_ir_sensor_state ir_SW_state;
-	t_ir_sensor_state ir_NE_state;
-	t_ir_sensor_state ir_SE_state;
 } t_state;
 
 

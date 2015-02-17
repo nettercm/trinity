@@ -19,80 +19,6 @@ static sint16 m_r_target=0, m_l_target=0;
 static sint16 m_ramp=5;
 
 
-void do_wall_tracking(t_inputs *inputs, t_outputs *outputs)
-{
-	sint16 m_l=0, m_r=0;
-	int error;
-	float correction;
-	static int past_error[4]={0,0,0,0};
-	static int last_error=0;
-	static float dE=0.0f;
-	static int idx=0;
-
-	error = s.inputs->sonar[4] - 40;//s.ir_NW_state.real_history_avg - 40;
-	dE = (dE + (abs(error)-abs(last_error)))/2.0f;
-	last_error = error;
-
-	m_r = m_r_speed;
-	m_l = m_l_speed;
-
-	if(error > 0 && dE>=0 ) //turn left
-	{
-		if(error > 40) error = 40;
-		correction = 1.0f + ((float)error / 100.0f);
-		/*
-		outputs->cmd = 1;
-		outputs->params[0]=50; //50;
-		m_r = m_r_speed*correction;// - (m_r_speed<0?-20:20);
-		m_l = m_l_speed/correction;// + (m_l_speed<0?-20:20);
-		if(m_r > 255) { m_l -= m_r-255; }
-		outputs->params[1] = m_r;
-		outputs->params[2] = m_l;
-		*/
-	}
-	if(error < 0  && dE<=0 )// turn right
-	{
-		error *= -1;
-		if(error > 40) error = 40;
-		correction = 1.0f + ((float)error / 100.0f);
-		/*
-		outputs->cmd = 1;
-		outputs->params[0]=50; //50;
-		m_r = m_r_speed/correction;// - (m_r_speed<0?-20:20);
-		m_l = m_l_speed*correction;// + (m_l_speed<0?-20:20);
-		if(m_l > 255) { m_r -= m_l-255; }
-		outputs->params[1] = m_r;
-		outputs->params[2] = m_l;
-		*/
-	}
-
-	printf("%3d,%3d,%5f,%3d,%3d\n",s.inputs->sonar[4],error,dE,m_l,m_r);
-
-}
-
-
-extern int us_data[];
-void test_wall_tracking(void)
-{
-	int i=0;
-	t_inputs inputs;
-
-	m_r_speed=50; 
-	m_l_speed=50;
-
-	s.inputs = &inputs;
-
-	while(us_data[i]<99999)
-	{
-		s.inputs->sonar[4] = us_data[i];
-		do_wall_tracking(NULL, &(s.outputs));
-		i++;
-	}
-}
-
-
-
-
 volatile unsigned int key=0;
 
 void process_user_input(void)
@@ -386,21 +312,3 @@ void process_user_input(void)
 
 
 
-
-//////////////////////////////////////////////////////////////////////////////
-
-#if 0
-
-void outputs_update(HANDLE p, t_inputs *inputs, t_outputs *outputs)
-{
-	static int do_outputs=0;
-
-	if(--do_outputs<=0)
-	{
-		do_outputs = 2;
-		process_user_input();
-		CMD_send();
-	}
-}
-
-#endif

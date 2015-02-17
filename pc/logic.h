@@ -10,11 +10,7 @@ extern "C" {
 #include <windows.h>
 #include "messages.h"
 
-void outputs_update(HANDLE p, t_inputs *inputs, t_outputs *outputs);
-void state_update(t_inputs *inputs, t_outputs *outputs);
-void inputs_process(t_inputs *inputs);
 void process_user_input(void);
-int update(t_inputs *inputs, t_outputs *outputs);
 
 
 #define KEY_F1			0xe13b
