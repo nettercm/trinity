@@ -110,6 +110,8 @@ typedef enum {
 uint8_t os_task_highest_prio_ready_task( void );
 uint8_t os_task_next_ready_task( void );
 void os_task_ready_set( uint8_t tid );
+TaskState_t os_task_ready_get( uint8_t tid );
+uint8_t os_task_is_ready(uint8_t tid);
 void os_task_wait_sem_set( uint8_t tid, Sem_t sem );
 void os_task_suspend( uint8_t tid );
 void os_task_resume( uint8_t tid );

@@ -143,6 +143,8 @@ static void task_waiting_event_set( tcb *task );
 static void task_waiting_event_timeout_set( tcb *task );
 static uint8_t os_task_wait_queue_empty( uint8_t tid );
 static void task_ready_set( uint8_t tid );
+static TaskState_t task_ready_get( uint8_t tid );
+static uint8_t task_is_ready( uint8_t tid );
 static void task_killed_set( uint8_t tid );
 
 static tcb task_list[ N_TASKS ];
@@ -540,6 +542,20 @@ void os_task_ready_set( uint8_t tid ) {
 }
 
 
+/* Gets the task to ready state */
+TaskState_t os_task_ready_get( uint8_t tid ) {
+    os_assert( tid < nTasks );
+    return task_ready_get( tid );
+}
+
+
+/* Gets the task to ready state */
+uint8_t os_task_is_ready( uint8_t tid ) {
+    os_assert( tid < nTasks );
+    return task_is_ready( tid );
+}
+
+
 void os_task_suspend( uint8_t tid ) {
     TaskState_t state;
 
@@ -767,6 +783,16 @@ static void task_wait_sem_set( uint8_t tid, Sem_t sem ) {
 
 static void task_ready_set( uint8_t tid ) {
     task_list[ tid ].state = READY;
+}
+
+
+static TaskState_t task_ready_get( uint8_t tid ) {
+    return task_list[ tid ].state;
+}
+
+
+static uint8_t task_is_ready( uint8_t tid ) {
+    return task_list[ tid ].state == READY;
 }
 
 
