@@ -5,6 +5,16 @@
 
 int grid[100][100];
 
+//index into s.ir and s.inputs.ir - does not need to match actual input channel numbers
+#define IR_N			0
+#define IR_NE			1
+#define IR_E			2
+#define IR_SE			3
+#define IR_S			4
+#define IR_SW			5
+#define IR_W			6
+#define IR_NW			7
+
 #if 0
 void plotLine(int x0, int y0, int x1, int y1)
 {
@@ -162,15 +172,15 @@ namespace robot_ui
 		while(i<history_index)
 		{
 
-			if(radar_checkBox_show_ir_north->Checked)		update_grid(i,1,Convert::ToSingle(radar_txt_calib_n_x->Text), Convert::ToSingle(radar_txt_calib_n_y->Text), Convert::ToSingle(radar_txt_calib_n_theta->Text) * (PI/180.0f));
+			if(radar_checkBox_show_ir_north->Checked)		update_grid(i,IR_N,Convert::ToSingle(radar_txt_calib_n_x->Text), Convert::ToSingle(radar_txt_calib_n_y->Text), Convert::ToSingle(radar_txt_calib_n_theta->Text) * (PI/180.0f));
 			//if(radar_checkBox_show_ir_far_north->Checked)
-			if(radar_checkBox_show_ir_nw->Checked)			update_grid(i,0,Convert::ToSingle(radar_txt_calib_nw_x->Text),Convert::ToSingle(radar_txt_calib_nw_y->Text),Convert::ToSingle(radar_txt_calib_nw_theta->Text) * (PI/180.0f));
-			if(radar_checkBox_show_ir_ne->Checked)			update_grid(i,2,Convert::ToSingle(radar_txt_calib_ne_x->Text),Convert::ToSingle(radar_txt_calib_ne_y->Text),Convert::ToSingle(radar_txt_calib_ne_theta->Text) * (PI/180.0f));
+			if(radar_checkBox_show_ir_nw->Checked)			update_grid(i,IR_NW,Convert::ToSingle(radar_txt_calib_nw_x->Text),Convert::ToSingle(radar_txt_calib_nw_y->Text),Convert::ToSingle(radar_txt_calib_nw_theta->Text) * (PI/180.0f));
+			if(radar_checkBox_show_ir_ne->Checked)			update_grid(i,IR_NE,Convert::ToSingle(radar_txt_calib_ne_x->Text),Convert::ToSingle(radar_txt_calib_ne_y->Text),Convert::ToSingle(radar_txt_calib_ne_theta->Text) * (PI/180.0f));
 
-			if(radar_checkBox_show_ir_4->Checked)			update_grid(i,4,Convert::ToSingle(radar_txt_calib_4_x->Text),Convert::ToSingle(radar_txt_calib_4_y->Text),Convert::ToSingle(radar_txt_calib_4_theta->Text) * (PI/180.0f));
-			if(radar_checkBox_show_ir_5->Checked)			update_grid(i,5,Convert::ToSingle(radar_txt_calib_5_x->Text),Convert::ToSingle(radar_txt_calib_5_y->Text),Convert::ToSingle(radar_txt_calib_5_theta->Text) * (PI/180.0f));
-			if(radar_checkBox_show_ir_6->Checked)			update_grid(i,6,Convert::ToSingle(radar_txt_calib_6_x->Text),Convert::ToSingle(radar_txt_calib_6_y->Text),Convert::ToSingle(radar_txt_calib_6_theta->Text) * (PI/180.0f));
-			if(radar_checkBox_show_ir_7->Checked)			update_grid(i,7,Convert::ToSingle(radar_txt_calib_7_x->Text),Convert::ToSingle(radar_txt_calib_7_y->Text),Convert::ToSingle(radar_txt_calib_7_theta->Text) * (PI/180.0f));
+			if(radar_checkBox_show_ir_4->Checked)			update_grid(i,IR_E,Convert::ToSingle(radar_txt_calib_4_x->Text),Convert::ToSingle(radar_txt_calib_4_y->Text),Convert::ToSingle(radar_txt_calib_4_theta->Text) * (PI/180.0f));
+			if(radar_checkBox_show_ir_5->Checked)			update_grid(i,IR_SE,Convert::ToSingle(radar_txt_calib_5_x->Text),Convert::ToSingle(radar_txt_calib_5_y->Text),Convert::ToSingle(radar_txt_calib_5_theta->Text) * (PI/180.0f));
+			if(radar_checkBox_show_ir_6->Checked)			update_grid(i,IR_SW,Convert::ToSingle(radar_txt_calib_6_x->Text),Convert::ToSingle(radar_txt_calib_6_y->Text),Convert::ToSingle(radar_txt_calib_6_theta->Text) * (PI/180.0f));
+			if(radar_checkBox_show_ir_7->Checked)			update_grid(i,IR_W,Convert::ToSingle(radar_txt_calib_7_x->Text),Convert::ToSingle(radar_txt_calib_7_y->Text),Convert::ToSingle(radar_txt_calib_7_theta->Text) * (PI/180.0f));
 			//g->FillEllipse(b2, (int)rx, (int)ry ,pensize, pensize);
 			i++;
 		}

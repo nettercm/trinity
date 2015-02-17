@@ -4,11 +4,7 @@
  * Created: 11/21/2012 12:04:18 AM
  *  Author: Chris
  */ 
-
-#include "typedefs.h"
-#include "lookup.h"
-#include "hardware.h"
-
+#include "standard_includes.h"
 /*
 t_LOOKUP_table SHARPIR_4to30_table[] =
 {
@@ -113,8 +109,8 @@ void SHARPIR_init(void)
 //timing:  10-20us
 sint16 SHARPIR_get_real_value(uint8 sensor, sint16 raw_value)
 {
-	if(sensor == AI_IR_N_long) return LOOKUP_do(raw_value, SHARPIR_10to80_table);
-	else return LOOKUP_do(raw_value, SHARPIR_4to30_table);
+	//if(sensor == AI_IR_N_long) return LOOKUP_do(raw_value, SHARPIR_10to80_table);
+	//else return LOOKUP_do(raw_value, SHARPIR_4to30_table);
 }
 
 void SHARPIR_test(void)
@@ -125,3 +121,46 @@ void SHARPIR_test(void)
 	r = LOOKUP_do(24 , SHARPIR_4to30_table);
 	r = LOOKUP_do(120, SHARPIR_4to30_table);
 }
+
+
+void SHARPIR_update_fsm(u08 cmd, u08 *param)
+{
+	static u08 initialized=0;
+	s16 value;
+	DEFINE_CFG2(s16,short_filter_threashold,2,1);					
+	DEFINE_CFG2(s16,short_filter_amount,2,2);					
+	DEFINE_CFG2(s16,long_filter_threashold,2,3);					
+	DEFINE_CFG2(s16,long_filter_amount,2,4);					
+
+	if(!initialized)
+	{
+		initialized=1;
+		usb_printf("SHARPIR_update_fsm()\n");
+	
+		PREPARE_CFG2(short_filter_threashold);					
+		PREPARE_CFG2(short_filter_amount);			
+		PREPARE_CFG2(long_filter_threashold);			
+		PREPARE_CFG2(long_filter_amount);						
+	}
+
+	
+	{
+		UPDATE_CFG2(short_filter_threashold);		
+		UPDATE_CFG2(short_filter_amount);
+		UPDATE_CFG2(long_filter_threashold);
+		UPDATE_CFG2(long_filter_amount);
+	}
+
+	value = LOOKUP_do(s.inputs.analog[AI_IR_NW],SHARPIR_4to30_table);
+	if(value > short_filter_threashold) value = ((s.ir[IR_NW]*short_filter_amount) + value)/(short_filter_amount+1);
+	s.inputs.ir[IR_NW] = s.ir[IR_NW]		= value;
+
+	value = LOOKUP_do(s.inputs.analog[AI_IR_N], SHARPIR_10to80_table);
+	if(value > long_filter_threashold) value = ((s.ir[IR_N]*long_filter_amount) + value)/(short_filter_amount+1);
+	s.inputs.ir[IR_N] = s.ir[IR_N]		= value;
+
+	value = LOOKUP_do(s.inputs.analog[AI_IR_NE],SHARPIR_4to30_table);
+	if(value > short_filter_threashold) value = ((s.ir[IR_NE]*short_filter_amount) + value)/(short_filter_amount+1);
+	s.inputs.ir[IR_NE] = s.ir[IR_NE]		= value;
+}
+

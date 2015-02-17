@@ -13,7 +13,6 @@ void servo_task(u08 cmd, u08 *param)
 	DEFINE_CFG2(u16,s2_pos,15,6);					
 	DEFINE_CFG2(u16,s3_pos,15,7);					
 	DEFINE_CFG2(u16,s4_pos,15,8);					
-	const unsigned char demuxPins[] = {IO_B0, IO_B1, IO_B2}; // eight servos
 
 	//task_open_1();
 	//code between _1() and _2() will get executed every time the scheduler resumes this task
@@ -53,12 +52,12 @@ void servo_task(u08 cmd, u08 *param)
 		UPDATE_CFG2(s4_pos);					
 		set_servo_speed(0, s1_speed);
 		set_servo_speed(1, s2_speed);
-		set_servo_speed(2, s3_speed);
-		set_servo_speed(3, s4_speed);
+		//set_servo_speed(2, s3_speed);
+		//set_servo_speed(3, s4_speed);
 		set_servo_target(0, s1_pos*10);
 		set_servo_target(1, s2_pos*10);
-		set_servo_target(2, s3_pos*10);
-		set_servo_target(3, s4_pos*10);	
+		//set_servo_target(2, s3_pos*10);
+		//set_servo_target(3, s4_pos*10);	
 	}
 
 	//task_close();

@@ -73,8 +73,8 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		//the following state transition applies to all states
 		if(s.behavior_state[FOLLOW_WALL]==0) state = s_disabled;
 		
-		side =  (which_wall == LEFT_WALL ? s.ir[AI_IR_NW] : s.ir[AI_IR_NE]);
-		front = s.ir[AI_IR_N];
+		side =  (which_wall == LEFT_WALL ? s.ir[IR_NW] : s.ir[IR_NE]);
+		front = s.ir[IR_N];
 		
 
 		first_(s_disabled)
@@ -199,7 +199,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 				state = s_tracking_wall; //by default, go back to racking the wall, unless....
 				if( side > found_wall_distance) state = s_turning_corner;
 			}
-			//if( s.ir[AI_IR_N] <= 50 ) state = 2;
+			//if( s.ir[IR_N] <= 50 ) state = 2;
 			
 			exit_(s_turning_sharp_corner) { }
 		}

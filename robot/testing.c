@@ -183,9 +183,9 @@ void test_task(u08 cmd, u08 *param)
 				while(move_manneuver2(0,30,9999,(70),(70))) 
 				{
 					OS_SCHEDULE;
-					if( (s.ir[AI_IR_N] <= 60) ) stop |= 0x01;
-					if( (s.ir[AI_IR_NE] <= 60)) stop |= 0x02;
-					if( (s.ir[AI_IR_NW] <= 60)) stop |= 0x04;
+					if( (s.ir[IR_N] <= 60) ) stop |= 0x01;
+					if( (s.ir[IR_NE] <= 60)) stop |= 0x02;
+					if( (s.ir[IR_NW] <= 60)) stop |= 0x04;
 					if( (s.inputs.sonar[0] <= 100) ) stop |= 0x08;
 
 					if(stop != 0)
@@ -203,9 +203,9 @@ void test_task(u08 cmd, u08 *param)
 
 		if(s.behavior_state[TEST_LOGIC]==4) 
 		{
-			FAN_ON();
+			PUMP_ON();
 			task_wait(1000);
-			FAN_OFF();
+			PUMP_OFF();
 			s.behavior_state[TEST_LOGIC]=0;
 		}
 

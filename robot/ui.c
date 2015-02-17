@@ -82,7 +82,7 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 		{
 			clear();  
 			lcd_goto_xy(0,0); 
-			lcd_printf("i%03d %03d %03d %03d",s.ir[AI_IR_NE], s.ir[AI_IR_N_long], s.ir[AI_IR_N], s.ir[AI_IR_NW]); 
+			lcd_printf("i%03d  %03d  %03d",s.ir[IR_NE], s.ir[IR_N], s.ir[IR_NW]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 
 			lcd_printf("u%03d %03d %03d",  us_nw, us_n, us_ne); 

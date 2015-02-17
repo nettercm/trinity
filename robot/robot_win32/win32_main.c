@@ -59,7 +59,8 @@ void sim_step(void)
 	t_real_now = timeGetTime();
 	m.elapsed_milliseconds=t_sim;
 	t_m=m.elapsed_milliseconds;
-	if(0)//(t_real_now-t_real_last >= 1000)
+	if(0)
+	//if(t_real_now-t_real_last >= 1000)
 	{
 		simxGetPingTime(clientID,&pingTime);		
 		printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
@@ -195,15 +196,6 @@ void sim_inputs(void)
 	s.inputs.sonar[1] = 4000;
 	//s.inputs.sonar[2] = 4000;
 	//s.inputs.sonar[3] = 4000;
-	/*
-	s.inputs.analog[AI_FLAME_N]=255;
-	s.line[LEFT_LINE] = 255;
-	s.line[RIGHT_LINE] = 255;
-	s.inputs.ir[0] = s.ir[AI_IR_NW]	= 300;
-	s.inputs.ir[1] = s.ir[AI_IR_N]	= 300;
-	s.inputs.ir[2] = s.ir[AI_IR_NE]	= 300;
-	s.inputs.ir[3] = s.ir[AI_IR_N_long]	= 600;
-	*/
 
 
 	//------------------------------------------------------------------------------------------------------------------------------------
@@ -314,15 +306,16 @@ void sim_inputs(void)
 	{
 		ir_update_countdown=2;
 
-		s.inputs.ir[0] = s.ir[AI_IR_NW]		= (u16)read_ir(ir7,40,300,0.0002);
-		s.inputs.ir[2] = s.ir[AI_IR_NE]		= (u16)read_ir(ir1,40,300,0.0002);
-		s.inputs.ir[1] = s.ir[AI_IR_N]		= (u16)read_ir(ir0,60,600,0.0002);
-		s.inputs.ir[3] = s.ir[AI_IR_N_long]	= (u16)read_ir(ir0,60,600,0.0002);
+		s.inputs.ir[IR_NW] = s.ir[IR_NW]		= (u16)read_ir(ir7,40,300,0.0002);
+		s.inputs.ir[IR_NE] = s.ir[IR_NE]		= (u16)read_ir(ir1,40,300,0.0002);
+		s.inputs.ir[IR_N]  = s.ir[IR_N]			= (u16)read_ir(ir0,60,600,0.0002);
 
-		s.inputs.ir[4]						= (u16)read_ir(ir2,40,400,0.0002);
-		s.inputs.ir[5]						= (u16)read_ir(ir3,40,400,0.0002);
-		s.inputs.ir[6]						= (u16)read_ir(ir5,40,400,0.0002);
-		s.inputs.ir[7]						= (u16)read_ir(ir6,40,400,0.0002);
+		//s.inputs.ir[3] = s.ir[IR_N_long]		= (u16)read_ir(ir0,60,600,0.0002);
+
+		s.inputs.ir[IR_E]						= (u16)read_ir(ir2,40,400,0.0002);
+		s.inputs.ir[IR_SE]						= (u16)read_ir(ir3,40,400,0.0002);
+		s.inputs.ir[IR_SW]						= (u16)read_ir(ir5,40,400,0.0002);
+		s.inputs.ir[IR_W]						= (u16)read_ir(ir6,40,400,0.0002);
 	}
 	//------------------------------------------------------------------------------------------------------------------------------------
 
@@ -330,7 +323,7 @@ void sim_inputs(void)
 	if(0)
 	{
 		float d,x1,y1,t1,t2,x2,y2,x3,y3;
-		d=((float)s.ir[AI_IR_NE]/10.0)*25.4;
+		d=((float)s.ir[IR_NE]/10.0)*25.4;
 		x1=50;
 		y1=-50;
 		t1=-45.0*(PI/180);

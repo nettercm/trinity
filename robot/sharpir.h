@@ -18,6 +18,7 @@ extern t_LOOKUP_table SHARPIR_se_table[];
 extern void SHARPIR_init(void);
 extern void SHARPIR_test(void);
 extern sint16 SHARPIR_get_real_value(uint8 sensor, sint16 raw_value);
+extern void SHARPIR_update_fsm(u08 cmd, u08 *param);
 
 
 #endif /* SHARPIR_H_ */

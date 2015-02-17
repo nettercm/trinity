@@ -1,8 +1,14 @@
 
+#ifdef WIN32
+#include <Windows.h>
+#include <timeapi.h>
+#endif
+
 
 #include "standard_includes.h"
 
-const unsigned char pulseInPins[] = { IO_US_ECHO_AND_PING_1 , IO_US_ECHO_AND_PING_2 , SOUND_START_PIN};
+const unsigned char pulseInPins[] = PULSE_PINS; 
+const unsigned char demuxPins[] = SERVO_DEMUX_PINS; // eight servos
 
 extern void commands_process_fsm(u08 cmd, u08 *param);
 extern void lcd_update_fsm(u08 cmd, u08 *param);
@@ -27,20 +33,34 @@ void stop_all_behaviours(void)
 }
 
 
+//does not initialize servos
 int hardware_init(void)
 {
 	UCSR1A = 0;
 	DDRD = 0;
 
+	//analog
+	set_analog_mode(MODE_10_BIT); // 10-bit analog-to-digital conversions
+
 	//Make SSbar be an output so it does not interfere with SPI communication.
-	//SSbar == FAN_PIN
-	set_digital_output(FAN_PIN, LOW);
+	//SSbar == PUMP_PIN
+	set_digital_output(PUMP_PIN, LOW);
 
 	set_digital_input(SOUND_START_PIN, PULL_UP_ENABLED);
-	set_digital_input(BUTTON_START_PIN, PULL_UP_ENABLED);
+	//set_digital_input(BUTTON_START_PIN, PULL_UP_ENABLED);
+
+	//analog mux pins
+	set_digital_output(ANALOG_MUX_ADDR_0_PIN, LOW);
+	set_digital_output(ANALOG_MUX_ADDR_1_PIN, LOW);
+	set_digital_output(ANALOG_MUX_ADDR_2_PIN, LOW);
+	set_digital_output(ANALOG_MUX_ADDR_3_PIN, LOW);
+
 	
 	//sonar pins	
-	ultrasonic_hardware_init();
+	set_digital_output(IO_US_ECHO_AND_PING_1, LOW);
+	set_digital_output(IO_US_ECHO_AND_PING_2, LOW);
+	set_digital_input (IO_US_ECHO_AND_PING_1 ,HIGH_IMPEDANCE);
+	set_digital_input (IO_US_ECHO_AND_PING_2, HIGH_IMPEDANCE);
 	
 	//uvtron pulse	
 	//set_digital_input(IO_UV_PULSE, HIGH_IMPEDANCE);
@@ -48,17 +68,11 @@ int hardware_init(void)
 	//set baud rate etc.
 	serial_hardware_init();
 
-	//analog
-	set_analog_mode(MODE_10_BIT); // 10-bit analog-to-digital conversions
-
-
 	lcd_init_printf();
-	//clear();
-	//print_from_program_space(PSTR("Analog. dT="));
 
 	motors_hardware_init();
 	
-	pulse_in_start(pulseInPins, 3);		// start measuring pulses (1 per each sonar;  uvtorn not used right now)
+	pulse_in_start(pulseInPins, 3);		// start measuring pulses (1 per each sonar, +1 for sound start)
 	
 	return 0;
 }
@@ -89,8 +103,8 @@ void scan(u08 cmd, u16 moving_avg)
 	angle = (s16) (odometry_get_rotation_since_checkpoint()+0.5);
 
 	//currently our sharp IR lookup table doesn't clamp the readings at the sensors max range, so there could be some large values; need to clamp here
-	ir_n = s.ir[AI_IR_N];	  if(ir_n >  300) ir_n =  300;
-	ir_fn= s.ir[AI_IR_FAR_N]; if(ir_fn > 600) ir_fn = 600;
+	ir_n = s.ir[IR_N];	   if(ir_n >  600) ir_n =  600;
+	ir_fn= ir_n; //s.ir[IR_FAR_N]; if(ir_fn > 600) ir_fn = 600;
 
 
 	if(cmd==1) //initialize the state and our moving average
@@ -114,8 +128,8 @@ void scan(u08 cmd, u16 moving_avg)
 			scan_data[i].angle = angle;
 			scan_data[i].abs_angle = (s16)(s.inputs.theta * K_rad_to_deg);
 			scan_data[i].flame			= (u08) flame_avg; //255 - s.inputs.analog[AI_FLAME_N];
-			scan_data[i].ir_north		= ir_n_avg; //s.ir[AI_IR_N];
-			scan_data[i].ir_far_north	= ir_fn_avg; //s.ir[AI_IR_FAR_N];
+			scan_data[i].ir_north		= ir_n_avg; //s.ir[IR_N];
+			scan_data[i].ir_far_north	= ir_fn_avg; //s.ir[IR_FAR_N];
 			last_angle = angle;
 			i++;
 			if(i>=360)
@@ -148,10 +162,12 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		s_searching_room_1,		//8
 		s_finding_room_4,		//9
 		s_searching_room_4,		//10
-		s_move_to_candle		//11
+		s_move_to_candle,		//11
+
+		s_none=255
 	};
 	static enum states state=s_disabled;
-	static enum states last_state=s_disabled;
+	static enum states last_state=s_none;
 	static u32 t_entry=0;
 	static u08 still_inside_room=0;
 	static u32 context_switch_counter=0;
@@ -307,7 +323,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(s_disabled) 
 			{  
 				HARD_STOP(); //motor_command(cmd,accel,decel,0,0);
-				FAN_OFF();
+				PUMP_OFF();
 				STOP_BEHAVIOR(FOLLOW_WALL);
 				//STOP_BEHAVIOR(MASTER_LOGIC);
 				RESET_LINE_DETECTION();
@@ -329,8 +345,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(s_waiting_for_start) 
 			{
 				//TODO: should not be using low-level APIs here
+				//TODO: number of US sensors is hardcoded here
 				pulse_in_stop();
-				pulse_in_start(pulseInPins,3);
+				pulse_in_start(pulseInPins,sizeof(pulseInPins)); //capture US sensor + sound start
 			}
 
 			if(check_for_start_signal()) 
@@ -342,7 +359,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			exit_(s_waiting_for_start)
 			{
 				pulse_in_stop();
-				pulse_in_start(pulseInPins,2);
+				pulse_in_start(pulseInPins,sizeof(pulseInPins)-1); //only capture US sensor, i.e. skip the last one, which is for sound start
 			}
 		}
 		
@@ -358,7 +375,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//is something right in front of us?
 			//if so, then we were facing south initially, and now we are facing west; turn back...
-			if( (s.ir[AI_IR_N] < 120) || (s.inputs.sonar[0] < 120) )  TURN_IN_PLACE(turn_speed, 90);
+			if( (s.ir[IR_N] < 120) || (s.inputs.sonar[0] < 120) )  TURN_IN_PLACE(turn_speed, 90);
 
 			odometry_update_postion(35.0f, 92.0f, 270.0f);
 
@@ -414,7 +431,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//event_wait(line_alignment_done_evt);
 			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
-			odometry_update_postion( ((float)(s.ir[AI_IR_NW]))/16.0f , 65.0f, 90.0f);
+			odometry_update_postion( ((float)(s.ir[IR_NW]))/16.0f , 65.0f, 90.0f);
 
 			//move a little into the room
 			MOVE(turn_speed, room3_enter);
@@ -446,7 +463,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//TODO:  implement a more general "find wall" logic and make it part of the "follow wall" state machine
 			/*
 			motor_command(cmd,accel,decel,turn_speed+5,turn_speed);
-			while( (s.ir[AI_IR_NE] > 120) && (s.ir[AI_IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
+			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
 			motor_command(cmd,accel,decel,0,0);
 			*/
 
@@ -502,7 +519,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//event_wait(line_alignment_done_evt);
 			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
-			odometry_update_postion(27.0f, ((float)(s.ir[AI_IR_NW]))/16.0f , 180.0f);
+			odometry_update_postion(27.0f, ((float)(s.ir[IR_NW]))/16.0f , 180.0f);
 
 			//move a little bit into the room
 			MOVE(turn_speed, room2_enter);
@@ -531,7 +548,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			/*
 			motor_command(6,accel,decel,turn_speed+5,turn_speed);
-			while( (s.ir[AI_IR_NE] > 120) && (s.ir[AI_IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
+			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
 			motor_command(cmd,accel,decel,0,0);
 			*/
 			state = s_finding_room_1;
@@ -581,8 +598,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			//which door are we enterhing through?
-			if(s.inputs.y > (18.0f*25.4f))  odometry_update_postion(47.0f, 36.0f - ((float)(s.ir[AI_IR_NW]))/16.0f, 0.0f);
-			else odometry_update_postion(47.0f, ((float)(s.ir[AI_IR_NE]))/16.0f, 0.0f);
+			if(s.inputs.y > (18.0f*25.4f))  odometry_update_postion(47.0f, 36.0f - ((float)(s.ir[IR_NW]))/16.0f, 0.0f);
+			else odometry_update_postion(47.0f, ((float)(s.ir[IR_NE]))/16.0f, 0.0f);
 
 			//move a little into the room
 			MOVE(turn_speed, room1_enter);
@@ -611,7 +628,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			TURN_IN_PLACE(turn_speed, room1_turn_3);
 
 			motor_command(6,accel,decel,turn_speed,turn_speed);
-			while( (s.ir[AI_IR_NE] > 120) && (s.ir[AI_IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
+			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
 			motor_command(cmd,accel,decel,0,0);
 
 			state = s_finding_room_4;
@@ -642,7 +659,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 			//TODO: make a note how far away we are from the wall on the right, because it affects a maneuver further down. (but watch out for mirrors!)
 
-			odometry_update_postion(89.0f, ((float)(s.ir[AI_IR_NE]))/16.0f, 90.0f);
+			odometry_update_postion(89.0f, ((float)(s.ir[IR_NE]))/16.0f, 90.0f);
 
 
 			//completely exit from room 1 until we have reached the center of the intersection
@@ -706,7 +723,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			HARD_STOP();
 			TURN_IN_PLACE(turn_speed, -90);	//now we would be facing the door
 
-			if(s.ir[AI_IR_N] > 160)	//is there an opening right in front of us?
+			if(s.ir[IR_N] > 160)	//is there an opening right in front of us?
 			{
 				//yes...
 				//at this point we are facing north and a door into room #4 is right in front of us
@@ -827,7 +844,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			play_frequency(440,25000,15);
 			//task_wait(500);
-			FAN_ON(); 
+			PUMP_ON(); 
 
 
 			//start moving straight
@@ -839,13 +856,13 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				s.inputs.watch[0] = 2;
 				motor_command(6,1,1,30-bias,30+bias);		
 				OS_SCHEDULE;
-				if(s.ir[AI_IR_NE] < 70) bias=10;
-				else if(s.ir[AI_IR_NW] < 70) bias=-10;
+				if(s.ir[IR_NE] < 70) bias=10;
+				else if(s.ir[IR_NW] < 70) bias=-10;
 				else bias=0;
 
-				if( (s.ir[AI_IR_N] <= 100) ) stop |= 0x01;
-				//if( (s.ir[AI_IR_NE] <= 50)) stop |= 0x02;
-				//if( (s.ir[AI_IR_NW] <= 50)) stop |= 0x04;
+				if( (s.ir[IR_N] <= 100) ) stop |= 0x01;
+				//if( (s.ir[IR_NE] <= 50)) stop |= 0x02;
+				//if( (s.ir[IR_NW] <= 50)) stop |= 0x04;
 				if( (s.inputs.sonar[0] <= 100) ) stop |= 0x08;
 
 				//if(LINE_WAS_DETECTED()) stop |= 0x10;
@@ -874,7 +891,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 					}
 					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
 					bias=0;
-					//FAN_ON(); 
+					//PUMP_ON(); 
 				}
 				if( (!stop) && (bias > 0) )
 				{
@@ -898,14 +915,14 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 					}
 					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
 					bias=0;
-					//FAN_ON(); 
+					//PUMP_ON(); 
 				}
 
 			}
 			dbg_printf("stopped! reason: 0x%02x\n",stop);
 			HARD_STOP();
 			s.inputs.watch[0] = 17; OS_SCHEDULE;
-			FAN_ON(); 
+			PUMP_ON(); 
 
 
 			TURN_IN_PLACE(turn_speed, -45);
@@ -921,7 +938,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			}
 
 			s.inputs.watch[0] = 22; OS_SCHEDULE;
-			while( (s.inputs.sonar[0] > 70) && (s.ir[AI_IR_N] > 70) )
+			while( (s.inputs.sonar[0] > 70) && (s.ir[IR_N] > 70) )
 			{
 				motor_command(7,1,1,10,10);
 				OS_SCHEDULE;
@@ -931,7 +948,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 
 			//now turn on the fan and sweep left and right for some time
-			FAN_ON(); 
+			PUMP_ON(); 
 			//task_wait(1000);
 			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
 			TURN_IN_PLACE(5,-10); 
@@ -946,7 +963,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			TURN_IN_PLACE(5,-10);
 			//task_wait(1000);
 			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
-			FAN_OFF(); 
+			PUMP_OFF(); 
 
 			//TODO: go back to the home circle (optional)
 			state = s_disabled;
@@ -985,13 +1002,13 @@ void test_fsm(u08 cmd, u08 *param)
 
 	if(s.behavior_state[TEST_LOGIC]==1) 
 	{
-		FAN_ON();
+		PUMP_ON();
 		s.behavior_state[TEST_LOGIC]=0;
 	}
 
 	if(s.behavior_state[TEST_LOGIC]==2) 
 	{
-		FAN_OFF();
+		PUMP_OFF();
 		s.behavior_state[TEST_LOGIC]=0;
 	}
 
@@ -1003,29 +1020,42 @@ void test_fsm(u08 cmd, u08 *param)
 }
 
 
-void main_loop(void)
+void task_run(taskproctype taskproc, u08 cmd, u08 *param)
 {
 	u08 currently_running_tid;
 
-#ifdef SVP_ON_WIN32
+	currently_running_tid  = running_tid;	
+	running_tid = task_id_get(taskproc);
+	if(os_task_is_ready(running_tid)) 
+	{
+		taskproc(cmd,param);
+	}
+	running_tid = currently_running_tid;
+}
+
+
+void main_loop(void)
+{
+
+	#ifdef SVP_ON_WIN32
 	sim_task(0,0); //needs to run first, because it initializes some things.
-#endif
+	#endif
 	//incoming communication, i.e. commands
 	serial_receive_fsm(0,0); //includes processing of commands
 
-	//sample and process inputs
-#ifndef SVP_ON_WIN32	
+	//sample and process low-level inputs - most of this is only needed on the actual robot
+	#ifndef SVP_ON_WIN32	
 	analog_update_fsm(0,0);  //we don't want this when running on the PC and/or in simulation mode
-#else	
-	{ extern void sim_inputs(void); sim_inputs(); }
-#endif
+	SHARPIR_update_fsm(0,0);
+	task_run(ultrasonic_update_fsm,0,0);
+	#else	
+	{ extern void sim_inputs(void); sim_inputs(); } //on the PC, IR, Sonar and line sensor readings are provided by V-REP
+	#endif
 	line_detection_fsm_v2(0,0);
 
+
 	//behaviors
-	currently_running_tid=running_tid;	
-	running_tid=ml_tid;  
-	master_logic_fsm(0,0); 
-	running_tid=currently_running_tid;
+	task_run(master_logic_fsm,0,0); //ml fsm makes sleep statements, so it is a task and not just a simply fsm
 
 	wall_follow_fsm(0,0);
 	line_alignment_fsm_v2(0,0);
@@ -1038,14 +1068,16 @@ void main_loop(void)
 	test_fsm(0,0);
 
 	//ui
-	//lcd_update_fsm(0,0);	//lcd is incompatible with servos; also, not yet converted from task back to pure fsm	
+	#if 0
+	lcd_update_fsm(0,0);	//lcd is incompatible with servos; also, not yet converted from task back to pure fsm	
+	#endif
 
 	//outgoing communication
 	serial_send_fsm(0,0);
-#ifdef SVP_ON_WIN32
+	#ifdef SVP_ON_WIN32
 	{ extern void sim_outputs(void); sim_outputs(); }
 	{ extern void sim_step(void);	 sim_step();    }
-#endif	
+	#endif	
 }
 
 
@@ -1053,7 +1085,7 @@ void main_loop(void)
 
 void main_loop_task(u08 cmd, u08 *param)
 {
-
+	static u32 t_now, t_last, t_delta;
 	task_open_1();
 	//code between _1() and _2() will get executed every time the scheduler resumes this task
 
@@ -1065,14 +1097,27 @@ void main_loop_task(u08 cmd, u08 *param)
 
 	while(1)
 	{
+		t_now = get_ms();
+		t_delta = t_now-t_last;
+		t_last = t_now;
+		#ifdef WIN32
+		usb_printf("t_delta = %ld, m.elapsed_milliseconds = %ld, GetTickCount=%ld\n",t_delta,m.elapsed_milliseconds,timeGetTime());
+		#endif
 		main_loop();
-#ifndef SVP_ON_WIN32
+		#ifndef SVP_ON_WIN32
+		//TODO: don't hard-code the execution rate time delay - take loop time into account, i.e make it 20-(t_delta-20)
 		task_wait(20);
-#endif
+		#else
+		//on the PC, under sim control, the simulation time will drive the progress of time to make sure everything is in lock-step
+		//hence no need for a sleep statement
+		OS_SCHEDULE;
+		#endif
 	}
 
 	task_close();
 }
+
+
 
 
 void update_grid( int ir_sensor_index,float x1, float y1, float t1)
@@ -1117,11 +1162,11 @@ int main(void)
 	//clear(); lcd_goto_xy(0,0); printf("V=%d",	read_battery_millivolts_svp()); delay_ms(100);
 	
 	//odometry_update(120,100,100.0f,100.0f,160.0f);  //440us
-	s.inputs.ir[1]=200;
-	update_grid(1,60.0f,50.0f,30.0f); //480us (math only - no grid update)
+	//s.inputs.ir[1]=200;
+	//update_grid(1,60.0f,50.0f,30.0f); //480us (math only - no grid update)
 
 	play_from_program_space(welcome);
-	delay_ms(500);
+	//delay_ms(500);
 	
 	usb_printf("robot.c::main()\n");
 
@@ -1154,44 +1199,28 @@ int main(void)
 
 	os_init();  //initialize the cooperative multitasking subsystem and start all tasks
 
-
-#if 0
-	task_create( fsm_test_task,				1,   NULL, 0, 0 );
-#else
-
-	serial_cmd_evt = event_create();
+	//serial_cmd_evt = event_create();
 	line_alignment_start_evt = event_create();
 	line_alignment_done_evt = event_create();
 
-#ifdef SVP_ON_WIN32
-	//task_create( sim_task,					 1,  NULL, 0, 0);
-#endif
-	task_create( main_loop_task,			 2,  NULL, 0, 0);
-	//task_create( test_task,					 3,  NULL, 0, 0);
-
-	//task_create( lcd_update_fsm,			10,  NULL, 0, 0 );	//lcd is incompatible with servos	
-	//task_create( analog_update_fsm,			11,  NULL, 0, 0 );	//dont' run this in simulation mode
-	//task_create( serial_send_fsm,			12 , NULL, 0, 0 );		
-	//task_create( serial_receive_fsm,		13,  NULL, 0, 0);
-	//task_create( commands_process_fsm,		14,  NULL, 0, 0);
-	//task_create( motor_command_fsm,			15,  NULL, 0, 0);
+			 task_create( main_loop_task,				2,   NULL, 0, 0);
 	us_tid = task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
-	//task_create( debug_fsm,				17, NULL, 0, 0);   //not used right now
-	//task_create( wall_follow_fsm,			18,  NULL, 0, 0);
-	ml_tid = task_create( master_logic_fsm,			19,  NULL, 0, 0);
-	//task_create( line_detection_fsm,		20,  NULL, 0, 0);
-	//task_create( line_alignment_fsm,		21,  NULL, 0, 0);
-	//task_create( line_detection_fsm_v2,		22,  NULL, 0, 0);
-	//task_create( servo_task,				23,  NULL, 0, 0);
-	//task_create( busy_task,				24,  NULL, 0, 0);
-	//task_create( idle_task,				25,  NULL, 0, 0);
-	//task_create( fsm_test_task,				29,   NULL, 0, 0 );
-#endif
+	ml_tid = task_create( master_logic_fsm,				19,  NULL, 0, 0);
 
-	os_task_suspend(ml_tid);
+	//don't want the OS to schedule those tasks. we'll do that manually as part of the main loop
+	//os_task_suspend(ml_tid);
+	//os_task_suspend(us_tid);
 
-	os_start();
-	
+	//os_start();
+	running = 1;
+	os_enable_interrupts();
+	for (;;)
+	{
+		{extern void _os_tick(void); _os_tick(); }
+		{extern void _os_idle(void); _os_idle(); }
+	    running_tid = os_task_next_ready_task();
+		task_run(main_loop_task,0,0);
+	}
 	//won't ever get here...
 		
 	return 0;

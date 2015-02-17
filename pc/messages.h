@@ -55,9 +55,9 @@ typedef struct
 	uint8 magic1[2]; 			//0xabcd
 	uint8 seq;
 	uint8 ack;					//seq number of the last packet received from the PC
-	uint8  payload[80];
+	uint8  payload[88];
 	uint8 magic2[2]; 			//0xdcba
-}  __attribute__((__packed__)) t_frame_to_pc; //80 bytes
+}  __attribute__((__packed__)) t_frame_to_pc; //94 bytes
 #ifdef WIN32
 #pragma pack(pop)
 #endif
@@ -73,7 +73,7 @@ typedef struct
 	uint8 ack;					//seq number of the last packet received from the robot
 	uint8 payload[16];			//first 2 bytes of payload reserved for now.
 	uint8 magic2[2]; 			//0xdcba
-}  __attribute__((__packed__)) t_frame_from_pc;
+}  __attribute__((__packed__)) t_frame_from_pc; //22 bytes
 #ifdef WIN32
 #pragma pack(pop)
 #endif
@@ -85,7 +85,7 @@ typedef struct
 typedef struct
 {
 	uint32 timestamp;
-	uint8 analog[8];		//8
+	uint8 analog[16];		//8
 
 	uint16 sonar[4];		//8
 	uint16 ir[8];			//8
@@ -101,7 +101,7 @@ typedef struct
 	uint16 flags;			//2
 	//uint8  fsm_states[8];	//8
 	sint16 watch[4];		//8
-}  __attribute__((__packed__)) t_inputs; //72 bytes
+}  __attribute__((__packed__)) t_inputs; //84 bytes
 #ifdef WIN32
 #pragma pack(pop)
 #endif
