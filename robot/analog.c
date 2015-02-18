@@ -32,7 +32,7 @@ void analog_update_fsm(u08 cmd, u08 *param)
 			set_digital_output(ANALOG_MUX_ADDR_1_PIN, i & 0x02);
 			set_digital_output(ANALOG_MUX_ADDR_2_PIN, i & 0x04);
 			set_digital_output(ANALOG_MUX_ADDR_3_PIN, i & 0x08);
-			s.inputs.analog[i] = (uint16)(analog_read(i)>>2);
+			s.inputs.analog[i] = (uint16)(analog_read(4)>>2);
 		}
 		
 		s.line[RIGHT_LINE] = s.inputs.analog[AI_LINE_RIGHT];

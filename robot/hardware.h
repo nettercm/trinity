@@ -88,6 +88,8 @@ Analog Mux usage: (sample time for 16 ADC: approx 1.5ms, + overhead => 1.7 - 1.8
 
 #define AI_FLAME_N		12
 
+#define AI_START_BUTTON 15
+
 
 #define RIGHT_LINE 0 //index into s.line[]
 #define LEFT_LINE 1 //index into s.line[]

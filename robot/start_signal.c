@@ -34,7 +34,7 @@ int check_for_start_signal()
 
 	if(start_button_state==0) //button not pressed
 	{
-		if( !(is_digital_input_high(IO_C1)) ) //is the button pressed?
+		if( s.inputs.analog[AI_START_BUTTON]==0 ) //is the button pressed?
 		{
 			start_button_state=1;
 			start_button_count=0; //start counting...
@@ -42,7 +42,7 @@ int check_for_start_signal()
 	}
 	else //button currently in a pressed state
 	{
-		if( (is_digital_input_high(IO_C1)) ) //button released?
+		if( s.inputs.analog[AI_START_BUTTON]>0 ) //button released?
 		{
 			start_button_state=0;
 			start_button_count=0;

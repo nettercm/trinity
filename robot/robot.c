@@ -1068,9 +1068,7 @@ void main_loop(void)
 	test_fsm(0,0);
 
 	//ui
-	#if 0
-	lcd_update_fsm(0,0);	//lcd is incompatible with servos; also, not yet converted from task back to pure fsm	
-	#endif
+	task_run(lcd_update_fsm,0,0);	//lcd is incompatible with servos; also, not yet converted from task back to pure fsm	
 
 	//outgoing communication
 	serial_send_fsm(0,0);
@@ -1203,9 +1201,10 @@ int main(void)
 	line_alignment_start_evt = event_create();
 	line_alignment_done_evt = event_create();
 
-			 task_create( main_loop_task,				2,   NULL, 0, 0);
-	us_tid = task_create( ultrasonic_update_fsm,		16,  NULL, 0, 0);
-	ml_tid = task_create( master_logic_fsm,				19,  NULL, 0, 0);
+	task_create( main_loop_task,			1,  NULL, 0, 0);
+	task_create( ultrasonic_update_fsm,		2,  NULL, 0, 0);
+	task_create( master_logic_fsm,			3,  NULL, 0, 0);
+	task_create( lcd_update_fsm,			4,  NULL, 0, 0);
 
 	//don't want the OS to schedule those tasks. we'll do that manually as part of the main loop
 	//os_task_suspend(ml_tid);
