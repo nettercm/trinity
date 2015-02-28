@@ -102,7 +102,7 @@ void ultrasonic_update_fsm(uint8 cmd, uint8 *param)
 			//ping sensor 1
 			//usb_printf("\n\nus: 1\n");
 			PING(IO_US_ECHO_AND_PING_1);
-			newpulse = new_pulse(US_1_PULSE_CHANNEL);
+			newpulse = new_pulse(0);
 			t_ping = get_ms();
 		
 			//task_wait(2);
@@ -115,11 +115,11 @@ void ultrasonic_update_fsm(uint8 cmd, uint8 *param)
 			while(  (newpulse==0) && ((get_ms()-t_ping) < echo_timeout) )
 			{
 				//usb_printf("us: 3\n");
-				newpulse = new_high_pulse(US_1_PULSE_CHANNEL);
+				newpulse = new_high_pulse(0);
 				if(newpulse)
 				{
 					//usb_printf("us: 4\n");
-					pulse = pulse_to_microseconds(get_last_high_pulse(US_1_PULSE_CHANNEL));
+					pulse = pulse_to_microseconds(get_last_high_pulse(0));
 					distance = ((pulse*10)/148) + 2;
 					s.inputs.sonar[0] = distance;
 					s.us_avg[0] = (s.us_avg[0]*3 + distance)/4;
@@ -149,7 +149,7 @@ void ultrasonic_update_fsm(uint8 cmd, uint8 *param)
 		{
 			//ping sensor 2
 			PING(IO_US_ECHO_AND_PING_2);
-			newpulse = new_pulse(US_2_PULSE_CHANNEL);
+			newpulse = new_pulse(1);
 			t_ping = get_ms();
 		
 			//task_wait(2);
@@ -159,10 +159,49 @@ void ultrasonic_update_fsm(uint8 cmd, uint8 *param)
 			newpulse = 0;
 			while(  (newpulse==0) && (get_ms() - t_ping < echo_timeout) )
 			{
-				newpulse = new_high_pulse(US_2_PULSE_CHANNEL);
+				newpulse = new_high_pulse(1);
 				if(newpulse)
 				{
-					pulse = pulse_to_microseconds(get_last_high_pulse(US_2_PULSE_CHANNEL));
+					pulse = pulse_to_microseconds(get_last_high_pulse(1));
+					distance = ((pulse*10)/148) + 2;
+					s.inputs.sonar[1] = distance;
+					s.us_avg[1] = (s.us_avg[1]*3 + distance)/4;
+				}
+				//task_wait(2);
+				OS_SCHEDULE;
+			}
+			if(newpulse==0)
+			{
+				distance = 4000;
+				s.inputs.sonar[1] = distance;
+				s.us_avg[1] = (s.us_avg[1]*3 + distance)/4;
+			}
+		}				
+
+		while( (get_ms() - t_ping < intra_delay) )
+		{
+			//task_wait(1);
+			OS_SCHEDULE;
+		}
+
+		if(bitmap & 0x04)
+		{
+			//ping sensor 2
+			PING(IO_US_ECHO_AND_PING_3);
+			newpulse = new_pulse(2);
+			t_ping = get_ms();
+		
+			//task_wait(2);
+			OS_SCHEDULE;
+
+			//wait for echo
+			newpulse = 0;
+			while(  (newpulse==0) && (get_ms() - t_ping < echo_timeout) )
+			{
+				newpulse = new_high_pulse(2);
+				if(newpulse)
+				{
+					pulse = pulse_to_microseconds(get_last_high_pulse(2));
 					distance = ((pulse*10)/148) + 2;
 					s.inputs.sonar[1] = distance;
 					s.us_avg[1] = (s.us_avg[1]*3 + distance)/4;

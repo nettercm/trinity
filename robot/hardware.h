@@ -117,18 +117,16 @@ Analog Mux usage: (sample time for 16 ADC: approx 1.5ms, + overhead => 1.7 - 1.8
 #define ANALOG_MUX_ADDR_2_PIN	IO_A2
 #define ANALOG_MUX_ADDR_3_PIN	IO_A3
 #define ANALOG_INPUT_PIN		IO_A4
-#define	available_pin_2			IO_A5
-#define	available_pin_3			IO_A6
-#define	available_pin_4			IO_A7
+#define	IO_US_ECHO_AND_PING_3	IO_A5
+#define	IO_US_ECHO_AND_PING_4	IO_A6
+#define	IO_US_ECHO_AND_PING_5	IO_A7
 
 
 
 //pulse capture definitions (used for sonars and sound start)
-extern const unsigned char pulseInPins[3]; 
-#define US_1_PULSE_CHANNEL	0
-#define US_2_PULSE_CHANNEL	1
-#define SOUND_PULSE_CHANNEL 2
-#define PULSE_PINS			{ IO_US_ECHO_AND_PING_1 , IO_US_ECHO_AND_PING_2 , SOUND_START_PIN }
+extern const unsigned char pulseInPins[6]; 
+#define SOUND_PULSE_CHANNEL 5
+#define PULSE_PINS			{ IO_US_ECHO_AND_PING_1 , IO_US_ECHO_AND_PING_2 , IO_US_ECHO_AND_PING_3, IO_US_ECHO_AND_PING_4, IO_US_ECHO_AND_PING_5, SOUND_START_PIN }
 
 //servo demux
 extern const unsigned char demuxPins[1];
