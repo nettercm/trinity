@@ -75,6 +75,10 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		
 		side =  (which_wall == LEFT_WALL ? s.ir[IR_NW] : s.ir[IR_NE]);
 		front = s.ir[IR_N];
+		if(s.inputs.sonar[0] < front)
+		{
+			front = s.inputs.sonar[0];
+		}
 		
 
 		first_(s_disabled)
@@ -97,12 +101,10 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 				last_error = invalid_error_value;
 			}
 							
-			if( (use_corner_logic) && (side > lost_wall_distance) ) { state = s_lost_wall;  leave_(s_tracking_wall); }
-
 			e1 = side-target_distance;
 			e2 = front -(target_distance+40);
 			
-			//if there is something right in front, slow down; otherwise speed up
+			//if there is something right in front, or if the error gets too big, then slow down; otherwise speed up
 			if( (front < 160)  ||  (abs(e1)>40) ) 
 			{
 				if(target_speed > min_speed) target_speed -= down_ramp;
@@ -111,8 +113,15 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 			{
 				//ramp
 				if(target_speed < nominal_speed) target_speed += up_ramp;
-				//if( (abs(error) > 20) && (target_speed > 30) ) target_speed -= 1;
 			}				
+
+			//only look for the "lost the wall" condition if nothing is right in front. if someting IS right in front, need to make
+			//sure we turn in place soon enough
+			if( (use_corner_logic) && (side > lost_wall_distance) && (front > 160) ) 
+			{ 
+				state = s_lost_wall;  
+				leave_(s_tracking_wall); 
+			}
 
 			if( (e2<0) && (e2<e1) ) error = e2;
 			else error = e1;
@@ -136,11 +145,11 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 			
 			if(correction > 0)
 			{
-				motor_command(8,1000,0,target_speed-correction,target_speed+(correction*0));
+				motor_command(8,1000,0,target_speed-correction,target_speed+(correction*1));
 			}
 			else
 			{
-				motor_command(8,1000,0,target_speed-(correction*0),target_speed+correction);
+				motor_command(8,1000,0,target_speed-(correction*1),target_speed+correction);
 			}
 
 			exit_(s_tracking_wall) { }
@@ -170,8 +179,21 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 			
 			if(target_speed > corner_speed) target_speed -= down_ramp;
 			if(target_speed < corner_speed) target_speed += up_ramp;
-			if(which_wall==LEFT_WALL) motor_command(8,0,0,(target_speed*10)/corner_radius,target_speed);
-			else motor_command(8,0,0,target_speed,(target_speed*10)/corner_radius);
+
+			if(front < 100)
+			{
+				//if we are turning a corner and there is something right in front, turn sharper!!
+				corner_radius = 200;
+			}
+
+			if(which_wall==LEFT_WALL) 
+			{
+				motor_command(8,0,0,(target_speed*10)/corner_radius,target_speed);
+			}
+			else 
+			{
+				motor_command(8,0,0,target_speed,(target_speed*10)/corner_radius);
+			}
 	
 			if( side <= target_distance ) state = s_tracking_wall;
 			if ( abs(odometry_get_rotation_since_checkpoint()) >= 90 ) 
