@@ -93,6 +93,15 @@ void sim_step(void)
 			s.behavior_state[FOLLOW_WALL]=2;
 		}
 
+		if(c=='a')
+		{
+			s.behavior_state[MASTER_LOGIC]=12;
+		}
+
+		if(c=='1') //find room #1
+		{
+			s.behavior_state[MASTER_LOGIC]=7;
+		}
 		if(c=='s')
 		{
 			m.start_signal=1;
@@ -135,7 +144,7 @@ void sim_outputs(void)
 	simxSetJointTargetVelocity(clientID,rm,(((float) m.m1)/1.83f)/5.19695f,STREAMING_MODE);		
 
 	//servos
-	simxSetJointTargetPosition(clientID,pan,(((float)m.servo[1])-1350.0f)/353.0f,STREAMING_MODE);
+	simxSetJointTargetPosition(clientID,pan,(((float)m.servo[1])-1250.0f)/353.0f,STREAMING_MODE);
 	simxSetJointTargetPosition(clientID,tilt,(((float)m.servo[0])-1450.0f)/300.0f,STREAMING_MODE);
 	//printf("0,1 = %5d,%5d\n",m.servo[0],m.servo[1]);
 

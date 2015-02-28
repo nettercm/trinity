@@ -29,9 +29,9 @@ S16(3, 4, "Ki",								0, 0, 0.10*16)
 //----------------------------------------------------------
 GRP(4, "ULTRASONIC RANGE")
 
-U08(4, 1, "sensor enable/disable bitmap",	0, 0, 0x01)
+U08(4, 1, "sensor enable/disable bitmap",	0, 0, 0xff)
 U32(4, 2, "echo timeout",					0, 0, 50)
-U32(4, 3, "minimum delay between sensors",	0, 0, 50)
+U32(4, 3, "minimum delay between sensors",	0, 0, 20)
 //----------------------------------------------------------
 
 
@@ -114,20 +114,20 @@ S16(10, 2, "nominal speed"	,	0, 0, 120)
 S16(10, 3, "target distance",	0, 0, 100)
 S16(10, 4, "max error"		,	0, 0, 80)
 S16(10, 5, "max correction %",	0, 0, 140)
-S16(10, 6, "Kp"				,	0, 0, 60)
-S16(10, 7, "Ki"				,	0, 0, 5)
-S16(10, 8, "Kd"				,	0, 0, 80)
-S16(10, 9, "minimum speed"	,	0, 0, 30)
-S16(10,10, "speed up amount",	0, 0, 5)
-S16(10,11, "slow down amount",	0, 0, 5)
+S16(10, 6, "Kp"				,	0, 0, 90)
+S16(10, 7, "Ki"				,	0, 0, 0)
+S16(10, 8, "Kd"				,	0, 0, 30)
+S16(10, 9, "minimum speed"	,	0, 0, 60)
+S16(10,10, "speed up amount",	0, 0, 4)
+S16(10,11, "slow down amount",	0, 0, 6)
 U08(10,12, "use corner logic",	0, 0, 1)
-FLT(10,13, "corner distance",	0, 0, 110)
+FLT(10,13, "corner distance",	0, 0, 150)
 S16(10,14, "corner speed",		0, 0, 80)
 S16(10,15, "integral limit",	0, 0, 40)
 S16(10,16, "lost wall distance",0, 0, 130)
 S16(10,17, "found wall distance",0,0, 90)
 S16(10,18, "corner radius",		 0,0, 24)
-S16(10,19, "sharp corner radius",0,0, 24)
+S16(10,19, "sharp corner radius",0,0, 20)
 //----------------------------------------------------------
 
 

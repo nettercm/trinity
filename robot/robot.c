@@ -59,8 +59,14 @@ int hardware_init(void)
 	//sonar pins	
 	set_digital_output(IO_US_ECHO_AND_PING_1, LOW);
 	set_digital_output(IO_US_ECHO_AND_PING_2, LOW);
+	set_digital_output(IO_US_ECHO_AND_PING_3, LOW);
+	set_digital_output(IO_US_ECHO_AND_PING_4, LOW);
+	set_digital_output(IO_US_ECHO_AND_PING_5, LOW);
 	set_digital_input (IO_US_ECHO_AND_PING_1 ,HIGH_IMPEDANCE);
 	set_digital_input (IO_US_ECHO_AND_PING_2, HIGH_IMPEDANCE);
+	set_digital_input (IO_US_ECHO_AND_PING_3, HIGH_IMPEDANCE);
+	set_digital_input (IO_US_ECHO_AND_PING_4, HIGH_IMPEDANCE);
+	set_digital_input (IO_US_ECHO_AND_PING_5, HIGH_IMPEDANCE);
 	
 	//uvtron pulse	
 	//set_digital_input(IO_UV_PULSE, HIGH_IMPEDANCE);
@@ -72,7 +78,7 @@ int hardware_init(void)
 
 	motors_hardware_init();
 	
-	pulse_in_start(pulseInPins, 3);		// start measuring pulses (1 per each sonar, +1 for sound start)
+	pulse_in_start(pulseInPins, sizeof(pulseInPins));		// start measuring pulses (1 per each sonar, +1 for sound start)
 	
 	return 0;
 }
@@ -163,6 +169,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		s_finding_room_4,		//9
 		s_searching_room_4,		//10
 		s_move_to_candle,		//11
+		s_exit_from_room,		//12
 
 		s_none=255
 	};
@@ -174,6 +181,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static u32 t_last=0;
 	static u08 dog_position=0; //1=N side of Rm#4,  2=E side,    3=S side
 	static u08 stop;
+	static u08 last_room=0;
 
 	DEFINE_CFG2(s16,turn_speed,						9,10);
 	DEFINE_CFG2(s16,cmd,							9,11);
@@ -513,7 +521,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		//-------------------------------------------------------------------------------------------------------
 		next_(s_searching_room_2)
 		{
-			enter_(s_searching_room_2) { s.current_room = 2;}
+			enter_(s_searching_room_2) 
+			{ 
+				s.current_room = 2;
+			}
 
 			//event_signal(line_alignment_start_evt); 
 			//event_wait(line_alignment_done_evt);
@@ -591,7 +602,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 		next_(s_searching_room_1)
 		{
-			enter_(s_searching_room_1) { s.current_room = 1; }
+			enter_(s_searching_room_1) 
+			{ 
+				s.current_room = 1; 
+			}
 
 			//event_signal(line_alignment_start_evt); 
 			//event_wait(line_alignment_done_evt);
@@ -780,7 +794,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		//-------------------------------------------------------------------------------------------------------
 		next_(s_searching_room_4)
 		{
-			enter_(s_searching_room_4) { s.current_room = 4; }
+			enter_(s_searching_room_4) 
+			{ 
+				s.current_room = 4; 
+			}
 
 			//event_signal(line_alignment_start_evt); 
 			//event_wait(line_alignment_done_evt);
@@ -860,6 +877,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				else if(s.ir[IR_NW] < 70) bias=-10;
 				else bias=0;
 
+				//TODO: if the candle is in the middle of the room, we might not see it if we are facing it slightly off-center
 				if( (s.ir[IR_N] <= 100) ) stop |= 0x01;
 				//if( (s.ir[IR_NE] <= 50)) stop |= 0x02;
 				//if( (s.ir[IR_NW] <= 50)) stop |= 0x04;
@@ -966,11 +984,43 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			PUMP_OFF(); 
 
 			//TODO: go back to the home circle (optional)
-			state = s_disabled;
+			state = s_exit_from_room;
 
 			exit_(s_move_to_candle) {}
 		}
 
+		next_(s_exit_from_room)
+		{
+			enter_(s_exit_from_room) 
+			{
+				NOP();
+			}
+
+			TURN_IN_PLACE(50, 90);
+			RESET_LINE_DETECTION();
+			GO(50);
+			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) ) 
+			{
+				OS_SCHEDULE; //TODO: use parameters here!
+			}
+			//motor_command(cmd,accel,decel,0,0);
+			HARD_STOP();
+			START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL);
+			WAIT_FOR_LINE_DETECTION();
+			STOP_BEHAVIOR(FOLLOW_WALL);
+			HARD_STOP();
+			RESET_LINE_DETECTION();
+			HARD_STOP();
+			if(s.current_room==3) state = s_finding_room_2;
+			if(s.current_room==2) state = s_finding_room_1;
+			if(s.current_room==1) state = s_finding_room_4; //TODO: this one has different pre-conditions, so it won't work as is
+			if(s.current_room==4) state = s_disabled;
+
+			exit_(s_exit_from_room) 
+			{
+				NOP();
+			}
+		}
 
 		s.inputs.watch[2]=state;
 		if(state!=last_state) dbg_printf("ML:state: %d->%d\n", last_state,state);
