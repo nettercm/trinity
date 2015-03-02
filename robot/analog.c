@@ -39,10 +39,10 @@ void analog_update_fsm(u08 cmd, u08 *param)
 		s.line[LEFT_LINE] = s.inputs.analog[AI_LINE_LEFT];
 
 		//sample the following only once every 5 * 20 == 100ms
-		if( count >= 20)
+		if( count >= 5)
 		{
 			count = 0;
-			vbatt = (vbatt*31UL + (uint32)read_battery_millivolts_svp())/32UL;
+			vbatt = (vbatt*7UL + (uint32)read_battery_millivolts_svp())/8UL;
 			s.inputs.vbatt = (uint16)vbatt;
 		}
 

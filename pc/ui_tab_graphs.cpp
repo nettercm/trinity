@@ -54,6 +54,9 @@ namespace robot_ui
 			else if(graphs_comboBox_series_1a->Text == "analog[5]") y = inputs_history[x].analog[5];
 			else if(graphs_comboBox_series_1a->Text == "analog[6]") y = inputs_history[x].analog[6];
 			else if(graphs_comboBox_series_1a->Text == "analog[7]") y = inputs_history[x].analog[7];
+			else if(graphs_comboBox_series_1a->Text == "analog[12]") y = inputs_history[x].analog[12];
+			else if(graphs_comboBox_series_1a->Text == "analog[13]") y = inputs_history[x].analog[13];
+			else if(graphs_comboBox_series_1a->Text == "analog[14]") y = inputs_history[x].analog[14];
 			else if(graphs_comboBox_series_1a->Text == "ir[0]") y = inputs_history[x].ir[0];
 			else if(graphs_comboBox_series_1a->Text == "ir[1]") y = inputs_history[x].ir[1];
 			else if(graphs_comboBox_series_1a->Text == "ir[2]") y = inputs_history[x].ir[2];
@@ -74,6 +77,9 @@ namespace robot_ui
 			else if(graphs_comboBox_series_2a->Text == "analog[5]") y = inputs_history[x].analog[5];
 			else if(graphs_comboBox_series_2a->Text == "analog[6]") y = inputs_history[x].analog[6];
 			else if(graphs_comboBox_series_2a->Text == "analog[7]") y = inputs_history[x].analog[7];
+			else if(graphs_comboBox_series_2a->Text == "analog[12]") y = inputs_history[x].analog[12];
+			else if(graphs_comboBox_series_2a->Text == "analog[13]") y = inputs_history[x].analog[13];
+			else if(graphs_comboBox_series_2a->Text == "analog[14]") y = inputs_history[x].analog[14];
 			else if(graphs_comboBox_series_2a->Text == "ir[0]") y = inputs_history[x].ir[0];
 			else if(graphs_comboBox_series_2a->Text == "ir[1]") y = inputs_history[x].ir[1];
 			else if(graphs_comboBox_series_2a->Text == "ir[2]") y = inputs_history[x].ir[2];
@@ -140,10 +146,10 @@ namespace robot_ui
 		graphs_comboBox_series_2a->Items->Clear();
 		graphs_comboBox_series_2b->Items->Clear();
 
-		graphs_comboBox_series_1a->Items->AddRange(gcnew cli::array< System::Object^  >(28) 
+		graphs_comboBox_series_1a->Items->AddRange(gcnew cli::array< System::Object^  >(31) 
 		{
 			L"--NONE--", 
-			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", 
+			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]",L"analog[12]",L"analog[13]",L"analog[14]",
 			L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", 
 			L"actual_speed[0]", L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", 
 			L"x", L"y", L"theta", 
@@ -151,10 +157,10 @@ namespace robot_ui
 			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]",
 		});
 
-		graphs_comboBox_series_1b->Items->AddRange(gcnew cli::array< System::Object^  >(28) 
+		graphs_comboBox_series_1b->Items->AddRange(gcnew cli::array< System::Object^  >(31) 
 		{
 			L"--NONE--", 
-			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", 
+			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]",L"analog[12]",L"analog[13]",L"analog[14]",
 			L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", 
 			L"actual_speed[0]", L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", 
 			L"x", L"y", L"theta", 
@@ -162,10 +168,10 @@ namespace robot_ui
 			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]",
 		});
 
-		graphs_comboBox_series_2a->Items->AddRange(gcnew cli::array< System::Object^  >(28) 
+		graphs_comboBox_series_2a->Items->AddRange(gcnew cli::array< System::Object^  >(31) 
 		{
 			L"--NONE--", 
-			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", 
+			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]",L"analog[12]",L"analog[13]",L"analog[14]",
 			L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", 
 			L"actual_speed[0]", L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", 
 			L"x", L"y", L"theta", 
@@ -173,10 +179,10 @@ namespace robot_ui
 			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]",
 		});
 
-		graphs_comboBox_series_2b->Items->AddRange(gcnew cli::array< System::Object^  >(28) 
+		graphs_comboBox_series_2b->Items->AddRange(gcnew cli::array< System::Object^  >(31) 
 		{
 			L"--NONE--", 
-			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", 
+			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]",L"analog[12]",L"analog[13]",L"analog[14]",
 			L"ir[0]", L"ir[1]", L"ir[2]", L"ir[3]", 
 			L"actual_speed[0]", L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", 
 			L"x", L"y", L"theta", 

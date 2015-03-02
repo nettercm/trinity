@@ -203,8 +203,8 @@ void ultrasonic_update_fsm(uint8 cmd, uint8 *param)
 				{
 					pulse = pulse_to_microseconds(get_last_high_pulse(2));
 					distance = ((pulse*10)/148) + 2;
-					s.inputs.sonar[1] = distance;
-					s.us_avg[1] = (s.us_avg[1]*3 + distance)/4;
+					s.inputs.sonar[2] = distance;
+					s.us_avg[2] = (s.us_avg[2]*3 + distance)/4;
 				}
 				//task_wait(2);
 				OS_SCHEDULE;
@@ -212,8 +212,8 @@ void ultrasonic_update_fsm(uint8 cmd, uint8 *param)
 			if(newpulse==0)
 			{
 				distance = 4000;
-				s.inputs.sonar[1] = distance;
-				s.us_avg[1] = (s.us_avg[1]*3 + distance)/4;
+				s.inputs.sonar[2] = distance;
+				s.us_avg[2] = (s.us_avg[2]*3 + distance)/4;
 			}
 		}				
 	}

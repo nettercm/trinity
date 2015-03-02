@@ -53,8 +53,8 @@ Analog Mux usage: (sample time for 16 ADC: approx 1.5ms, + overhead => 1.7 - 1.8
 7	Sharp IR S
 8	Reserved (Sharp IR)
 9	Reserved (Sharp IR)
-10	Line
-11	Line
+10	Line R
+11	Line L
 12	Flame
 13	Reserved (Flame)
 14	Reserved (Flame)
@@ -87,6 +87,8 @@ Analog Mux usage: (sample time for 16 ADC: approx 1.5ms, + overhead => 1.7 - 1.8
 #define AI_LINE_LEFT	11
 
 #define AI_FLAME_N		12
+#define AI_FLAME_NW		13
+#define AI_FLAME_NE		14
 
 #define AI_START_BUTTON 15
 

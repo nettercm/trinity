@@ -162,5 +162,13 @@ void SHARPIR_update_fsm(u08 cmd, u08 *param)
 	value = LOOKUP_do(s.inputs.analog[AI_IR_NE],SHARPIR_4to30_table);
 	if(value > short_filter_threashold) value = ((s.ir[IR_NE]*short_filter_amount) + value)/(short_filter_amount+1);
 	s.inputs.ir[IR_NE] = s.ir[IR_NE]		= value;
+
+	value = LOOKUP_do(s.inputs.analog[AI_IR_W],SHARPIR_4to30_table);
+	if(value > short_filter_threashold) value = ((s.ir[IR_W]*short_filter_amount) + value)/(short_filter_amount+1);
+	s.inputs.ir[IR_W] = s.ir[IR_W]		= value;
+
+	value = LOOKUP_do(s.inputs.analog[AI_IR_E],SHARPIR_4to30_table);
+	if(value > short_filter_threashold) value = ((s.ir[IR_E]*short_filter_amount) + value)/(short_filter_amount+1);
+	s.inputs.ir[IR_E] = s.ir[IR_E]		= value;
 }
 

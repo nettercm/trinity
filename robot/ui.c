@@ -67,25 +67,25 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 			lcd_printf("L: %3d %3d", s.inputs.analog[AI_LINE_RIGHT],s.inputs.analog[AI_LINE_LEFT]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 	
-			lcd_printf("F: %03d  V: %3d", s.inputs.analog[AI_FLAME_N],s.inputs.vbatt/10); 
+			lcd_printf("F: %03d %3d %3d", s.inputs.analog[AI_FLAME_NE],s.inputs.analog[AI_FLAME_N],s.inputs.analog[AI_FLAME_NW]); 
 		}
 		else if(s.lcd_screen==1)
 		{
 			clear();  
 			lcd_goto_xy(0,0); 
-			lcd_printf("U: %4d %4d",  s.inputs.sonar[0],s.inputs.sonar[1]); 
+			lcd_printf("U: %4d %4d",  s.inputs.sonar[3],s.inputs.sonar[4]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 
-			lcd_printf("AVG: %4d %4d",  s.us_avg[0], s.us_avg[1]);
+			lcd_printf("%4d %4d %4d",  s.inputs.sonar[2],s.inputs.sonar[0],s.inputs.sonar[1]); 
 		}
 		else if(s.lcd_screen==2)
 		{
 			clear();  
 			lcd_goto_xy(0,0); 
-			lcd_printf("i%03d  %03d  %03d",s.ir[IR_NE], s.ir[IR_N], s.ir[IR_NW]); 
+			lcd_printf("i: %03d %03d %03d",s.ir[IR_NE], s.ir[IR_N], s.ir[IR_NW]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 
-			lcd_printf("u%03d %03d %03d",  us_nw, us_n, us_ne); 
+			lcd_printf(" %03d   %03d",  s.ir[IR_E],s.ir[IR_W]); 
 		}
 		else if(s.lcd_screen==3)
 		{
