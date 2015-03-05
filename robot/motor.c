@@ -495,12 +495,11 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 }
 
 
-void motor_command_fsm(u08 cmd, u08 *param)
+void odometry_update_fsm(u08 cmd, u08 *param)
 {
-	DEFINE_CFG(u08,update_rate,3,1);
 	DEFINE_CFG(flt,odo_cml,5,1);
 	DEFINE_CFG(flt,odo_cmr,5,2);
-	DEFINE_CFG(flt,odo_b,5,3);
+	DEFINE_CFG(flt,odo_b,  5,3);
 	static u08 initialized=0;
 		
 	//task_open();
@@ -509,26 +508,18 @@ void motor_command_fsm(u08 cmd, u08 *param)
 	{
 		initialized=1;
 		
-		usb_printf("motor_command_fsm()\n");
+		usb_printf("odometry_update_fsm()\n");
 	
-		PREPARE_CFG(u08,update_rate);
 		PREPARE_CFG(flt,odo_cml);
 		PREPARE_CFG(flt,odo_cmr);
 		PREPARE_CFG(flt,odo_b);
 	}
 
-	//while(1)
-	{
-		UPDATE_CFG(u08,update_rate);
-		UPDATE_CFG(flt,odo_cml);
-		UPDATE_CFG(flt,odo_cmr);
-		UPDATE_CFG(flt,odo_b);
-		motor_command(0,0,0,0,0);
-		odometry_update(s.inputs.actual_speed[0], s.inputs.actual_speed[1], odo_cml, odo_cmr, odo_b);
-		//task_wait(update_rate); //OS_SCHEDULE;
-	}
-	
-	//task_close();
+	UPDATE_CFG(flt,odo_cml);
+	UPDATE_CFG(flt,odo_cmr);
+	UPDATE_CFG(flt,odo_b);
+	//motor_command(0,0,0,0,0);
+	odometry_update(s.inputs.actual_speed[0], s.inputs.actual_speed[1], odo_cml, odo_cmr, odo_b);
 }
 
 
