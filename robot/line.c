@@ -171,7 +171,7 @@ u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
 	{
 		if(s.line[RIGHT_LINE] <= white)
 		{
-			motor_command(7,0,0,0,20);
+			motor_command(7,0,0,0,40);
 		}
 		else 
 		{
@@ -183,7 +183,7 @@ u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
 	{
 		if(s.line[RIGHT_LINE] > white)
 		{
-			motor_command(7,0,0,0,-20);
+			motor_command(7,0,0,0,-40);
 		}
 		else 
 		{
@@ -195,7 +195,7 @@ u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
 	{
 		if(s.line[LEFT_LINE] <= white)
 		{
-			motor_command(7,0,0,20,0);
+			motor_command(7,0,0,40,0);
 		}
 		else 
 		{
@@ -207,7 +207,7 @@ u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
 	{
 		if(s.line[LEFT_LINE] > white)
 		{
-			motor_command(7,0,0,-20,0);
+			motor_command(7,0,0,-40,0);
 		}
 		else 
 		{
@@ -217,26 +217,3 @@ u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
 	}
 	return state;
 }
-
-
-#if 0
-void line_alignment_fsm(u08 cmd, u08 *param)
-{
-	task_open();
-
-	usb_printf("line_alignment_fsm()\n");
-
-	for(;;)
-	{
-		event_wait(line_alignment_start_evt);
-		while(s.line[RIGHT_LINE] <= white) { motor_command(7,0,0,0,20); task_wait(10); } motor_command(7,0,0,0,0); //move right wheel fwd until off the line
-		while(s.line[RIGHT_LINE] > white) { motor_command(7,0,0,0,-20); task_wait(10); } motor_command(7,0,0,0,0); //now move right whell backwards until back on the line
-		while(s.line[LEFT_LINE] <= white) { motor_command(7,0,0,20,0); task_wait(10); } motor_command(7,0,0,0,0); //move left wheel fwd until off the line
-		while(s.line[LEFT_LINE] > white) { motor_command(7,0,0,-20,0); task_wait(10); } motor_command(7,0,0,0,0); //now move left whell backwards until back on the line
-		task_wait(100);
-		event_signal(line_alignment_done_evt);
-	}
-
-	task_close();
-}
-#endif

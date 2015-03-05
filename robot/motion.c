@@ -34,8 +34,15 @@ u08 move_manneuver2(u08 cmd, s16 speed, float distance, s16 safe_left, s16 safe_
 	if(cmd==1) //start
 	{
 		bias=0;
-		if(s.ir[IR_NE] < safe_right) bias=2;
-		else if(s.ir[IR_NW] < safe_left) bias=-2;
+		if( (s.ir[IR_NE] < safe_right) && (s.ir[IR_NW] < safe_left) )
+		{
+			if(s.ir[IR_NE] < s.ir[IR_NW]) bias=5;
+			else bias=-5;
+		}
+		else if(s.ir[IR_NE] < safe_right) bias=5;
+		else if(s.ir[IR_NW] < safe_left) bias=-5;
+		else bias=0;
+		motor_command(7,2,2,(10-bias)*sign,(10+bias)*sign); 
 		odometry_set_checkpoint(); 
 		if(distance < 0) sign=-1; else sign=1;
 		state = 1;
@@ -45,12 +52,12 @@ u08 move_manneuver2(u08 cmd, s16 speed, float distance, s16 safe_left, s16 safe_
 	{
 		if(state==1) 
 		{	
-			motor_command(7,2,2,(10-bias)*sign,(10+bias)*sign); 
+			motor_command(7,1,1,((speed-bias)/2)*sign,((speed+bias)/2)*sign); 
 			state++;
 		}
 		else if(state==2) 
 		{ 
-			motor_command(6,1,1,(speed-bias)*sign,(speed+bias)*sign); 
+			motor_command(7,1,1,(speed-bias)*sign,(speed+bias)*sign); 
 			state++;
 		}
 		else
@@ -65,8 +72,8 @@ u08 move_manneuver2(u08 cmd, s16 speed, float distance, s16 safe_left, s16 safe_
 			else bias=0;
 			if     (( fabs(odometry_get_distance_since_checkpoint()) >= fabs(distance)    )) { motor_command(2,0,0, 0,  0); state = 0; } //done
 			else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-40 ))   motor_command(7,1,1, sign*(10-bias), sign*(10+bias) );
-			else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-90 ))   motor_command(6,1,1, sign*(20-bias),sign*(20+bias));
-			else motor_command(6,1,1,(speed-bias)*sign,(speed+bias)*sign);
+			else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-90 ))   motor_command(7,1,1, sign*(20-bias), sign*(20+bias));
+			else motor_command(7,1,1,(speed-bias)*sign,(speed+bias)*sign);
 
 			if(s.ir[IR_N] < 60) { motor_command(2,0,0, 0, 0); state = 0; }
 		}
@@ -78,6 +85,7 @@ u08 turn_in_place_manneuver(u08 cmd, s16 speed, float angle)
 {
 	static u08 state=0;
 	static s16 sign=1;
+	float rotation;
 
 	if(cmd==1) //initialize the state
 	{
@@ -89,11 +97,21 @@ u08 turn_in_place_manneuver(u08 cmd, s16 speed, float angle)
 	}
 	else //update
 	{
-		if     (( fabs(odometry_get_rotation_since_checkpoint()) >= fabs(angle)    )) { motor_command(2,0,0, 0,  0); state = 0; } //done
-		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)- 5))   motor_command(7,1,1, -sign*5, sign*5 );
-		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)-10))   motor_command(6,3,3, -sign*10, sign*10 );
-		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)/4 ))   motor_command(6,1,1, -sign*15, sign*15 );
-		else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)/2 ))   motor_command(6,4,4, -sign*(speed/2),sign*(speed/2));
+		rotation = fabs(odometry_get_rotation_since_checkpoint());
+		if     ((  rotation >= fabs(angle)-3    )) 
+		{ 
+			motor_command(2,0,0, 0,  0); state = 0; 
+		} //done
+		//else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)- 5))   motor_command(7,1,1, -sign*5, sign*5 );
+		else if(( rotation >  fabs(angle)-15))   
+		{
+			motor_command(7,3,3, -sign*5, sign*5 );
+		}
+		//else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)/4 ))   motor_command(6,1,1, -sign*15, sign*15 );
+		else if(( rotation >  fabs(angle)/2 ))   
+		{
+			motor_command(6,4,4, -sign*(speed/2),sign*(speed/2));
+		}
 	}
 	return state;
 }
