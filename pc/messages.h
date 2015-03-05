@@ -20,31 +20,7 @@ typedef		signed long			sint32;
 #endif
 
 
-/*
-fsm_states
-0 master_logic_fsm
-1 align_to_wall_on_right
-2 monitor_speed
-3 align_to_line
-4 follow_left_wall_and_turn
-5 follow_right_wall_and_turn
-6 find_flame_fsm
 
-payload 72
-
-inputs 56+2   14 remain
-2 x param 6x2 + 2    0 remain
-
-cmds from PC:
-load all/1 from flash
-load all/1 from eeprom
-save all/1 to eeprom
-
-get all values
-get 1 value
-set 1 value
-
-*/
 
 #ifdef WIN32
 #pragma pack(push)
@@ -55,12 +31,15 @@ typedef struct
 	uint8 magic1[2]; 			//0xabcd
 	uint8 seq;
 	uint8 ack;					//seq number of the last packet received from the PC
-	uint8  payload[88];
+	uint8  payload[92];
 	uint8 magic2[2]; 			//0xdcba
-}  __attribute__((__packed__)) t_frame_to_pc; //94 bytes
+}  __attribute__((__packed__)) t_frame_to_pc; //98 bytes
 #ifdef WIN32
 #pragma pack(pop)
 #endif
+
+
+
 
 #ifdef WIN32
 #pragma pack(push)
@@ -78,6 +57,9 @@ typedef struct
 #pragma pack(pop)
 #endif
 
+
+
+
 #ifdef WIN32
 #pragma pack(push)
 #pragma pack(1)
@@ -87,7 +69,7 @@ typedef struct
 	uint32 timestamp;
 	uint8 analog[16];		//8
 
-	uint16 sonar[4];		//8
+	uint16 sonar[6];		//8
 	uint16 ir[8];			//8
 
 	sint16 encoders[2];		//4
@@ -95,58 +77,16 @@ typedef struct
 	sint16 target_speed[2]; //4
 	sint16 motors[2];		//4
 	float x,y,theta;		//12
-	//uint8 din;
-	//uint8 buttons[3];
 	uint16 vbatt;			//2
 	uint16 flags;			//2
-	//uint8  fsm_states[8];	//8
 	sint16 watch[4];		//8
-}  __attribute__((__packed__)) t_inputs; //84 bytes
+}  __attribute__((__packed__)) t_inputs; //88 bytes
 #ifdef WIN32
 #pragma pack(pop)
 #endif
 
-#ifdef WIN32
-#pragma pack(push)
-#pragma pack(1)
-#endif
-typedef struct
-{
-	uint8 magic1[2]; 			//0xabcd
-	uint32 timestamp;
-	/*
-	uint16 servo[1];
-	sint16 motors[2];
-	uint8  dout;
-	uint8  cmd;
-	sint16 params[4];
-	*/
-	uint16 flags;
-	uint8 data[20];
-	uint8 magic2[2]; 			//0xdcba
-}  __attribute__((__packed__)) t_outputs;  //26+32 bytes
-#ifdef WIN32
-#pragma pack(pop)
-#endif
 
- 
-/*
-Platform:
-set tx interval
-
-Servos:
-set target angle of servo X
-
-Sonar:
-set sonar echo timeout
-
-PID:
-set PID loop parameters
-
-Other:
-set behavior state, e.g. start / stop / reset
-
-*/
+#define INPUTS_HISTORY_SIZE 200000
 
 #ifdef __cplusplus 
 }

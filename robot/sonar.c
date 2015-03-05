@@ -64,159 +64,137 @@ void set_ultrasonic_mux(uint8 addr)
 		delay_us(20); \
 		set_digital_input(pin,HIGH_IMPEDANCE)
 
-	
+
+
+/*
+
+note:  sound travelles about 6.6m in 20ms, so 3.3m in one direction
+
+time since last ping (any sensor) - should wait at least 20ms between pings
+time since last ping (this sensor) - should wait at least 40ms between pings of the same sensor
+
+sonar states:
+
+00ms:  ping #1.
+20ms:  ping #2.   check for echo on #1
+40ms:  ping #3.   
+60ms:  ping #4.
+80ms:  ping #5.
+
+idle - waiting before issuing next ping
+ping issued - waitinf for echo
+
+*/
+
+const u08 sonar_pin[] = { IO_US_ECHO_AND_PING_1, IO_US_ECHO_AND_PING_2, IO_US_ECHO_AND_PING_3, IO_US_ECHO_AND_PING_4, IO_US_ECHO_AND_PING_5 };
+
+u08 get_next_sensor(void)
+{
+	static u08 sensor=0;
+
+	sensor++;
+	if(sensor > 4) sensor = 0;
+	return sensor;
+}
 	
 void ultrasonic_update_fsm(uint8 cmd, uint8 *param)
 {
-	static u08 cfg_idx_bitmap, cfg_idx_echo_timeout, cfg_idx_intra_delay;
-	static u08 bitmap;
-	static u32 echo_timeout, intra_delay;
+	enum states 
+	{ 
+		s_waiting_for_ping=0,	//0 
+		s_waiting_for_echo,		//1
+		s_none=255
+	};
+	static enum states state=s_waiting_for_ping;
+	static enum states last_state=s_none;
+	static u32 t_entry=0;
+	static u08 initialized=0;
 	static u08 newpulse=0;
 	static u32 t_ping=0;
 	static u32 pulse;
 	static u16 distance;
+	static u08 sensor=0;
+	DEFINE_CFG2(u08,bitmap,4,1);
+	DEFINE_CFG2(u32,echo_timeout,4,2);
+	DEFINE_CFG2(u32,intra_delay,4,3);
 	
-	task_open();
-	
-	cfg_idx_bitmap			= cfg_get_index_by_grp_and_id(4,1);
-	cfg_idx_echo_timeout	= cfg_get_index_by_grp_and_id(4,2);
-	cfg_idx_intra_delay		= cfg_get_index_by_grp_and_id(4,3);
-	
-	
-	usb_printf("ultrasonic_update_fsm()\n");
-	
-	while(1)
+
+	//task_open();
+
+	if(!initialized)
 	{
-		bitmap			= cfg_get_u08_by_index(cfg_idx_bitmap);
-		echo_timeout	= cfg_get_u32_by_index(cfg_idx_echo_timeout);
-		intra_delay		= cfg_get_u32_by_index(cfg_idx_intra_delay);
-		
-		while( (get_ms() - t_ping) < intra_delay )
-		{
-			//task_wait(1);
-			OS_SCHEDULE;
-		}
+		initialized=1;
 
-		if(bitmap & 0x01)
-		{
-			//ping sensor 1
-			//usb_printf("\n\nus: 1\n");
-			PING(IO_US_ECHO_AND_PING_1);
-			newpulse = new_pulse(0);
-			t_ping = get_ms();
-		
-			//task_wait(2);
-			OS_SCHEDULE;
+		usb_printf("ultrasonic_update_fsm()\n");
 
-			//usb_printf("us: 2\n");
-
-			//wait for echo
-			newpulse = 0;
-			while(  (newpulse==0) && ((get_ms()-t_ping) < echo_timeout) )
-			{
-				//usb_printf("us: 3\n");
-				newpulse = new_high_pulse(0);
-				if(newpulse)
-				{
-					//usb_printf("us: 4\n");
-					pulse = pulse_to_microseconds(get_last_high_pulse(0));
-					distance = ((pulse*10)/148) + 2;
-					s.inputs.sonar[0] = distance;
-					s.us_avg[0] = (s.us_avg[0]*3 + distance)/4;
-				}
-				//usb_printf("us: 5\n");
-				//task_wait(2);
-				OS_SCHEDULE;
-				//usb_printf("us: 6\n");
-			}
-			//usb_printf("us: 7\n");
-			if(newpulse==0) 	
-			{
-				//usb_printf("us: 8\n");
-				distance = 4000;
-				s.inputs.sonar[0] = distance;
-				s.us_avg[0] = (s.us_avg[0]*3 + distance)/4;
-			}	
-		}				
-
-		while( (get_ms() - t_ping < intra_delay) )
-		{
-			//task_wait(1);
-			OS_SCHEDULE;
-		}
-
-		if(bitmap & 0x02)
-		{
-			//ping sensor 2
-			PING(IO_US_ECHO_AND_PING_2);
-			newpulse = new_pulse(1);
-			t_ping = get_ms();
-		
-			//task_wait(2);
-			OS_SCHEDULE;
-
-			//wait for echo
-			newpulse = 0;
-			while(  (newpulse==0) && (get_ms() - t_ping < echo_timeout) )
-			{
-				newpulse = new_high_pulse(1);
-				if(newpulse)
-				{
-					pulse = pulse_to_microseconds(get_last_high_pulse(1));
-					distance = ((pulse*10)/148) + 2;
-					s.inputs.sonar[1] = distance;
-					s.us_avg[1] = (s.us_avg[1]*3 + distance)/4;
-				}
-				//task_wait(2);
-				OS_SCHEDULE;
-			}
-			if(newpulse==0)
-			{
-				distance = 4000;
-				s.inputs.sonar[1] = distance;
-				s.us_avg[1] = (s.us_avg[1]*3 + distance)/4;
-			}
-		}				
-
-		while( (get_ms() - t_ping < intra_delay) )
-		{
-			//task_wait(1);
-			OS_SCHEDULE;
-		}
-
-		if(bitmap & 0x04)
-		{
-			//ping sensor 2
-			PING(IO_US_ECHO_AND_PING_3);
-			newpulse = new_pulse(2);
-			t_ping = get_ms();
-		
-			//task_wait(2);
-			OS_SCHEDULE;
-
-			//wait for echo
-			newpulse = 0;
-			while(  (newpulse==0) && (get_ms() - t_ping < echo_timeout) )
-			{
-				newpulse = new_high_pulse(2);
-				if(newpulse)
-				{
-					pulse = pulse_to_microseconds(get_last_high_pulse(2));
-					distance = ((pulse*10)/148) + 2;
-					s.inputs.sonar[2] = distance;
-					s.us_avg[2] = (s.us_avg[2]*3 + distance)/4;
-				}
-				//task_wait(2);
-				OS_SCHEDULE;
-			}
-			if(newpulse==0)
-			{
-				distance = 4000;
-				s.inputs.sonar[2] = distance;
-				s.us_avg[2] = (s.us_avg[2]*3 + distance)/4;
-			}
-		}				
+		PREPARE_CFG2(bitmap);					
+		PREPARE_CFG2(echo_timeout);					
+		PREPARE_CFG2(intra_delay);					
 	}
-	task_close();
+
+	//while(1)
+	{
+		UPDATE_CFG2(bitmap);					
+		UPDATE_CFG2(echo_timeout);					
+		UPDATE_CFG2(intra_delay);					
+
+
+		first_(s_waiting_for_ping)
+		{
+			enter_(s_waiting_for_ping) 
+			{  
+				NOP();
+			}
+			
+			if(get_ms() - t_ping >= intra_delay)
+			{
+				PING(sonar_pin[sensor]);
+				newpulse = new_pulse(sensor); //clear the pulse capture state
+				t_ping = get_ms();
+				state = s_waiting_for_echo;
+			}
+
+			exit_(s_waiting_for_ping)  
+			{ 
+				NOP();
+			}
+		}
+
+		next_(s_waiting_for_echo)
+		{
+			enter_(s_waiting_for_echo) 
+			{  
+				NOP();
+			}
+
+			newpulse = new_high_pulse(sensor);
+			if(newpulse)
+			{
+				pulse = pulse_to_microseconds(get_last_high_pulse(sensor));
+				distance = ((pulse*10)/148) + 2;
+				state = s_waiting_for_ping;
+			}
+			else if( get_ms()-t_ping >= echo_timeout)
+			{
+				distance = 4000;
+				state = s_waiting_for_ping;
+			}
+
+			exit_(s_waiting_for_echo)  
+			{ 
+				s.inputs.sonar[sensor] = distance;
+				s.us_avg[sensor] = (s.us_avg[sensor]*3 + distance)/4;
+
+				sensor=get_next_sensor();
+				if(get_ms() - t_ping >= intra_delay)
+				{
+					PING(sonar_pin[sensor]);
+					newpulse = new_pulse(sensor);
+					t_ping = get_ms();
+					state = s_waiting_for_echo;
+				}
+			}
+		}
+	}
 }
 
