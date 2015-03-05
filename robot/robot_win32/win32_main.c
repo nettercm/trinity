@@ -20,7 +20,7 @@ static int pan,tilt;
 static int ir0,ir1,ir2,ir3,ir4,ir5,ir6,ir7;
 static int line_left,line_right;
 static int flame_sensor;
-static int sonar_front;
+static int sonar0,sonar1,sonar2;
 static int robot;
 
 typedef struct
@@ -289,7 +289,7 @@ void sim_inputs(void)
 	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,STREAMING_MODE);
 	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,STREAMING_MODE);
 
-	if(0)
+	if(1)
 	{
 		static double enc_ab=0, enc_cd=0;
 		enc_ab += lticks;
@@ -350,19 +350,16 @@ void sim_inputs(void)
 
 	//------------------------------------------------------------------------------------------------------------------------------------
 	//sonar
-	sonar_update_countdown--;
-	if(sonar_update_countdown<1)
 	{
-		unsigned char state;
+		unsigned char sensor=0;
+		simxInt sensors[] = {sonar0, sonar1, sonar2}; 
 		float point[3],surface[3];
 		float distance;
 		int handle;
 		float noise;
 		float noise_factor = 0.0002f; //  +/- 2%
 
-		sonar_update_countdown=2;
-
-		result = simxReadProximitySensor(clientID,sonar_front,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
+		result = simxReadProximitySensor(clientID,sensors[sensor],&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
 		distance = 4000;
 		if(state) 
 		{
@@ -372,7 +369,9 @@ void sim_inputs(void)
 			noise = noise*noise_factor;
 			distance += distance * noise;
 		}
-		s.inputs.sonar[0] = (u16)distance;
+		s.inputs.sonar[sensor] = (u16)distance;
+		sensor++;
+		if(sensor>2) sensor=0;
 	}
 	//------------------------------------------------------------------------------------------------------------------------------------
 
@@ -415,7 +414,9 @@ void win32_main(void)
 	simxGetObjectHandle(clientID,"line_right",&line_right,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"flame_sensor",&flame_sensor,simx_opmode_oneshot_wait);
 
-	simxGetObjectHandle(clientID,"sonar_front",&sonar_front,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"sonar0",&sonar0,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"sonar1",&sonar1,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"sonar2",&sonar2,simx_opmode_oneshot_wait);
 
 	simxGetObjectHandle(clientID,"Robot",&robot,simx_opmode_oneshot_wait);
 
