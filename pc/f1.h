@@ -26,7 +26,7 @@ extern "C"
 	extern volatile unsigned int key; 
 	extern int loop(void);
 	extern void show_last_error(char *s);
-	extern volatile t_inputs inputs_history[200000];
+	extern volatile t_inputs inputs_history[INPUTS_HISTORY_SIZE];
 	extern volatile int history_index;
 	extern int update_interval;
 	extern char log_buffer[];

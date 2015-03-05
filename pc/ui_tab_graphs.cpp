@@ -43,6 +43,8 @@ namespace robot_ui
 		static int y=0;
 
 		if(history_index - x > 2000) x=history_index-2000;
+		if(x<0) x=0;
+		if(x>history_index) x=history_index; //wrap-around
 
 		while(x<history_index)
 		{

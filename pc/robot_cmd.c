@@ -23,10 +23,9 @@
 t_frame_to_pc *rx_buffer;
 t_frame_to_pc dummy_frame;
 t_inputs inputs;
-t_outputs outputs;
 char *serial_port=NULL;
 
-volatile t_inputs inputs_history[200000]; //1 hour @ 50Hz
+volatile t_inputs inputs_history[INPUTS_HISTORY_SIZE]; //1 hour @ 50Hz   TODO: make this a circular buffer
 volatile int history_index=0;
 int update_interval=0;
 
@@ -353,7 +352,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 
 		inputs_history[history_index] = inputs;
 		history_index++;
-		if(history_index>=200000) history_index=0;
+		if(history_index>=INPUTS_HISTORY_SIZE) history_index=1;
 	}
 	else 
 	{

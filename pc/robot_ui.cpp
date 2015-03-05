@@ -166,6 +166,7 @@ namespace robot_ui
 				inputs_history[history_index].ir[2] = 300;
 				inputs_history[history_index].ir[3] = 400;
 				history_index++;
+				if(history_index>=INPUTS_HISTORY_SIZE) history_index=1;
 				theta += (PI/180.0f);
 				if(theta >= 2.0f*PI) 
 				{
@@ -214,38 +215,6 @@ namespace robot_ui
 		{
 			main_textBox_vbatt->Text = Convert::ToString(((float)s.inputs->vbatt)/1000.0f)+"V";
 		}
-
-		/*  
-		#if 0
-
-		if(s.p == INVALID_HANDLE_VALUE)
-		{
-			//Sleep(20);
-			inputs_history[history_index].analog[0] = history_index;
-			inputs_history[history_index].theta = theta;
-			inputs_history[history_index].ir[0] = 100;
-			inputs_history[history_index].ir[1] = 200;
-			inputs_history[history_index].ir[2] = 300;
-			inputs_history[history_index].ir[3] = 400;
-			history_index++;
-			theta += (PI/180.0f);
-			if(theta >= 2.0f*PI) 
-			{
-				theta = 0.0f;
-			}
-			//log(".");
-		}
-		else
-		{
-			result = loop();
-			if(result)
-			{
-				main_textBox_vbatt->Text = Convert::ToString(((float)s.inputs->vbatt)/1000.0f)+"V";
-			}
-		}
-
-		#endif
-		*/
 	}
 
 
