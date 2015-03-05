@@ -30,7 +30,7 @@ S16(3, 4, "Ki",								0, 0, 0.10*16)
 GRP(4, "ULTRASONIC RANGE")
 
 U08(4, 1, "sensor enable/disable bitmap",	0, 0, 0xff)
-U32(4, 2, "echo timeout",					0, 0, 50)
+U32(4, 2, "echo timeout",					0, 0, 20)
 U32(4, 3, "minimum delay between sensors",	0, 0, 20)
 //----------------------------------------------------------
 
@@ -44,7 +44,7 @@ GRP(5, "ODOMETRY")
 //FLT(5, 3, "odo_b",							0, 0, 156.5)
 FLT(5, 1, "odo_cml",						0, 0, 0.1539996)
 FLT(5, 2, "odo_cmr",						0, 0, 0.1539996)
-FLT(5, 3, "odo_b",							0, 0, 160.0)
+FLT(5, 3, "odo_b",							0, 0, 154.0)
 //----------------------------------------------------------
 
 
@@ -60,7 +60,7 @@ U08(6, 2, "white",							0, 0, 50)//11)//50)
 //----------------------------------------------------------
 GRP(9, "MASTER LOGIC")
 
-S16(9,10, "turn speed",						0, 0, 50)
+S16(9,10, "turn speed",						0, 0, 80)
 S16(9,11, "motor command",					0, 0, 7)		//which motor command to use for certain mannouvers
 S16(9,12, "acceleration",					0, 0, 1)		//
 S16(9,13, "deceleration",					0, 0, 1)
@@ -71,17 +71,17 @@ U16(9,16, "flame scan filter ",				0, 0, 4)
 S16(9,20, "search Rm #3: enter distance",	0, 0, 180)		//distance is in mm here
 S16(9,21, "search Rm #3: turn #1",			0, 0,-120)
 S16(9,22, "search Rm #3: turn #2",			0, 0, 210)		//basically we'll face west after this turn; turn another 90 left to face the door
-S16(9,23, "search Rm #3: turn #3",			0, 0, 90)		//basically we'll face sount (the door)
+S16(9,23, "search Rm #3: turn #3",			0, 0, 180)		//basically we'll face sount (the door)
 
 S16(9,30, "search Rm #2: enter distance",	0, 0, 180)
 S16(9,31, "search Rm #2: turn #1",			0, 0,-120)
 S16(9,32, "search Rm #2: turn #2",			0, 0, 210)		//we'll face south at the end - need to turn another 90deg left to face the door
-S16(9,33, "search Rm #2: turn #3",			0, 0, 90)		//we'll face south at the end - need to turn another 90deg left to face the door
+S16(9,33, "search Rm #2: turn #3",			0, 0, 180)		//we'll face south at the end - need to turn another 90deg left to face the door
 
 S16(9,40, "search Rm #1: etner distance",	0, 0, 180)
 S16(9,41, "search Rm #1: turn #1",			0, 0,-100)
 S16(9,42, "search Rm #1: turn #2",			0, 0, 220)
-S16(9,43, "search Rm #1: turn #3",			0, 0,-180)
+S16(9,43, "search Rm #1: turn #3",			0, 0,-45)
 
 S16(9,51, "find Rm #4:   dog scan distance",0, 0, 280)
 S16(9,52, "find Rm #4:   dog scan sensor",  0, 0, 1)

@@ -401,7 +401,6 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_finding_room_3)
 			{
-				//MOVE2(turn_speed,200,120,120); //need to take into account the fact that initially we'll be on the home circle
 				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
 				RESET_LINE_DETECTION();
 			}
@@ -435,45 +434,14 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				s.current_room = 3;
 			}
 
-			//event_signal(line_alignment_start_evt); 
-			//event_wait(line_alignment_done_evt);
-			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
+			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			odometry_update_postion( ((float)(s.ir[IR_NW]))/16.0f , 65.0f, 90.0f);
 
-			//move a little into the room
-			MOVE(turn_speed, room3_enter);
-
-			//we should facing more or less N right now.  turn right about 120degrees so that we are facing SE
-			TURN_IN_PLACE(turn_speed, room3_turn_1);
-
-			//now start to scan for the flame by turning left about 250 degrees
-			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			TURN_IN_PLACE_AND_SCAN(turn_speed, room3_turn_2, flame_scan_filter);
-
-			//now analyze the data...
-			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
-			if(scan_result.flame_center_value > flame_found_threashold) //TODO: make the minimum flame value a parameter
-			{
-				//turn into the direction where we saw the peak
-				TURN_IN_PLACE( turn_speed, -(room3_turn_2-scan_result.center_angle) );
-				//TODO: now confirm that we are still seeing the flame
-				switch_(s_searching_room_3, s_move_to_candle);
-			}
-
-			//if there was no candle, go on to the next room.
-			//we should be facing the wall more or less SW, so we just need to start following the right wall
-			still_inside_room = 1;
-			RESET_LINE_DETECTION();
+			//TODO: read the omni-directional flame sensor to determine if this room contains the flame or not
 
 			TURN_IN_PLACE(turn_speed, room3_turn_3);
-
-			//TODO:  implement a more general "find wall" logic and make it part of the "follow wall" state machine
-			/*
-			motor_command(cmd,accel,decel,turn_speed+5,turn_speed);
-			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
-			motor_command(cmd,accel,decel,0,0);
-			*/
+			still_inside_room = 1;
 
 			//at this point we should be able to just follow the wall a gain
 			state = s_finding_room_2;
@@ -526,29 +494,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				s.current_room = 2;
 			}
 
-			//event_signal(line_alignment_start_evt); 
-			//event_wait(line_alignment_done_evt);
-			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
+			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			odometry_update_postion(27.0f, ((float)(s.ir[IR_NW]))/16.0f , 180.0f);
-
-			//move a little bit into the room
-			MOVE(turn_speed, room2_enter);
-
-			//we are facing more or less W right now.  turn right about 120degrees so that we are facing NE
-			TURN_IN_PLACE(turn_speed, room2_turn_1);
-
-			//now start to scan for the flame by turning left about 250 degrees
-			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			TURN_IN_PLACE_AND_SCAN(turn_speed, room2_turn_2, flame_scan_filter);
-			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
-			if(scan_result.flame_center_value > flame_found_threashold) 
-			{
-				//turn into the direction where we saw the peak
-				TURN_IN_PLACE( turn_speed, -(room2_turn_2-scan_result.center_angle) );
-				//we are looging straight at the candle - proceed with extinguishing
-				switch_(s_searching_room_2, s_move_to_candle);
-			}
 
 			//if there was no candle, go on to the next room.
 			//we should be facing the wall more or less SE, we just need to start following the right wall
@@ -557,11 +505,6 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			TURN_IN_PLACE(turn_speed, room2_turn_3);
 
-			/*
-			motor_command(6,accel,decel,turn_speed+5,turn_speed);
-			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
-			motor_command(cmd,accel,decel,0,0);
-			*/
 			state = s_finding_room_1;
 
 			exit_(s_searching_room_2) { }
@@ -576,21 +519,21 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
 			}
 
-			if(lines_crossed != last_lines_crossed)
+			if( LINE_WAS_DETECTED() )
 			{
 				//we'll be crossing the line while exiting from the prev. room!!!!
 				if(still_inside_room) 
 				{
 					play_note(C(4), 50, 10);
 					//s.inputs.watch[2]++;
-					last_lines_crossed = lines_crossed;
+					RESET_LINE_DETECTION();
 					still_inside_room=0;
 				}
 				else
 				{
 					play_note(C(3), 50, 10);
-					motor_command(cmd,accel,decel,0,0);
-					s.behavior_state[FOLLOW_WALL] = 0;  //s.behavior_state[2] = 0;
+					HARD_STOP();
+					STOP_BEHAVIOR(FOLLOW_WALL);
 					state = s_searching_room_1;
 				}
 			}
@@ -607,31 +550,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				s.current_room = 1; 
 			}
 
-			//event_signal(line_alignment_start_evt); 
-			//event_wait(line_alignment_done_evt);
-			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
+			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			//which door are we enterhing through?
-			if(s.inputs.y > (18.0f*25.4f))  odometry_update_postion(47.0f, 36.0f - ((float)(s.ir[IR_NW]))/16.0f, 0.0f);
-			else odometry_update_postion(47.0f, ((float)(s.ir[IR_NE]))/16.0f, 0.0f);
-
-			//move a little into the room
-			MOVE(turn_speed, room1_enter);
-
-			//we are facing more or less E right now.  turn left about 120degrees so that we are facing NW
-			TURN_IN_PLACE(turn_speed, room1_turn_1);
-
-			//now start to scan for the flame by turning right about 250 degrees
-			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			TURN_IN_PLACE_AND_SCAN(turn_speed, room1_turn_2, flame_scan_filter);
-			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
-			if(scan_result.flame_center_value > flame_found_threashold) 
-			{
-				//turn into the direction where we saw the peak
-				TURN_IN_PLACE( turn_speed, -(room1_turn_2-scan_result.center_angle) );
-				switch_(s_searching_room_1, s_move_to_candle);
-			}
-
 
 			still_inside_room = 1;
 			RESET_LINE_DETECTION();
@@ -642,7 +563,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			TURN_IN_PLACE(turn_speed, room1_turn_3);
 
 			motor_command(6,accel,decel,turn_speed,turn_speed);
-			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) ) task_wait(10); //TODO: use parameters here!
+			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) )
+			{
+				OS_SCHEDULE; //TODO: use parameters here!
+			}
 			motor_command(cmd,accel,decel,0,0);
 
 			state = s_finding_room_4;
@@ -668,8 +592,6 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			HARD_STOP();
 			
 			//now we are on the line that marks the north-side door of Room #1 - let's align ourselves to that line so that we are facing North
-			//event_signal(line_alignment_start_evt); 
-			//event_wait(line_alignment_done_evt);
 			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 			//TODO: make a note how far away we are from the wall on the right, because it affects a maneuver further down. (but watch out for mirrors!)
 
@@ -799,46 +721,15 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				s.current_room = 4; 
 			}
 
-			//event_signal(line_alignment_start_evt); 
-			//event_wait(line_alignment_done_evt);
-			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
-
-			if(s.inputs.theta < (180.0f*K_deg_to_rad)) 	odometry_update_postion(57.0f, 56.0f, 90.0f);
-			else odometry_update_postion(66.0f, 76.0f, 270.0f);
-
-			//move a little bit into the room
-			MOVE(turn_speed, search4_distance_1); //100);
+			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
+			//if(s.inputs.theta < (180.0f*K_deg_to_rad)) 	odometry_update_postion(57.0f, 56.0f, 90.0f);
+			//else odometry_update_postion(66.0f, 76.0f, 270.0f);
 
 			//we are facing either North or South, but it doesn't really matter...
-
-			//turn right
-			TURN_IN_PLACE(turn_speed, search4_turn_1); //-100);
-
-			//now start to scan for the flame by turning left about 200 degrees
-			//while turning, keep a history of the flame data so we can detect the peak and hence can hone in on the candle.
-			TURN_IN_PLACE_AND_SCAN(turn_speed, search4_turn_2, flame_scan_filter); //200);
-			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
-			if(scan_result.flame_center_value > flame_found_threashold) 
-			{
-				/*
-				if(scan_result.center_abs_angle > 270)
-				{
-					TURN_IN_PLACE( turn_speed, -(search4_turn_2+search4_turn_1) );
-					MOVE(turn_speed, room2_enter);
-					TURN_IN_PLACE( turn_speed, -135 );
-				}
-				else
-				*/
-				{
-					//turn into the direction where we saw the peak
-					TURN_IN_PLACE( turn_speed, -(search4_turn_2-scan_result.center_angle) );
-				}
-				//we are looging straight at the candle - proceed with extinguishing
-				switch_(s_searching_room_4, s_move_to_candle);
-			}
+			switch_(s_searching_room_4, s_move_to_candle);
 
 			//if there was no candle, then we messed up, because Room #4 is alwasy the last room we search!
-			state = s_disabled;
+			//state = s_disabled;
 
 			exit_(s_searching_room_4) {}
 		}
@@ -854,6 +745,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			enter_(s_move_to_candle) {}
 
+			//move a little bit into the room
+			MOVE(turn_speed, search4_distance_1); //100);
+
 			//make sure we are not in front of some obstacle (in case we saw a reflection from the wall)
 
 			//now move forward until we reach the candle circle; 
@@ -861,7 +755,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			play_frequency(440,25000,15);
 			//task_wait(500);
-			PUMP_ON(); 
+			//PUMP_ON(); 
 
 
 			//start moving straight
@@ -996,25 +890,31 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				NOP();
 			}
 
+			//at this point we are looking straight at the candle
 			TURN_IN_PLACE(50, 90);
 			RESET_LINE_DETECTION();
 			GO(50);
-			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) ) 
+			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) && (s.inputs.sonar[0] > 100) ) 
 			{
 				OS_SCHEDULE; //TODO: use parameters here!
 			}
-			//motor_command(cmd,accel,decel,0,0);
-			HARD_STOP();
-			START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL);
+			if( (s.ir[IR_N] < 100) || (s.inputs.sonar[0] < 100) ) 
+			{
+				TURN_IN_PLACE(50, 90);
+			}
+			START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL);
 			WAIT_FOR_LINE_DETECTION();
 			STOP_BEHAVIOR(FOLLOW_WALL);
 			HARD_STOP();
 			RESET_LINE_DETECTION();
+			/*
 			HARD_STOP();
 			if(s.current_room==3) state = s_finding_room_2;
 			if(s.current_room==2) state = s_finding_room_1;
 			if(s.current_room==1) state = s_finding_room_4; //TODO: this one has different pre-conditions, so it won't work as is
 			if(s.current_room==4) state = s_disabled;
+			*/
+			state = s_disabled;
 
 			exit_(s_exit_from_room) 
 			{
@@ -1034,12 +934,31 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 #pragma endregion
 
 
+typedef struct
+{
+	u32 time;
+	s16 l_speed;
+	s16 r_speed;
+} t_speed_profile;
+
+t_speed_profile speed_profile[]=
+{
+	{   0,		0,		0},
+	{ 200,		30,		30},
+	{ 400,		60,		60},
+	{ 600,		90,		90},
+	{ 800,		120,	120},
+	{1000,		0,		0}
+};
 
 void test_fsm(u08 cmd, u08 *param)
 {
-	enum states { s_disabled=0, s_tracking_wall=1, s_lost_wall=2, s_turning_corner=3, s_turning_sharp_corner=4 };
-	static enum states state=s_disabled;
-	static enum states last_state=s_disabled;
+	//enum states { s_disabled=0, s_tracking_wall=1, s_lost_wall=2, s_turning_corner=3, s_turning_sharp_corner=4 };
+	static u08 state=0;
+	static u08 last_state=255;
+	static u32 t_start;
+	u32 t_delta;
+	u08 i;
 	
 	static u08 initialized=0;
 	
@@ -1066,6 +985,24 @@ void test_fsm(u08 cmd, u08 *param)
 	{
 		dbg_printf("start = %d\n",is_digital_input_high(IO_B3));
 		s.behavior_state[TEST_LOGIC]=0;
+	}
+
+	if(s.behavior_state[TEST_LOGIC]==4) 
+	{
+		switch(state)
+		{
+		case 0:
+			t_start = get_ms();
+			motor_command(8,0,0,speed_profile[0].l_speed,speed_profile[0].r_speed);
+			state++;
+			break;
+		case 1:
+			t_delta = get_ms() - t_start;
+			i=0;
+			while(speed_profile[i].time < t_delta) i++;
+			motor_command(8,0,0,speed_profile[i-1].l_speed,speed_profile[i-1].r_speed);
+			break;
+		}
 	}
 }
 
@@ -1094,13 +1031,14 @@ void main_loop(void)
 	serial_receive_fsm(0,0); //includes processing of commands
 
 	//sample and process low-level inputs - most of this is only needed on the actual robot
+	ultrasonic_update_fsm(0,0);
 	#ifndef SVP_ON_WIN32	
 	analog_update_fsm(0,0);  //we don't want this when running on the PC and/or in simulation mode
 	SHARPIR_update_fsm(0,0);
-	task_run(ultrasonic_update_fsm,0,0);
 	#else	
 	{ extern void sim_inputs(void); sim_inputs(); } //on the PC, IR, Sonar and line sensor readings are provided by V-REP
 	#endif
+	odometry_update_fsm(0,0);
 	line_detection_fsm_v2(0,0);
 
 
@@ -1111,7 +1049,7 @@ void main_loop(void)
 	line_alignment_fsm_v2(0,0);
 
 	//outputs
-	motor_command_fsm(0,0);
+	motor_command(0,0,0,0,0);
 	servo_task(0,0);
 
 	//testing
