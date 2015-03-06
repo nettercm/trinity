@@ -19,7 +19,7 @@ static int lm,rm;
 static int pan,tilt;
 static int ir0,ir1,ir2,ir3,ir4,ir5,ir6,ir7;
 static int line_left,line_right;
-static int flame_sensor;
+static int flame0,flame1,flame2;
 static int sonar0,sonar1,sonar2;
 static int robot;
 
@@ -96,6 +96,11 @@ void sim_step(void)
 		if(c=='a')
 		{
 			s.behavior_state[MASTER_LOGIC]=12;
+		}
+
+		if(c=='b')
+		{
+			s.behavior_state[11]=5;
 		}
 
 		if(c=='1') //find room #1
@@ -233,16 +238,30 @@ void sim_inputs(void)
 
 
 	//------------------------------------------------------------------------------------------------------------------------------------
-	//Flame sensor
+	//Flame sensors
 	auxValues = NULL; auxValuesCount = NULL;
-	result = simxReadVisionSensor(clientID,flame_sensor,&state,&auxValues,&auxValuesCount,STREAMING_MODE);
+	result = simxReadVisionSensor(clientID,flame1,&state,&auxValues,&auxValuesCount,STREAMING_MODE);
 	if(result==0)
 	{
 		float flame;
 		//printf("aVC[0]=%d, aVC[1]=%d, av[0]=%f,av[13]=%f,\n",auxValuesCount[0],auxValuesCount[1],auxValues[0],auxValues[13]*4000);
-		flame = (auxValues[13]*1020.0f);
+		flame = (auxValues[13]*256.0f);
 		if(flame > 255.0f) flame=255.0f;
-		s.inputs.analog[AI_FLAME_N] = 255 - (u08)flame;
+		s.inputs.analog[AI_FLAME_NE] = (u08)flame;
+		//printf("auxValues[13]=%f    s.inputs.analog[AI_FLAME_N]=%d\n",auxValues[13],s.inputs.analog[AI_FLAME_N]);
+	}
+	if(auxValues)simxReleaseBuffer((simxUChar*)auxValues);
+	if(auxValuesCount)simxReleaseBuffer((simxUChar*)auxValuesCount);
+
+	auxValues = NULL; auxValuesCount = NULL;
+	result = simxReadVisionSensor(clientID,flame2,&state,&auxValues,&auxValuesCount,STREAMING_MODE);
+	if(result==0)
+	{
+		float flame;
+		//printf("aVC[0]=%d, aVC[1]=%d, av[0]=%f,av[13]=%f,\n",auxValuesCount[0],auxValuesCount[1],auxValues[0],auxValues[13]*4000);
+		flame = (auxValues[13]*256.0f);
+		if(flame > 255.0f) flame=255.0f;
+		s.inputs.analog[AI_FLAME_NW] = (u08)flame;
 		//printf("auxValues[13]=%f    s.inputs.analog[AI_FLAME_N]=%d\n",auxValues[13],s.inputs.analog[AI_FLAME_N]);
 	}
 	if(auxValues)simxReleaseBuffer((simxUChar*)auxValues);
@@ -412,7 +431,9 @@ void win32_main(void)
 
 	simxGetObjectHandle(clientID,"line_left",&line_left,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"line_right",&line_right,simx_opmode_oneshot_wait);
-	simxGetObjectHandle(clientID,"flame_sensor",&flame_sensor,simx_opmode_oneshot_wait);
+
+	simxGetObjectHandle(clientID,"flame1",&flame1,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"flame2",&flame2,simx_opmode_oneshot_wait);
 
 	simxGetObjectHandle(clientID,"sonar0",&sonar0,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"sonar1",&sonar1,simx_opmode_oneshot_wait);

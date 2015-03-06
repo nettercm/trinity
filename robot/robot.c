@@ -1167,6 +1167,11 @@ void test_fsm(u08 cmd, u08 *param)
 				bias = 0;
 				if(s.inputs.analog[AI_FLAME_NE]>s.inputs.analog[AI_FLAME_NW]) bias = 2;
 				if(s.inputs.analog[AI_FLAME_NW]>s.inputs.analog[AI_FLAME_NE]) bias = -2;
+				if( (s.inputs.analog[AI_FLAME_NW]<5) && (s.inputs.analog[AI_FLAME_NE]<5) ) 
+				{
+					//in case of overshoot, need to make a harder correction
+					bias = -10;
+				}
 				motor_command(7,2,2,40+bias,40-bias);
 			}
 			else
@@ -1273,7 +1278,7 @@ void main_loop_task(u08 cmd, u08 *param)
 		t_delta = t_now-t_last;
 		t_last = t_now;
 		#ifdef WIN32
-		usb_printf("t_delta = %ld, m.elapsed_milliseconds = %ld, GetTickCount=%ld\n",t_delta,m.elapsed_milliseconds,timeGetTime());
+		//usb_printf("t_delta = %ld, m.elapsed_milliseconds = %ld, GetTickCount=%ld\n",t_delta,m.elapsed_milliseconds,timeGetTime());
 		#endif
 		main_loop();
 		#ifndef SVP_ON_WIN32
