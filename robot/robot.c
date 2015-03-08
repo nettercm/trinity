@@ -360,7 +360,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			if(check_for_start_signal()) 
 			{
-				state = s_aligning_south;
+				//state = s_aligning_south;
+				START_BEHAVIOR(TEST_LOGIC,5); //TODO:  fix this
 			}
 			else if(s.behavior_state[MASTER_LOGIC]!=0) state = s.behavior_state[MASTER_LOGIC]; //s_waiting_for_start;
 
@@ -1090,6 +1091,27 @@ D_ (  99,   1,  12255,  T, 23,20.0,   V,9.6,  0x0000,  A, 31, 31,  1, 33, 16, 14
 D_ ( 100,   1,  12274,  T, 41,21.1,   V,9.6,  0x0000,  A, 30, 31,  0, 32, 18, 16, 16, 14,     E, 6496,-5828,   O,-2.1,10.8,13.9,    S, 390, 196, 357,4000,  I, 180, 380, 997,  M,  0,  0,   0,  0,   0,  0,   W,  0,  0,  1,  0 )
 */
 
+typedef struct
+{
+	u16 x;
+	u16 y;
+} t_pan_tilt_pos;
+
+t_pan_tilt_pos pan_tilt_pos[]=
+{
+	{140, 140},
+	{125, 140},
+	{110, 140},
+
+	{110, 148},
+	{125, 148},
+	{140, 148},
+
+	{140, 155},
+	{125, 155},
+	{110, 144}
+};
+
 void test_fsm(u08 cmd, u08 *param)
 {
 	//enum states { s_disabled=0, s_tracking_wall=1, s_lost_wall=2, s_turning_corner=3, s_turning_sharp_corner=4 };
@@ -1097,8 +1119,10 @@ void test_fsm(u08 cmd, u08 *param)
 	static u08 last_state=255;
 	static u32 t_start;
 	static s16 bias=0;
+	static u08 count;
 	u32 t_delta;
 	u08 i;
+	t_config_value v;
 	
 	static u08 initialized=0;
 	
@@ -1150,6 +1174,7 @@ void test_fsm(u08 cmd, u08 *param)
 		switch(state)
 		{
 		case 0:
+			//TODO:  need to deal w/ reflections from the wall. can result in undershoot. sensor readings are almost maxed out by reflextion.
 			if(s.inputs.analog[AI_FLAME_NE]<80)
 			{
 				motor_command(6,3,3,40,-40);
@@ -1177,9 +1202,33 @@ void test_fsm(u08 cmd, u08 *param)
 			else
 			{
 				motor_command(2,0,0,0,0);
-				s.behavior_state[TEST_LOGIC]=0;
-				state=0;
+				PUMP_ON();
+				//s.behavior_state[TEST_LOGIC]=0;
+				state++;
+				t_start = get_ms();
+				count = 0;
+				//Ly: -10 ... 40  (-10 = top) = 140...155    Lx: -10....30 (-10 = right) = 115...140   top-left  x,y = 30,-10 bottom-right = -10,40
 			}
+			break;
+		case 2:
+			t_delta = get_ms() - t_start;
+			i=t_delta / 100;
+			if(i>8) 
+			{
+				i = 0; 
+				t_start = get_ms(); 
+				count++;
+			}
+			v.u16 = pan_tilt_pos[i].x;  
+			cfg_set_value_by_grp_id(15,6, v);
+			v.u16 = pan_tilt_pos[i].y;  
+			cfg_set_value_by_grp_id(15,5, v);
+			if(count>10)
+			{
+				PUMP_OFF();
+				s.behavior_state[TEST_LOGIC]=0;
+			}
+			break;
 		}
 	}
 

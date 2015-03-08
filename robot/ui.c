@@ -85,7 +85,7 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 			lcd_printf("i: %03d %03d %03d",s.ir[IR_NE], s.ir[IR_N], s.ir[IR_NW]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 
-			lcd_printf(" %03d   %03d",  s.ir[IR_E],s.ir[IR_W]); 
+			lcd_printf("%03d %03d %03d %03d",s.ir[IR_E],s.ir[IR_NR],s.ir[IR_NL],s.ir[IR_W]); 
 		}
 		else if(s.lcd_screen==3)
 		{

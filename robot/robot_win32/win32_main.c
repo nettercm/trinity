@@ -340,8 +340,8 @@ void sim_inputs(void)
 		//s.inputs.ir[3] = s.ir[IR_N_long]		= (u16)read_ir(ir0,60,600,0.0002);
 
 		s.inputs.ir[IR_E]						= (u16)read_ir(ir2,40,400,0.0002);
-		s.inputs.ir[IR_SE]						= (u16)read_ir(ir3,40,400,0.0002);
-		s.inputs.ir[IR_SW]						= (u16)read_ir(ir5,40,400,0.0002);
+		s.inputs.ir[IR_NR]						= (u16)read_ir(ir3,40,400,0.0002);
+		s.inputs.ir[IR_NL]						= (u16)read_ir(ir5,40,400,0.0002);
 		s.inputs.ir[IR_W]						= (u16)read_ir(ir6,40,400,0.0002);
 	}
 	//------------------------------------------------------------------------------------------------------------------------------------

@@ -281,21 +281,23 @@ void process_user_input(void)
 		if(jcL != joystick_changed_L)
 		{
 			t_config_value v;
+			u16 x,y;
 
 			jcL = joystick_changed_L;
 
-			log_printf("joystick:  joystick_Ly_1=%d, joystick_Lx_1=%d\n",joystick_Ly_1,joystick_Lx_1);
-			v.u16=122+(joystick_Lx_1/2);
+			v.u16=125+(joystick_Lx_1/2);
+			x=v.u16;
 			cfg_set_value_by_grp_id(15,6, v);
 			CMD_set_config_value(15,6, (uint8*)&v);
 			CMD_send();
 			
 			v.u16=145+(joystick_Ly_1/3);
+			y=v.u16;
 			cfg_set_value_by_grp_id(15,5, v);
 			CMD_set_config_value(15,5, (uint8*)&v);
 			CMD_send();
 			
-
+			log_printf("joystick:   Lx_1,Ly_1 = %3d,%3d    x,y = %3d,%3d  \n",joystick_Lx_1,joystick_Ly_1,x,y);
 		}
 
 		if(jcR != joystick_changed_R)
