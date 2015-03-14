@@ -44,20 +44,20 @@ PB2				LCD
 Analog Mux usage: (sample time for 16 ADC: approx 1.5ms, + overhead => 1.7 - 1.8ms)
  
 0	Sharp IR N
-1	Sharp IR NW
+1	Sharp IR NL
 2	Sharp IR NE
 3	Sharp IR W
-4	
-5	Sharp IR SW
-6	Sharp IR SE
-7	Sharp IR S
-8	Reserved (Sharp IR)
-9	Reserved (Sharp IR)
+4	Sharp IR NW
+5	Sharp IR NR
+6	
+7	
+8	
+9	Start Button
 10	Line R
 11	Line L
-12	Flame
-13	Reserved (Flame)
-14	Reserved (Flame)
+12	Flame Omni
+13	Flame NW
+14	Flame NE
 15	Sharp IR E
 */ 
 
@@ -81,7 +81,6 @@ Analog Mux usage: (sample time for 16 ADC: approx 1.5ms, + overhead => 1.7 - 1.8
 #define AI_IR_E			15
 #define AI_IR_NW		4
 #define AI_IR_NR		5
-//#define AI_IR_S			7
 
 #define AI_LINE_RIGHT	10
 #define AI_LINE_LEFT	11
