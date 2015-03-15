@@ -19,8 +19,8 @@ PD3 / TXD1		Bluetooth TX			Bluetooth TX
 PD2 / RXD1		Bluetooth RX			Bluetooth RX
 PD1 / TXD0		Sonar 1					Sonar 1 
 PD0 / RXD0		Sonar 2					Sonar 2 
-PC1 / SDA		Start button			Servo Mux (usage is TBD)
-PC0 / SCL	 							UV Tron (???)
+PC1 / SDA		Start button			Servo Mux
+PC0 / SCL	 							
 PB4 / ~SS		Fan enable				Pump enable
 PB3 / OC0A		Sound start (from Mic)	Sound start (from Mic)
 PA0 / ADC0		Right line sensor		Analog Mux address 0

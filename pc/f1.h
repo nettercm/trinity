@@ -453,13 +453,13 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_show_ir_4;
 			// main_comboBox_port
 			// 
 			this->main_comboBox_port->FormattingEnabled = true;
-			this->main_comboBox_port->Items->AddRange(gcnew cli::array< System::Object^  >(9) {L"4", L"7", L"8", L"9", L"10", L"11", 
-				L"12", L"13", L"55"});
+			this->main_comboBox_port->Items->AddRange(gcnew cli::array< System::Object^  >(11) {L"4", L"7", L"8", L"9", L"10", L"11", 
+				L"12", L"13", L"19",L"20",L"55"});
 			this->main_comboBox_port->Location = System::Drawing::Point(51, 20);
 			this->main_comboBox_port->Name = L"main_comboBox_port";
 			this->main_comboBox_port->Size = System::Drawing::Size(34, 21);
 			this->main_comboBox_port->TabIndex = 1;
-			this->main_comboBox_port->Text = L"4";
+			this->main_comboBox_port->Text = L"19";
 			this->main_comboBox_port->SelectedIndexChanged += gcnew System::EventHandler(this, &f1::main_comboBox_port_SelectedIndexChanged);
 			// 
 			// main_checkBox_connect

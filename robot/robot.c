@@ -1175,7 +1175,7 @@ void test_fsm(u08 cmd, u08 *param)
 		{
 		case 0:
 			//TODO:  need to deal w/ reflections from the wall. can result in undershoot. sensor readings are almost maxed out by reflextion.
-			if(s.inputs.analog[AI_FLAME_NE]<80)
+			if(s.inputs.analog[AI_FLAME_NE]<60)
 			{
 				motor_command(6,3,3,40,-40);
 			}
@@ -1187,12 +1187,12 @@ void test_fsm(u08 cmd, u08 *param)
 			}
 			break;
 		case 1:
-			if( (s.inputs.sonar[0] > 50) && (s.inputs.sonar[1] > 50)  && (s.inputs.sonar[2] > 50) )
+			if( (s.inputs.sonar[0] > 60) && (s.inputs.sonar[1] > 60)  && (s.inputs.sonar[2] > 60) )
 			{
 				bias = 0;
 				if(s.inputs.analog[AI_FLAME_NE]>s.inputs.analog[AI_FLAME_NW]) bias = 2;
 				if(s.inputs.analog[AI_FLAME_NW]>s.inputs.analog[AI_FLAME_NE]) bias = -2;
-				if( (s.inputs.analog[AI_FLAME_NW]<5) && (s.inputs.analog[AI_FLAME_NE]<5) ) 
+				if( (s.inputs.analog[AI_FLAME_NW]<40) && (s.inputs.analog[AI_FLAME_NE]<40) ) 
 				{
 					//in case of overshoot, need to make a harder correction
 					bias = -10;
