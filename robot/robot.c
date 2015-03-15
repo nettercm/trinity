@@ -360,8 +360,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			if(check_for_start_signal()) 
 			{
-				//state = s_aligning_south;
-				START_BEHAVIOR(TEST_LOGIC,5); //TODO:  fix this
+				state = s_aligning_south;
+				//START_BEHAVIOR(TEST_LOGIC,5); //TODO:  fix this
 			}
 			else if(s.behavior_state[MASTER_LOGIC]!=0) state = s.behavior_state[MASTER_LOGIC]; //s_waiting_for_start;
 
