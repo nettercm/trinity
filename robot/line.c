@@ -62,13 +62,13 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 
 		PREPARE_CFG2(black);					
 		PREPARE_CFG2(white);					
-
-		UPDATE_CFG2(black);					
-		UPDATE_CFG2(white);
 	}
 
 	//while(1)
 	{
+		UPDATE_CFG2(black);					
+		UPDATE_CFG2(white);
+
 		if(l_state==0) //current on black...
 		{
 			if(s.line[LEFT_LINE] <= white) //now on white...

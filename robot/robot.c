@@ -5,6 +5,22 @@
 #endif
 
 
+/*
+Issues:
+
+line detection: signal-to-noise ration on analog[10]/right line is bad;   also,  missing the entrance to room 1 (maybe exit from room 2 confuses the line detector)
+
+accelleration from 0 to min speed / turn speed needs to be more smooth if that speed is > 30
+
+robot does not go into room 3 if door opening is < 16".  (may have to do w/ recently added front sensor logic, because it improved after tweaking w.f.c line 120)
+
+when turning left after exiting from room 1, robot is way too far to the right
+
+too slow when make 90deg inside turns
+
+*/
+
+
 #include "standard_includes.h"
 
 const unsigned char pulseInPins[] = PULSE_PINS; 

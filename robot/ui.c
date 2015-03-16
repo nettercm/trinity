@@ -47,13 +47,13 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 		if(button_is_pressed(TOP_BUTTON))
 		{
 			play_note(A(3), 50, 10);
-			//START_BEHAVIOR(FOLLOW_WALL, LEFT_WALL); 
-			START_BEHAVIOR(MASTER_LOGIC,9); 
+			START_BEHAVIOR(FOLLOW_WALL, LEFT_WALL); 
+			//START_BEHAVIOR(MASTER_LOGIC,9); 
 		}
 		if(button_is_pressed(BOTTOM_BUTTON))
 		{
 			play_note(A(3), 50, 10);
-			START_BEHAVIOR(MASTER_LOGIC,1); 
+			START_BEHAVIOR(MASTER_LOGIC,2); 
 		}
 
 

@@ -52,15 +52,15 @@ FLT(5, 3, "odo_b",							0, 0, 154.0) //154 in sim, 160 on the physical robot
 //----------------------------------------------------------
 GRP(6, "LINE DETECTION")
 
-U08(6, 1, "black",							0, 0, 51)//12)//70)
-U08(6, 2, "white",							0, 0, 50)//11)//50)
+U08(6, 1, "black",							0, 0, 16)//12)//70)
+U08(6, 2, "white",							0, 0, 12)//11)//50)
 //----------------------------------------------------------
 
 
 //----------------------------------------------------------
 GRP(9, "MASTER LOGIC")
 
-S16(9,10, "turn speed",						0, 0, 80)
+S16(9,10, "turn speed",						0, 0, 40)
 S16(9,11, "motor command",					0, 0, 7)		//which motor command to use for certain mannouvers
 S16(9,12, "acceleration",					0, 0, 1)		//
 S16(9,13, "deceleration",					0, 0, 1)
@@ -117,9 +117,9 @@ S16(10, 5, "max correction %",	0, 0, 140)
 S16(10, 6, "Kp"				,	0, 0, 60)
 S16(10, 7, "Ki"				,	0, 0, 0)
 S16(10, 8, "Kd"				,	0, 0, 30)
-S16(10, 9, "minimum speed"	,	0, 0, 40)
-S16(10,10, "speed up amount",	0, 0, 4)
-S16(10,11, "slow down amount",	0, 0, 7)
+S16(10, 9, "minimum speed"	,	0, 0, 30)
+S16(10,10, "speed up amount",	0, 0, 1)
+S16(10,11, "slow down amount",	0, 0, 10)
 U08(10,12, "use corner logic",	0, 0, 1)
 FLT(10,13, "corner distance",	0, 0, 90)
 S16(10,14, "corner speed",		0, 0, 100)

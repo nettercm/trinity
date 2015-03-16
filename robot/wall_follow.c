@@ -117,7 +117,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 			//only look for the "lost the wall" condition if nothing is right in front. if someting IS right in front, need to make
 			//sure we turn in place soon enough
-			if( (use_corner_logic) && (side > lost_wall_distance) && (front > 160) ) 
+			if( (use_corner_logic) && (side > lost_wall_distance) && (front > 140) ) 
 			{ 
 				state = s_lost_wall;  
 				leave_(s_tracking_wall); 
