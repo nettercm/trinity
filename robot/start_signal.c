@@ -108,9 +108,13 @@ int check_for_start_signal()
 		}
 		if(t_now - t_last > 250)
 		{
-			dbg_printf("sound start count = %d\n",sound_start_count);
 			if(sound_start_count <= 1) consecutive_sound_start_count=0;
-			if(sound_start_count >  1) consecutive_sound_start_count++;
+			if (sound_start_count > 1)
+			{
+				consecutive_sound_start_count++;
+				dbg_printf("sound start count = %d, %d\n", sound_start_count, consecutive_sound_start_count);
+			}
+
 			sound_start_count=0;
 			t_last=t_now;
 		}

@@ -88,8 +88,9 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 					l_crossed=1;
 					if(t_crossed==0) t_crossed=get_ms();
 					l_ticks_crossed = s.encoder_ticks; //s.inputs.encoders[0];
+					dbg_printf("left line crossed: %ld @ %ldms, %ld\n", s.encoder_ticks/*s.inputs.encoders[0]*/ - l_ticks, get_ms(), s.encoder_ticks); //s.inputs.encoders[0]);
 				}
-				dbg_printf("left line blip: %ld @ %ldms, %ld\n",s.encoder_ticks/*s.inputs.encoders[0]*/ - l_ticks,get_ms(),s.encoder_ticks); //s.inputs.encoders[0]);
+				//dbg_printf("left line blip: %ld @ %ldms, %ld\n",s.encoder_ticks/*s.inputs.encoders[0]*/ - l_ticks,get_ms(),s.encoder_ticks); //s.inputs.encoders[0]);
 			}
 		}
 
@@ -112,8 +113,9 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 					r_crossed=1;
 					if(t_crossed==0) t_crossed=get_ms();
 					r_ticks_crossed = s.encoder_ticks /*s.inputs.encoders[1]*/;
+					dbg_printf("right line crossed: %ld @ %ldms, %ld\n", s.encoder_ticks /*s.inputs.encoders[1]*/ - r_ticks, get_ms(), s.encoder_ticks /*s.inputs.encoders[1]*/);
 				}
-				dbg_printf("right line blip: %ld @ %ldms, %ld\n",s.encoder_ticks /*s.inputs.encoders[1]*/ - r_ticks, get_ms(), s.encoder_ticks /*s.inputs.encoders[1]*/);
+				//dbg_printf("right line blip: %ld @ %ldms, %ld\n",s.encoder_ticks /*s.inputs.encoders[1]*/ - r_ticks, get_ms(), s.encoder_ticks /*s.inputs.encoders[1]*/);
 			}
 		}
 
