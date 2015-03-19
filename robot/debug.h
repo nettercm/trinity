@@ -27,10 +27,9 @@ extern unsigned char *msptr;
 extern volatile unsigned long msCounter;
 
 
-//silence!
-
+//using the buzzer is not compatible w/ servo PWM
 #define play_note(a,b,c) NOP()
-//#define play_from_program_space(a) NOP()
+#define play_from_program_space(a) NOP()
 
 
 /*

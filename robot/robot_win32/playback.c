@@ -26,7 +26,7 @@ void playback_sim_step(void)
 	if(enabled)
 	{
 		//we should have changed state just like in the capture file!
-		if(i.watch[2] != s.behavior_state[3])
+		if(i.watch[2] != s.behavior_state[MASTER_LOGIC_FSM])
 		{
 			printf("%6d:  ML state:  s.behavior_state[3]=%d  i.watch[2]=%d\n",i.timestamp,s.behavior_state[3],i.watch[2]);
 			//if(s.behavior_state[3]<2) s.behavior_state[3] = i.watch[2];

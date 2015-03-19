@@ -5,20 +5,38 @@
 #endif
 
 
+
 /*
 Issues:
 
-line detection: signal-to-noise ration on analog[10]/right line is bad;   also,  missing the entrance to room 1 (maybe exit from room 2 confuses the line detector)
+•	When the flame is close to a wall, the flame’s reflection from the wall can max out the flame sensors => may end up to looking straight at the candle when stopped
+	o	Do a sweep and use IR and/or flame sensor data to find the correct peak position
+	o	If the wall is known to be on the left, sweep from the right until the right sensor is maxed out
 
-accelleration from 0 to min speed / turn speed needs to be more smooth if that speed is > 30
+•	When doing a 360 spin to look for the candle, need to make sure we don’t get confused by any IR potentially coming from outside the room
+	o	Need to look at the angle associated with the reading, i.e. ignore if it is coming from behind the robot
+	o	Don’t do a 360 degree spin – turn right >90deg and then left >180deg
 
-robot does not go into room 3 if door opening is < 16".  (may have to do w/ recently added front sensor logic, because it improved after tweaking w.f.c line 120)
+•	If the candle is in the middle of a large room, the robot will crash into it if we are approaching it off-center (sonar won’t see it)
+	o	Solution: add a NE and NW facing sonar
 
-when turning left after exiting from room 1, robot is way too far to the right
+•	When exiting room number 1 after extinguishing,  the door chosen depends on where the candle was
 
-too slow when make 90deg inside turns
+•	line detection: signal-to-noise ration on analog[10]/right line is bad;   also,  missing the entrance to room 1 (maybe exit from room 2 confuses the line detector)
+
+•	acceleration from 0 to min speed / turn speed needs to be more smooth if target speed is > 30
+
+•	robot does not go into room 3 if door opening is < 16". 
+	o	may have to do w/ recently added front sensor logic, 
+	o	it improved after tweaking wall_following.c line 120)
+
+•	when turning left after exiting from room 1, robot is way too far to the right
+
+•	too slow when make 90deg inside turns
+
 
 */
+
 
 
 #include "standard_includes.h"
@@ -339,7 +357,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	while(1)
 	{
 		//the following state transition applies to all states
-		if(s.behavior_state[MASTER_LOGIC]==0) state = s_disabled;
+		if(s.behavior_state[MASTER_LOGIC_FSM]==0) state = s_disabled;
 
 
 		first_(s_disabled)
@@ -348,16 +366,16 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			{  
 				HARD_STOP(); //motor_command(cmd,accel,decel,0,0);
 				PUMP_OFF();
-				STOP_BEHAVIOR(FOLLOW_WALL);
-				//STOP_BEHAVIOR(MASTER_LOGIC);
+				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
+				//STOP_BEHAVIOR(MASTER_LOGIC_FSM);
 				RESET_LINE_DETECTION();
 				dog_position=0;
 				s.inputs.watch[0] = s.inputs.watch[1] = s.inputs.watch[2] = s.inputs.watch[3] = 0;
 			}
 
-			//if(s.behavior_state[MASTER_LOGIC]!=0) state = s.behavior_state[MASTER_LOGIC]; //s_waiting_for_start;
+			//if(s.behavior_state[MASTER_LOGIC_FSM]!=0) state = s.behavior_state[MASTER_LOGIC_FSM]; //s_waiting_for_start;
 			state = s_waiting_for_start;
-			s.behavior_state[MASTER_LOGIC] = s_waiting_for_start;
+			s.behavior_state[MASTER_LOGIC_FSM] = s_waiting_for_start;
 
 			exit_(s_disabled)  { }
 		}
@@ -377,9 +395,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			if(check_for_start_signal()) 
 			{
 				state = s_aligning_south;
-				//START_BEHAVIOR(TEST_LOGIC,5); //TODO:  fix this
+				//START_BEHAVIOR(TEST_LOGIC_FSM,5); //TODO:  fix this
 			}
-			else if(s.behavior_state[MASTER_LOGIC]!=0) state = s.behavior_state[MASTER_LOGIC]; //s_waiting_for_start;
+			else if(s.behavior_state[MASTER_LOGIC_FSM]!=0) state = s.behavior_state[MASTER_LOGIC_FSM]; //s_waiting_for_start;
 
 			exit_(s_waiting_for_start)
 			{
@@ -421,7 +439,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_finding_room_3)
 			{
-				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
+				START_BEHAVIOR(FOLLOW_WALL_FSM,RIGHT_WALL); //start following the RIGHT wall
 				RESET_LINE_DETECTION();
 			}
 
@@ -437,7 +455,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				RESET_LINE_DETECTION();
 				play_note(C(3), 50, 10);
 				HARD_STOP();
-				STOP_BEHAVIOR(FOLLOW_WALL);
+				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 				state = s_searching_room_3;
 			}
 
@@ -478,7 +496,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_finding_room_2)
 			{
-				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
+				START_BEHAVIOR(FOLLOW_WALL_FSM,RIGHT_WALL); //start following the RIGHT wall
 			}
 
 			if( LINE_WAS_DETECTED() )
@@ -494,7 +512,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				{
 					play_note(C(3), 50, 10);
 					HARD_STOP();
-					STOP_BEHAVIOR(FOLLOW_WALL);
+					STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 					state = s_searching_room_2;
 				}
 			}
@@ -536,7 +554,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_finding_room_1)
 			{
-				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
+				START_BEHAVIOR(FOLLOW_WALL_FSM,RIGHT_WALL); //start following the RIGHT wall
 			}
 
 			if( LINE_WAS_DETECTED() )
@@ -553,7 +571,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				{
 					play_note(C(3), 50, 10);
 					HARD_STOP();
-					STOP_BEHAVIOR(FOLLOW_WALL);
+					STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 					state = s_searching_room_1;
 				}
 			}
@@ -600,7 +618,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_finding_room_4) 
 			{ 
-				START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL); //start following the RIGHT wall
+				START_BEHAVIOR(FOLLOW_WALL_FSM,RIGHT_WALL); //start following the RIGHT wall
 			}
 
 			//keep following the right wall until we have passed through the door
@@ -608,7 +626,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//now we are facing N
 			play_note(C(3), 50, 10);
-			STOP_BEHAVIOR(FOLLOW_WALL);  //s.behavior_state[2] = 0;
+			STOP_BEHAVIOR(FOLLOW_WALL_FSM);  //s.behavior_state[2] = 0;
 			HARD_STOP();
 			
 			//now we are on the line that marks the north-side door of Room #1 - let's align ourselves to that line so that we are facing North
@@ -653,12 +671,12 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				TURN_IN_PLACE(turn_speed, find4_turn_1); //15);
 				MOVE2(turn_speed, find4_distance_2,find4_left_margin_1,find4_right_margin_1);
 				RESET_LINE_DETECTION();
-				START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL); //start  following the LEFT wall
+				START_BEHAVIOR(FOLLOW_WALL_FSM,LEFT_WALL); //start  following the LEFT wall
 
 				//keep following the left wall until we have passed through the door
 				WAIT_FOR_LINE_DETECTION();
 				play_note(C(3), 50, 10);
-				STOP_BEHAVIOR(FOLLOW_WALL);
+				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 				HARD_STOP();
 				RESET_LINE_DETECTION();
 				switch_(s_finding_room_4, s_searching_room_4);
@@ -700,12 +718,12 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 				//keep following the left wall until we have passed through the door;  i.e. going counter-clockwise around Rm #4
 				RESET_LINE_DETECTION();
-				START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL);
+				START_BEHAVIOR(FOLLOW_WALL_FSM,LEFT_WALL);
 				WAIT_FOR_LINE_DETECTION();
 
 				//we reached room 4 - so proceed to the appropriate state
 				play_note(C(3), 50, 10);
-				STOP_BEHAVIOR(FOLLOW_WALL);
+				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 				HARD_STOP();
 				RESET_LINE_DETECTION();
 				switch_(s_finding_room_4, s_searching_room_4);
@@ -716,12 +734,12 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			TURN_IN_PLACE(turn_speed, 90);  //turn left to face West
 			//keep following the left wall until we have passed through the door;  i.e. going counter-clockwise around Rm #4
 			RESET_LINE_DETECTION();
-			START_BEHAVIOR(FOLLOW_WALL,RIGHT_WALL);
+			START_BEHAVIOR(FOLLOW_WALL_FSM,RIGHT_WALL);
 			WAIT_FOR_LINE_DETECTION();
 
 			//we reached room 4 - so proceed to the appropriate state
 			play_note(C(3), 50, 10);
-			STOP_BEHAVIOR(FOLLOW_WALL);
+			STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 			HARD_STOP();
 			RESET_LINE_DETECTION();
 			switch_(s_finding_room_4, s_searching_room_4);
@@ -922,9 +940,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			{
 				TURN_IN_PLACE(50, 90);
 			}
-			START_BEHAVIOR(FOLLOW_WALL,LEFT_WALL);
+			START_BEHAVIOR(FOLLOW_WALL_FSM,LEFT_WALL);
 			WAIT_FOR_LINE_DETECTION();
-			STOP_BEHAVIOR(FOLLOW_WALL);
+			STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 			HARD_STOP();
 			RESET_LINE_DETECTION();
 			/*
@@ -1156,25 +1174,25 @@ void test_fsm(u08 cmd, u08 *param)
 		usb_printf("wall_follow_fsm()\n");
 	}
 
-	if(s.behavior_state[TEST_LOGIC]==1) 
+	if(s.behavior_state[TEST_LOGIC_FSM]==1) 
 	{
 		PUMP_ON();
-		s.behavior_state[TEST_LOGIC]=0;
+		s.behavior_state[TEST_LOGIC_FSM]=0;
 	}
 
-	if(s.behavior_state[TEST_LOGIC]==2) 
+	if(s.behavior_state[TEST_LOGIC_FSM]==2) 
 	{
 		PUMP_OFF();
-		s.behavior_state[TEST_LOGIC]=0;
+		s.behavior_state[TEST_LOGIC_FSM]=0;
 	}
 
-	if(s.behavior_state[TEST_LOGIC]==3) 
+	if(s.behavior_state[TEST_LOGIC_FSM]==3) 
 	{
 		dbg_printf("start = %d\n",is_digital_input_high(IO_B3));
-		s.behavior_state[TEST_LOGIC]=0;
+		s.behavior_state[TEST_LOGIC_FSM]=0;
 	}
 
-	if(s.behavior_state[TEST_LOGIC]==4) 
+	if(s.behavior_state[TEST_LOGIC_FSM]==4) 
 	{
 		switch(state)
 		{
@@ -1192,7 +1210,7 @@ void test_fsm(u08 cmd, u08 *param)
 		}
 	}
 
-	if(s.behavior_state[TEST_LOGIC]==5) 
+	if(s.behavior_state[TEST_LOGIC_FSM]==5) 
 	{
 		switch(state)
 		{
@@ -1205,7 +1223,7 @@ void test_fsm(u08 cmd, u08 *param)
 			else
 			{
 				motor_command(2,0,0,0,0);
-				//s.behavior_state[TEST_LOGIC]=0;
+				//s.behavior_state[TEST_LOGIC_FSM]=0;
 				state++;
 			}
 			break;
@@ -1226,7 +1244,7 @@ void test_fsm(u08 cmd, u08 *param)
 			{
 				motor_command(2,0,0,0,0);
 				PUMP_ON();
-				//s.behavior_state[TEST_LOGIC]=0;
+				//s.behavior_state[TEST_LOGIC_FSM]=0;
 				state++;
 				t_start = get_ms();
 				count = 0;
@@ -1249,13 +1267,13 @@ void test_fsm(u08 cmd, u08 *param)
 			if(count>10)
 			{
 				PUMP_OFF();
-				s.behavior_state[TEST_LOGIC]=0;
+				s.behavior_state[TEST_LOGIC_FSM]=0;
 			}
 			break;
 		}
 	}
 
-	if(s.behavior_state[TEST_LOGIC]==6) 
+	if(s.behavior_state[TEST_LOGIC_FSM]==6) 
 	{
 		if(s.inputs.analog[AI_FLAME_NW]<80)
 		{
@@ -1264,7 +1282,7 @@ void test_fsm(u08 cmd, u08 *param)
 		else
 		{
 			motor_command(2,0,0,0,0);
-			s.behavior_state[TEST_LOGIC]=0;
+			s.behavior_state[TEST_LOGIC_FSM]=0;
 		}
 	}
 }

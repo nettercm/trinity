@@ -90,12 +90,12 @@ void vrep_sim_step(void)
 
 		if(c=='r')
 		{
-			s.behavior_state[FOLLOW_WALL]=2;
+			s.behavior_state[FOLLOW_WALL_FSM]=2;
 		}
 
 		if(c=='a')
 		{
-			s.behavior_state[MASTER_LOGIC]=12;
+			s.behavior_state[MASTER_LOGIC_FSM]=12;
 		}
 
 		if(c=='b')
@@ -105,7 +105,7 @@ void vrep_sim_step(void)
 
 		if(c=='1') //find room #1
 		{
-			s.behavior_state[MASTER_LOGIC]=7;
+			s.behavior_state[MASTER_LOGIC_FSM]=7;
 		}
 		if(c=='s')
 		{

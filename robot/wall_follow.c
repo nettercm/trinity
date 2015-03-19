@@ -71,7 +71,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 		
 		//the following state transition applies to all states
-		if(s.behavior_state[FOLLOW_WALL]==0) state = s_disabled;
+		if(s.behavior_state[FOLLOW_WALL_FSM]==0) state = s_disabled;
 		
 		side =  (which_wall == LEFT_WALL ? s.ir[IR_NW] : s.ir[IR_NE]);
 		front = s.ir[IR_N];
@@ -84,9 +84,9 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		first_(s_disabled)
 		{
 			enter_(s_disabled) { motor_command(6,2,2,0,0); }
-			if(s.behavior_state[FOLLOW_WALL]!=0)
+			if(s.behavior_state[FOLLOW_WALL_FSM]!=0)
 			{
-				which_wall = s.behavior_state[FOLLOW_WALL];
+				which_wall = s.behavior_state[FOLLOW_WALL_FSM];
 				state = s_tracking_wall;
 			}
 			exit_(s_disabled)  { motor_command(8,1000,0,min_speed/2,min_speed/2); target_speed = min_speed; }

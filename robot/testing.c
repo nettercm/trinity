@@ -69,7 +69,7 @@ void test_task(u08 cmd, u08 *param)
 		UPDATE_CFG2(distance);
 		UPDATE_CFG2(angle);
 
-		if(s.behavior_state[TEST_LOGIC]==1) 
+		if(s.behavior_state[TEST_LOGIC_FSM]==1) 
 		{
 			/*
 			1) gradually ramp up (at specified rate) to target speed
@@ -143,16 +143,16 @@ void test_task(u08 cmd, u08 *param)
 			TURN_IN_PLACE_AND_SCAN( 100, -180 );
 			scan_result = find_peak_in_scan(scan_data,360,3);
 			*/
-			s.behavior_state[TEST_LOGIC]=0;
+			s.behavior_state[TEST_LOGIC_FSM]=0;
 		}
 
-		if(s.behavior_state[TEST_LOGIC]==2)
+		if(s.behavior_state[TEST_LOGIC_FSM]==2)
 		{
 			TURN_IN_PLACE(speed,angle);
-			s.behavior_state[TEST_LOGIC]=0;
+			s.behavior_state[TEST_LOGIC_FSM]=0;
 		}
 
-		if(s.behavior_state[TEST_LOGIC]==3)
+		if(s.behavior_state[TEST_LOGIC_FSM]==3)
 		{
 			TURN_IN_PLACE(40, -90);
 			TURN_IN_PLACE_AND_SCAN(40, 180, 4);
@@ -198,18 +198,18 @@ void test_task(u08 cmd, u08 *param)
 				
 				
 			}
-			s.behavior_state[TEST_LOGIC]=0;
+			s.behavior_state[TEST_LOGIC_FSM]=0;
 		}
 
-		if(s.behavior_state[TEST_LOGIC]==4) 
+		if(s.behavior_state[TEST_LOGIC_FSM]==4) 
 		{
 			PUMP_ON();
 			task_wait(1000);
 			PUMP_OFF();
-			s.behavior_state[TEST_LOGIC]=0;
+			s.behavior_state[TEST_LOGIC_FSM]=0;
 		}
 
-		if(s.behavior_state[TEST_LOGIC]==5) 
+		if(s.behavior_state[TEST_LOGIC_FSM]==5) 
 		{
 			dbg_printf("start = %d\n",is_digital_input_high(IO_B3));
 			task_wait(500);
@@ -230,7 +230,7 @@ void test_task(u08 cmd, u08 *param)
 			else
 			{
 				motor_command(6,accel,decel,0,0);
-				s.behavior_state[TEST_LOGIC]=0;
+				s.behavior_state[TEST_LOGIC_FSM]=0;
 			}
 			task_wait(20);
 		}
