@@ -25,10 +25,6 @@ int check_for_start_signal()
 	static u08 start_button_count=0;
 	t_now = get_ms();
 
-#ifdef SVP_ON_WIN32
-	if(m.start_signal)	{ m.start_signal = 0; return 1; }
-	else return 0;
-#endif
 
 	if(t_last==0) t_last=t_now;
 

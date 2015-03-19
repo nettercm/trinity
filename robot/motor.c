@@ -170,14 +170,9 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 	
 	if(cmd==0) //0 means update
 	{
-		l_enc_delta = svp_get_counts_and_reset_ab();
-		r_enc_delta = svp_get_counts_and_reset_cd();
-		s.inputs.actual_speed[0] = l_enc_delta;
-		s.inputs.actual_speed[1] = r_enc_delta;
-		s.inputs.encoders[0] += l_enc_delta;
-		s.inputs.encoders[1] += r_enc_delta;
-		s.encoder_ticks += (s32)((abs(l_enc_delta) + abs(r_enc_delta))/2);
-		
+		l_enc_delta = s.inputs.actual_speed[0];
+		r_enc_delta = s.inputs.actual_speed[1];
+
 		switch(s.motor_command_state)
 		{
 			case 0:	//we are not turning or carrying out any specific move/command, so simply re-apply what's consider the current motor speeds i.e. x_actual
@@ -501,6 +496,7 @@ void odometry_update_fsm(u08 cmd, u08 *param)
 	DEFINE_CFG(flt,odo_cmr,5,2);
 	DEFINE_CFG(flt,odo_b,  5,3);
 	static u08 initialized=0;
+	static sint16 l_enc_delta, r_enc_delta;
 		
 	//task_open();
 
@@ -518,7 +514,15 @@ void odometry_update_fsm(u08 cmd, u08 *param)
 	UPDATE_CFG(flt,odo_cml);
 	UPDATE_CFG(flt,odo_cmr);
 	UPDATE_CFG(flt,odo_b);
-	//motor_command(0,0,0,0,0);
+
+	l_enc_delta = svp_get_counts_and_reset_ab();
+	r_enc_delta = svp_get_counts_and_reset_cd();
+	s.inputs.actual_speed[0] = l_enc_delta;
+	s.inputs.actual_speed[1] = r_enc_delta;
+	s.inputs.encoders[0] += l_enc_delta;
+	s.inputs.encoders[1] += r_enc_delta;
+	s.encoder_ticks += (s32)((abs(l_enc_delta) + abs(r_enc_delta))/2);
+
 	odometry_update(s.inputs.actual_speed[0], s.inputs.actual_speed[1], odo_cml, odo_cmr, odo_b);
 }
 

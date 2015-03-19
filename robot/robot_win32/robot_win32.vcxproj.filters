@@ -318,6 +318,12 @@
     <ClCompile Include="..\os.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vrep.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="playback.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\.gitattributes" />

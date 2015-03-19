@@ -940,7 +940,11 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		}
 
 		s.inputs.watch[2]=state;
-		if(state!=last_state) dbg_printf("ML:state: %d->%d\n", last_state,state);
+		if(s.behavior_state[3]!=0) s.behavior_state[3]=state;
+		if(state!=last_state) 
+		{
+			dbg_printf("ML:state: %d->%d\n", last_state,state);
+		}
 
 		//task_wait(25);
  		OS_SCHEDULE;
@@ -1392,11 +1396,14 @@ void update_grid( int ir_sensor_index,float x1, float y1, float t1)
 }
 	
 	
-
+#ifdef WIN32
+int main(int argc, char **argv)
+#else
 int main(void)
+#endif
 {
 	#ifdef SVP_ON_WIN32
-	{ extern void win32_main(void); 	win32_main(); }
+	{ extern void win32_main(int argc, char **argv); 	win32_main(argc, argv); }
 	#endif
 	hardware_init();  //initialize hardware & pololu libraries
 	//i2c_init();
@@ -1446,9 +1453,9 @@ int main(void)
 	line_alignment_done_evt = event_create();
 
 	task_create( main_loop_task,			1,  NULL, 0, 0);
-	task_create( ultrasonic_update_fsm,		2,  NULL, 0, 0);
-	task_create( master_logic_fsm,			3,  NULL, 0, 0);
-	task_create( lcd_update_fsm,			4,  NULL, 0, 0);
+	//task_create( ultrasonic_update_fsm,		2,  NULL, 0, 0);
+	task_create( master_logic_fsm,			2,  NULL, 0, 0);
+	task_create( lcd_update_fsm,			3,  NULL, 0, 0);
 
 	//don't want the OS to schedule those tasks. we'll do that manually as part of the main loop
 	//os_task_suspend(ml_tid);
