@@ -57,6 +57,9 @@ int	usb_printf(const char *__fmt, ...)
 //typically around 100us
 int	dbg_printf(const char *__fmt, ...)
 {
+#if 1
+	return 0;
+#else
 	int size,i;
 	va_list ap;
 	va_start(ap, __fmt);
@@ -75,6 +78,7 @@ int	dbg_printf(const char *__fmt, ...)
 		}
 	}
 	return i;
+#endif
 }
 
 
