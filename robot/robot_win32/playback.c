@@ -17,7 +17,7 @@ void playback_sim_init(char *path)
 	m.elapsed_milliseconds = 0;
 	m.enc_ab = 0;
 	m.enc_cd = 0;
-	capture_file=fopen("c:\\Temp\\2015-03-18-17-21-53-capture_file.txt","r");
+	capture_file=fopen("c:\\Temp\\2015-03-18-21-50-21-capture_file.txt","r");
 }
 
 
@@ -47,7 +47,9 @@ void playback_sim_inputs(void)
 	static char last_line[500];
 	static s16 l_enc=0, r_enc=0;
 	int count;
-	Sleep(20);
+	int sleep_time = 0;
+
+	Sleep(sleep_time);
 	
 	if(_kbhit())
 	{
@@ -56,19 +58,30 @@ void playback_sim_inputs(void)
 
 		if(c=='s')
 		{
+			sleep_time = 10;
 			enabled=1;
+		}
+		if (c == 'S')
+		{
+			sleep_time = 0;
+			enabled = 1;
 		}
 	}
 
 	if(!enabled) 
 	{
 		s.inputs.analog[AI_START_BUTTON]=255; //otherwise, control logic will think the start button was pressed.
+		Sleep(20);
 		return;
 	}
 
 	str = fgets(line,500,capture_file);
 
-	if(str==NULL) return;
+	if (str == NULL)
+	{
+		enabled = 0;
+		return;
+	}
 
 	count = sscanf(line,
 		"%d,%d,%d,"
@@ -95,20 +108,30 @@ void playback_sim_inputs(void)
 		&(i.watch[2])//, &(i.watch[1]), &(i.watch[2]), &(i.watch[3])
 	);
 
+	if (i.watch[2] != s.behavior_state[3])
+	{
+		printf("%6d:  ML should change state:  s.behavior_state[3]=%d  i.watch[2]=%d\n", i.timestamp, s.behavior_state[3], i.watch[2]);
+		if ((s.behavior_state[3] == 1) && (i.watch[2] == 2))
+		{
+			force_start_signal();
+		}
+	}
+
+	if ((i.timestamp - s.inputs.timestamp > 25) || (i.timestamp - s.inputs.timestamp < 15))
+	{
+		printf("%6d:  Unexpected timestamp change from %d to %d\n", i.timestamp, s.inputs.timestamp, i.timestamp);
+	}
+
+	if (count != 45)
+	{
+		count = 45; //breakpoint
+	}
+	memcpy(last_line, line, sizeof(line));
+
 	m.elapsed_milliseconds = i.timestamp;
 	m.vbatt = i.vbatt;
-
-
 	m.enc_ab += i.actual_speed[0]; //i.encoders[0];
 	m.enc_cd += i.actual_speed[1]; //i.encoders[1];
-	if( (m.enc_ab != 0) || (m.enc_cd != 0) )
-	{
-		NOP();
-		//need to compensate for the fact that i.encoders gets incremented later on inside odometry_update_fsm()
-		//alternatively, maybe we should simply not copy over the .encoders values, since they are really calculated values
-		//i.encoders[0] -= m.enc_ab;
-		//i.encoders[1] -= m.enc_cd;
-	}
 
 	//under WIN32, we don't run the post-processing that is associated w/ A2D input capture, so we need to fill in the s. struct values directly
 	s.line[RIGHT_LINE] = i.analog[AI_LINE_RIGHT];
@@ -128,17 +151,5 @@ void playback_sim_inputs(void)
 	s.inputs.timestamp  = i.timestamp;
 	s.inputs.vbatt		= i.vbatt;
 
-	if(i.watch[2] != s.behavior_state[3])
-	{
-		printf("%6d:  ML should change state:  s.behavior_state[3]=%d  i.watch[2]=%d\n",i.timestamp,s.behavior_state[3],i.watch[2]);
-		//if(s.behavior_state[3]<2) s.behavior_state[3] = i.watch[2];
-	}
-
-	if(count!=48)
-	{
-		count=48; //breakpoint
-	}
-	memcpy(last_line,line,sizeof(line));
-	//memcpy(&(s.inputs),&i,sizeof(t_inputs));
 }
 

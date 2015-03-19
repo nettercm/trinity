@@ -13,7 +13,12 @@ u16 consecutive_sound_start_count=0;
 u16 button_count=0;
 u32 frequency_in_hz=0;
 
+static u08 force = 0;
 
+void force_start_signal()
+{
+	force = 1;
+}
 
 int check_for_start_signal()
 {
@@ -125,12 +130,13 @@ int check_for_start_signal()
 		print("%  ");
 		*/
 	}
-	if( (start_button_count>=3) || (button_count >= 10) || (consecutive_sound_start_count >= 3) ) 
+	if( (force==1) || (start_button_count>=3) || (button_count >= 10) || (consecutive_sound_start_count >= 3) ) 
 	{
 		dbg_printf("bc = %d, cssc = %d\n",button_count, consecutive_sound_start_count);
 		button_count = 0;
 		consecutive_sound_start_count = 0;
 		sound_start_count = 0;
+		force = 0;
 		return 1; 
 	}
 	else return 0;

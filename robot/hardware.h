@@ -64,17 +64,20 @@ Analog Mux usage: (sample time for 16 ADC: approx 1.5ms, + overhead => 1.7 - 1.8
 //Start button (may not be needed)
 
 //index into s.ir and s.inputs.ir - does not need to match actual input channel numbers
-#define IR_N			0
+//#define IR_N			0
+static const u08 IR_N =  0;
 #define IR_NL			1
 #define IR_NR			2
 #define IR_NW			3
-#define IR_NE			4
+//#define IR_NE			4
+static const u08 IR_NE = 4;
 #define IR_W			5
 #define IR_E			6
 
 
 //analogs.  The following refer to channel numbers
-#define AI_IR_N			0
+//#define AI_IR_N			0
+static const u08 AI_IR_N = 0;
 #define AI_IR_NL		1
 #define AI_IR_NE		2
 #define AI_IR_W			3

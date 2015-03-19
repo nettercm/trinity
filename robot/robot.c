@@ -394,7 +394,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		//-------------------------------------------------------------------------------------------------------
 		next_(s_aligning_south)
 		{
-			enter_(s_aligning_south) { }
+			enter_(s_aligning_south) 
+			{
+				NOP();
+			}
 			
 			TURN_IN_PLACE(turn_speed, -90);
 

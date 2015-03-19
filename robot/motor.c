@@ -473,6 +473,17 @@ int motor_command(unsigned char cmd, uint16 p1, uint16 p2, sint16 lm_speed, sint
 			t_last=t_now;
 		}
 
+		#ifdef SVP_ON_WIN32
+		{
+			static s16 lm_actual = 0, rm_actual = 0;
+			if (abs(lm_actual - s.lm_actual) > 30 || abs(rm_actual - s.rm_actual) > 30)
+			{
+				NOP();
+			}
+			lm_actual = s.lm_actual;
+			rm_actual = s.rm_actual;
+		}
+		#endif
 	}
 	
 	if( (s.motor_command_state != last_state) ) //|| (cmd != 0) )
