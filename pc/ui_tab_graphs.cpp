@@ -73,6 +73,31 @@ namespace robot_ui
 			else y = x % 500;
 			graphs_chart->Series[0]->Points->AddXY(x, y);
 
+			if(		graphs_comboBox_series_1b->Text == "analog[0]") y = inputs_history[x].analog[0];
+			else if(graphs_comboBox_series_1b->Text == "analog[1]") y = inputs_history[x].analog[1];
+			else if(graphs_comboBox_series_1b->Text == "analog[2]") y = inputs_history[x].analog[2];
+			else if(graphs_comboBox_series_1b->Text == "analog[3]") y = inputs_history[x].analog[3];
+			else if(graphs_comboBox_series_1b->Text == "analog[4]") y = inputs_history[x].analog[4];
+			else if(graphs_comboBox_series_1b->Text == "analog[5]") y = inputs_history[x].analog[5];
+			else if(graphs_comboBox_series_1b->Text == "analog[6]") y = inputs_history[x].analog[6];
+			else if(graphs_comboBox_series_1b->Text == "analog[7]") y = inputs_history[x].analog[7];
+			else if(graphs_comboBox_series_1b->Text == "analog[10]") y = inputs_history[x].analog[10];
+			else if(graphs_comboBox_series_1b->Text == "analog[11]") y = inputs_history[x].analog[11];
+			else if(graphs_comboBox_series_1b->Text == "analog[12]") y = inputs_history[x].analog[12];
+			else if(graphs_comboBox_series_1b->Text == "analog[13]") y = inputs_history[x].analog[13];
+			else if(graphs_comboBox_series_1b->Text == "analog[14]") y = inputs_history[x].analog[14];
+			else if(graphs_comboBox_series_1b->Text == "ir[0]") y = inputs_history[x].ir[0];
+			else if(graphs_comboBox_series_1b->Text == "ir[1]") y = inputs_history[x].ir[1];
+			else if(graphs_comboBox_series_1b->Text == "ir[2]") y = inputs_history[x].ir[2];
+			else if(graphs_comboBox_series_1b->Text == "ir[3]") y = inputs_history[x].ir[3];
+			else if(graphs_comboBox_series_1b->Text == "sonar[0]") y = inputs_history[x].sonar[0];
+			else if(graphs_comboBox_series_1b->Text == "sonar[1]") y = inputs_history[x].sonar[1];
+			else if(graphs_comboBox_series_1b->Text == "sonar[2]") y = inputs_history[x].sonar[2];
+			else if(graphs_comboBox_series_1b->Text == "sonar[3]") y = inputs_history[x].sonar[3];
+			else if(graphs_comboBox_series_1b->Text == "theta") y = inputs_history[x].theta;
+			else y = x % 200;
+			graphs_chart->Series[2]->Points->AddXY(x, y);
+
 			if(		graphs_comboBox_series_2a->Text == "analog[0]") y = inputs_history[x].analog[0];
 			else if(graphs_comboBox_series_2a->Text == "analog[1]") y = inputs_history[x].analog[1];
 			else if(graphs_comboBox_series_2a->Text == "analog[2]") y = inputs_history[x].analog[2];
@@ -102,6 +127,7 @@ namespace robot_ui
 		// Keep a constant number of points by removing them from the left
 		while(graphs_chart->Series[0]->Points->Count > 2000) graphs_chart->Series[0]->Points->RemoveAt(0);
 		while(graphs_chart->Series[1]->Points->Count > 2000) graphs_chart->Series[1]->Points->RemoveAt(0);
+		while(graphs_chart->Series[2]->Points->Count > 2000) graphs_chart->Series[2]->Points->RemoveAt(0);
 
 		//graphs_chart->Invalidate();
 	}
@@ -139,13 +165,17 @@ namespace robot_ui
 
 		graphs_chart->ChartAreas["ChartArea2"]->AxisX->ScaleView = graphs_chart->ChartAreas["ChartArea1"]->AxisX->ScaleView;
 
-		graphs_chart->Series["Series 1"]->Points->Clear();
-		graphs_chart->Series["Series 1"]->IsXValueIndexed=TRUE;
-		graphs_chart->Series["Series 1"]->Enabled = TRUE; //FALSE;
+		graphs_chart->Series["Series 1a"]->Points->Clear();
+		graphs_chart->Series["Series 1a"]->IsXValueIndexed=TRUE;
+		graphs_chart->Series["Series 1a"]->Enabled = TRUE; //FALSE;
 
-		graphs_chart->Series["Series 2"]->Points->Clear();
-		graphs_chart->Series["Series 2"]->IsXValueIndexed=TRUE;
-		graphs_chart->Series["Series 2"]->Enabled = TRUE; //FALSE;
+		graphs_chart->Series["Series 2a"]->Points->Clear();
+		graphs_chart->Series["Series 2a"]->IsXValueIndexed=TRUE;
+		graphs_chart->Series["Series 2a"]->Enabled = TRUE; //FALSE;
+
+		graphs_chart->Series["Series 1b"]->Points->Clear();
+		graphs_chart->Series["Series 1b"]->IsXValueIndexed=TRUE;
+		graphs_chart->Series["Series 1b"]->Enabled = TRUE; //FALSE;
 
 		graphs_comboBox_series_1a->Items->Clear();
 		graphs_comboBox_series_1b->Items->Clear();
@@ -216,16 +246,16 @@ namespace robot_ui
 
 		if(x>=500) 
 		{
-			graphs_chart->Series["Series 1"]->Points->RemoveAt(0);
-			graphs_chart->Series["Series 2"]->Points->RemoveAt(0);
+			graphs_chart->Series["Series 1a"]->Points->RemoveAt(0);
+			graphs_chart->Series["Series 2a"]->Points->RemoveAt(0);
 		}
 
 		y1 = s.inputs->watch[0]; //actual_speed[0]; //ir[0];
 		y2 = s.inputs->watch[1]; //ir[2]; //ir[1];
 		t = timeGetTime();
 
-		graphs_chart->Series["Series 1"]->Points->AddXY(x,y1);
-		graphs_chart->Series["Series 2"]->Points->AddXY(x,y2);
+		graphs_chart->Series["Series 1a"]->Points->AddXY(x,y1);
+		graphs_chart->Series["Series 2a"]->Points->AddXY(x,y2);
 		//graphs_chart->Invalidate();
 #endif
 	}

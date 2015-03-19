@@ -72,6 +72,9 @@
     <ClCompile Include="ip.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ui_tab_datacapture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="data.h">

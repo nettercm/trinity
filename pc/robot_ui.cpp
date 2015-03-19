@@ -57,6 +57,9 @@ namespace robot_ui
 
 		log_printf("++ f1::f1(void)\n");
 
+	    this->SetStyle( static_cast<ControlStyles>(ControlStyles::DoubleBuffer | ControlStyles::UserPaint | ControlStyles::AllPaintingInWmPaint), true );
+		this->UpdateStyles();
+
 		ignore_parameter_changes = 1;
 
 		random = gcnew Random();
@@ -102,6 +105,11 @@ namespace robot_ui
 		//tcp_client_init("127.0.0.1",5555);
 		//tcp_send("test",4);
 
+		//log_txt->SetStyle( ControlStyles.AllPaintingInWmPaint |  ControlStyles.UserPaint |  ControlStyles.DoubleBuffer,true);
+	    this->SetStyle( static_cast<ControlStyles>(ControlStyles::DoubleBuffer | ControlStyles::UserPaint | ControlStyles::AllPaintingInWmPaint), true );
+		this->UpdateStyles();
+		this->ui_timer->Interval = 50;
+
 		log_printf("-- f1::f1(void)\n");
 	}
 
@@ -134,6 +142,55 @@ namespace robot_ui
 
 
 
+	/******************************************************************************************************************************************
+	*
+	******************************************************************************************************************************************/
+	System::Void f1::ui_timer_Tick(System::Object^  sender, System::EventArgs^  e) 
+	{
+		char s[500];
+		int i;
+		this->SuspendLayout();
+		this->log_tab->SuspendLayout();
+		//SendMessage(static_cast<HWND>(this->log_txt->Handle.ToPointer()), WM_SETREDRAW, false, 0);
+
+		if(log_read_index != log_write_index)
+		{
+			i=0;
+			while( (log_read_index != log_write_index)  && (i<499) )
+			{
+				s[i]=log_buffer[log_read_index];
+				log_read_index++;
+				if(s[i] == 10)
+				{
+					s[i++] = 0;
+					//log_txt->AppendText(gcnew String(s));
+					sb.Append(gcnew String(s));
+					//log_txt->AppendText(System::Environment::NewLine);
+					sb.Append(System::Environment::NewLine);
+					i=0;
+				}
+				else i++;
+				if(log_read_index>=LOG_BUFFER_SIZE) log_read_index=0;
+			}
+			s[i]=0;
+			//log_txt->AppendText(gcnew String(s));
+			sb.Append(gcnew String(s));
+			//log_txt->Text = sb.ToString();
+			if(log_txt_enabled->Checked)
+			{
+				log_txt->AppendText(sb.ToString());
+				sb.Clear();
+			}
+			//log_txt->SelectionStart = log_txt->Text->Length;
+			//log_txt->ScrollToCaret();
+
+		}
+		this->ResumeLayout();
+		this->log_tab->ResumeLayout();
+		//SendMessage(static_cast<HWND>(this->log_txt->Handle.ToPointer()), WM_SETREDRAW, true, 0);
+	}
+
+
 
 	/******************************************************************************************************************************************
 	*
@@ -155,10 +212,17 @@ namespace robot_ui
 
 		while(1)
 		{
+			{
+				static int count=0;
+				//if(count<10000) log_printf("main_serial_thread_DoWork(): t=%lu\n",timeGetTime());
+				count++;
+			}
+
 			if(s.connection==0) //(s.p == INVALID_HANDLE_VALUE)
 			{
 				//if not connected, generate some dummy data so we can test the graphs
 				Sleep(20);
+				/*
 				inputs_history[history_index].analog[0] = history_index;
 				inputs_history[history_index].theta = theta;
 				inputs_history[history_index].ir[0] = 100;
@@ -172,6 +236,7 @@ namespace robot_ui
 				{
 					theta = 0.0f;
 				}
+				*/
 				//log(".");
 			}
 			else
@@ -354,7 +419,7 @@ namespace robot_ui
 		if(s == "F11"	) key=KEY_F11;
 		if(s == "F12"	) key=KEY_F12;
 
-		//log_printf("Key = 0x%04x\n",key);
+		log_printf("Key = 0x%04x\n",key);
 	}
 
 
