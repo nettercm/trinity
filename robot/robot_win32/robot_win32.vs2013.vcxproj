@@ -145,6 +145,7 @@
     <ClCompile Include="..\start_signal.c" />
     <ClCompile Include="..\testing.c" />
     <ClCompile Include="..\ui.c" />
+    <ClCompile Include="playback.c" />
     <ClCompile Include="port\pololu\orangutan.c">
       <FileType>CppHeader</FileType>
     </ClCompile>
@@ -236,6 +237,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="vrep.c" />
     <ClCompile Include="vrep\extApi.c" />
     <ClCompile Include="vrep\extApiCustom.c" />
     <ClCompile Include="vrep\extApiPlatform.c" />
