@@ -14,12 +14,12 @@ extern void fsm_test_2(void);
 #define SWITCH_STATE(cs,ns) state=ns;goto _label ## cs;
 #define LEAVE_STATE(cs) goto _label ## cs;
 
-#define enter_(s) ENTER(s)
-#define exit_(s) EXIT(s)
-#define first_(s) FIRST_STATE(s)
-#define next_(s) NEXT_STATE(s)
-#define switch_(cs,ns) SWITCH_STATE(cs,ns)
-#define leave_(cs) LEAVE_STATE(cs)
+#define enter_(s) if( last_state != state ? (t_entry=get_ms()),((last_state=state)+1) : 0)
+#define exit_(s) _label ## s: if(state!=last_state)
+#define first_(s) if(state==s)
+#define next_(s) else if(state==s)
+#define switch_(cs,ns) state=ns;goto _label ## cs;
+#define leave_(cs) goto _label ## cs;
 #define time_since_entry_()  (get_ms()-t_entry)
 
 volatile char _dummy_;

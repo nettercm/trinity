@@ -2,6 +2,15 @@
 #include "standard_includes.h"
 
 
+void pan(u16 position, u16 speed)
+{
+}
+
+void tilt(u16 position, u16 speed)
+{
+}
+
+
 void servo_task(u08 cmd, u08 *param)
 {
 	static u08 initialized=0;

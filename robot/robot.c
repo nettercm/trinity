@@ -48,8 +48,9 @@ extern void commands_process_fsm(u08 cmd, u08 *param);
 extern void lcd_update_fsm(u08 cmd, u08 *param);
 extern void analog_update_fsm(u08 cmd, u08 *param);
 extern u08 line_alignment_fsm_v2(u08 cmd, u08 *param);
+extern void find_flame_fsm(u08 cmd, u08 *param);
 
-char buffer[128];
+//char buffer[128];
 
 uint32 t_last_output_update = 0;
 
@@ -1132,26 +1133,7 @@ D_ (  99,   1,  12255,  T, 23,20.0,   V,9.6,  0x0000,  A, 31, 31,  1, 33, 16, 14
 D_ ( 100,   1,  12274,  T, 41,21.1,   V,9.6,  0x0000,  A, 30, 31,  0, 32, 18, 16, 16, 14,     E, 6496,-5828,   O,-2.1,10.8,13.9,    S, 390, 196, 357,4000,  I, 180, 380, 997,  M,  0,  0,   0,  0,   0,  0,   W,  0,  0,  1,  0 )
 */
 
-typedef struct
-{
-	u16 x;
-	u16 y;
-} t_pan_tilt_pos;
 
-t_pan_tilt_pos pan_tilt_pos[]=
-{
-	{140, 140},
-	{125, 140},
-	{110, 140},
-
-	{110, 148},
-	{125, 148},
-	{140, 148},
-
-	{140, 155},
-	{125, 155},
-	{110, 144}
-};
 
 void test_fsm(u08 cmd, u08 *param)
 {
@@ -1212,65 +1194,7 @@ void test_fsm(u08 cmd, u08 *param)
 
 	if(s.behavior_state[TEST_LOGIC_FSM]==5) 
 	{
-		switch(state)
-		{
-		case 0:
-			//TODO:  need to deal w/ reflections from the wall. can result in undershoot. sensor readings are almost maxed out by reflextion.
-			if(s.inputs.analog[AI_FLAME_NE]<60)
-			{
-				motor_command(6,3,3,40,-40);
-			}
-			else
-			{
-				motor_command(2,0,0,0,0);
-				//s.behavior_state[TEST_LOGIC_FSM]=0;
-				state++;
-			}
-			break;
-		case 1:
-			if( (s.inputs.sonar[0] > 60) && (s.inputs.sonar[1] > 60)  && (s.inputs.sonar[2] > 60) )
-			{
-				bias = 0;
-				if(s.inputs.analog[AI_FLAME_NE]>s.inputs.analog[AI_FLAME_NW]) bias = 2;
-				if(s.inputs.analog[AI_FLAME_NW]>s.inputs.analog[AI_FLAME_NE]) bias = -2;
-				if( (s.inputs.analog[AI_FLAME_NW]<40) && (s.inputs.analog[AI_FLAME_NE]<40) ) 
-				{
-					//in case of overshoot, need to make a harder correction
-					bias = -10;
-				}
-				motor_command(7,2,2,40+bias,40-bias);
-			}
-			else
-			{
-				motor_command(2,0,0,0,0);
-				PUMP_ON();
-				//s.behavior_state[TEST_LOGIC_FSM]=0;
-				state++;
-				t_start = get_ms();
-				count = 0;
-				//Ly: -10 ... 40  (-10 = top) = 140...155    Lx: -10....30 (-10 = right) = 115...140   top-left  x,y = 30,-10 bottom-right = -10,40
-			}
-			break;
-		case 2:
-			t_delta = get_ms() - t_start;
-			i=t_delta / 100;
-			if(i>8) 
-			{
-				i = 0; 
-				t_start = get_ms(); 
-				count++;
-			}
-			v.u16 = pan_tilt_pos[i].x;  
-			cfg_set_value_by_grp_id(15,6, v);
-			v.u16 = pan_tilt_pos[i].y;  
-			cfg_set_value_by_grp_id(15,5, v);
-			if(count>10)
-			{
-				PUMP_OFF();
-				s.behavior_state[TEST_LOGIC_FSM]=0;
-			}
-			break;
-		}
+		//this was moved to flame.c
 	}
 
 	if(s.behavior_state[TEST_LOGIC_FSM]==6) 
@@ -1326,6 +1250,7 @@ void main_loop(void)
 	//behaviors
 	task_run(master_logic_fsm,0,0); //ml fsm makes sleep statements, so it is a task and not just a simply fsm
 
+	task_run(find_flame_fsm,0,0);
 	wall_follow_fsm(0,0);
 	line_alignment_fsm_v2(0,0);
 
@@ -1474,9 +1399,9 @@ int main(void)
 	line_alignment_done_evt = event_create();
 
 	task_create( main_loop_task,			1,  NULL, 0, 0);
-	//task_create( ultrasonic_update_fsm,		2,  NULL, 0, 0);
-	task_create( master_logic_fsm,			2,  NULL, 0, 0);
-	task_create( lcd_update_fsm,			3,  NULL, 0, 0);
+	task_create( find_flame_fsm	,			2,  NULL, 0, 0);
+	task_create( master_logic_fsm,			3,  NULL, 0, 0);
+	task_create( lcd_update_fsm,			4,  NULL, 0, 0);
 
 	//don't want the OS to schedule those tasks. we'll do that manually as part of the main loop
 	//os_task_suspend(ml_tid);
