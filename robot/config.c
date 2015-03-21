@@ -231,6 +231,17 @@ u08 cfg_get_u08_by_grp_id(uint8 grp, uint8 id)
 	return 0;
 }
 
+u16 cfg_get_u16_by_grp_id(uint8 grp, uint8 id)
+{
+	u08 i;
+	for(i=0;i<=MAX_CFG_ITEMS;i++)
+	{
+		if( (config[i].grp == grp) && (config[i].id == id) ) return config[i].v.u16;
+		if(config[i].grp == 255) return 0; //reached the end
+	}
+	return 0;
+}
+
 s16 cfg_get_s16_by_grp_id(uint8 grp, uint8 id)
 {
 	u08 i;

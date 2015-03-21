@@ -73,10 +73,10 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 		{
 			clear();  
 			lcd_goto_xy(0,0); 
-			lcd_printf("U: %4d %4d",  s.inputs.sonar[3],s.inputs.sonar[4]); 
+			lcd_printf("U: %4d %4d",  s.inputs.sonar[US_E],s.inputs.sonar[US_W]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 
-			lcd_printf("%4d %4d %4d",  s.inputs.sonar[2],s.inputs.sonar[0],s.inputs.sonar[1]); 
+			lcd_printf("%4d %4d %4d",  s.inputs.sonar[US_NE],s.inputs.sonar[US_N],s.inputs.sonar[US_NW]); 
 		}
 		else if(s.lcd_screen==2)
 		{

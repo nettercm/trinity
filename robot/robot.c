@@ -455,8 +455,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 				RESET_LINE_DETECTION();
 				play_note(C(3), 50, 10);
-				HARD_STOP();
 				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
+				HARD_STOP();
 				state = s_searching_room_3;
 			}
 
@@ -471,6 +471,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(s_searching_room_3)
 			{
 				s.current_room = 3;
+				task_wait(500);
 			}
 
 			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
@@ -478,14 +479,26 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			odometry_update_postion( ((float)(s.ir[IR_NW]))/16.0f , 65.0f, 90.0f);
 
 			//TODO: read the omni-directional flame sensor to determine if this room contains the flame or not
+			if(/* omni flame sensor sees the flame */1)
+			{
+				START_BEHAVIOR(FIND_FLAME_FSM,1);
+				while(1)
+				{
+					OS_SCHEDULE;
+				}
+			}
+			else
+			{
+				TURN_IN_PLACE(turn_speed, room3_turn_3);
+				still_inside_room = 1;
+				//at this point we should be able to just follow the wall a gain
+				state = s_finding_room_2;
+			}
 
-			TURN_IN_PLACE(turn_speed, room3_turn_3);
-			still_inside_room = 1;
-
-			//at this point we should be able to just follow the wall a gain
-			state = s_finding_room_2;
-
-			exit_(s_searching_room_3) { }
+			exit_(s_searching_room_3) 
+			{ 
+				NOP();
+			}
 		}
 
 
@@ -1194,7 +1207,18 @@ void test_fsm(u08 cmd, u08 *param)
 
 	if(s.behavior_state[TEST_LOGIC_FSM]==5) 
 	{
-		//this was moved to flame.c
+		static s16 ne=0, nw=0;
+
+		ne = (ne + (s16) s.inputs.analog[AI_FLAME_NE])/2;
+		nw = (nw + (s16) s.inputs.analog[AI_FLAME_NW])/2;
+		bias = 0;
+		if( (ne>245) && (nw>245) ) bias = 0;
+		else if( abs(ne-nw) < 10 ) bias = 0;
+		else if( ne>nw ) bias = -1;
+		else if( nw>ne ) bias =  1;
+		v.u16 = cfg_get_u16_by_grp_id(15,6);
+		v.u16 += bias;
+		cfg_set_value_by_grp_id(15,6, v);
 	}
 
 	if(s.behavior_state[TEST_LOGIC_FSM]==6) 
@@ -1236,8 +1260,8 @@ void main_loop(void)
 	serial_receive_fsm(0,0); //includes processing of commands
 
 	//sample and process low-level inputs - most of this is only needed on the actual robot
-	ultrasonic_update_fsm(0,0);
 	#ifndef SVP_ON_WIN32	
+	ultrasonic_update_fsm(0,0);
 	analog_update_fsm(0,0);  //we don't want this when running on the PC and/or in simulation mode
 	SHARPIR_update_fsm(0,0);
 	#else	

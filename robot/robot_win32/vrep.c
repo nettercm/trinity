@@ -20,7 +20,7 @@ static int pan,tilt;
 static int ir0,ir1,ir2,ir3,ir4,ir5,ir6,ir7;
 static int line_left,line_right;
 static int flame0,flame1,flame2;
-static int sonar0,sonar1,sonar2;
+static int sonar0,sonar1,sonar2,sonar3,sonar4;
 static int robot;
 
 typedef struct
@@ -63,7 +63,7 @@ void vrep_sim_step(void)
 	//if(t_real_now-t_real_last >= 1000)
 	{
 		simxGetPingTime(clientID,&pingTime);		
-		printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
+		//printf("dT(sim) = %d,  dT(real)=%d,   dT(model)=%d,  ping time = %d\n", t_sim-t_sim_last,  t_real_now-t_real_last,  t_m-t_m_last, pingTime);
 		t_real_last=t_real_now;
 		t_sim_last=t_sim;
 		t_m_last=t_m;
@@ -189,6 +189,7 @@ void vrep_sim_inputs(void)
 	static int t_sim,t_sim_last=0;
 	static u32 t_real_now, t_real_last=0; 
 	static u32 t_m,t_m_last=0;
+	t_config_value v;
 
 	t_sim = simxGetLastCmdTime(clientID);
 	t_real_now = timeGetTime();
@@ -206,7 +207,7 @@ void vrep_sim_inputs(void)
 
 	//initialize un-modeled sensors as if there was not detection
 	//s.inputs.sonar[0] = 4000; //north
-	s.inputs.sonar[1] = 4000;
+	//s.inputs.sonar[1] = 4000;
 	//s.inputs.sonar[2] = 4000;
 	//s.inputs.sonar[3] = 4000;
 
@@ -218,6 +219,10 @@ void vrep_sim_inputs(void)
 	{
 		s.inputs.analog[AI_START_BUTTON]=255;
 	}
+
+
+	v.u08 = 61;  cfg_set_value_by_grp_id(6,1, v); //black
+	v.u08 = 60;  cfg_set_value_by_grp_id(6,2, v); //white
 
 
 	//------------------------------------------------------------------------------------------------------------------------------------
@@ -319,7 +324,7 @@ void vrep_sim_inputs(void)
 	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,STREAMING_MODE);
 	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,STREAMING_MODE);
 
-	if(1)
+	if(0)
 	{
 		static double enc_ab=0, enc_cd=0;
 		enc_ab += lticks;
@@ -381,8 +386,8 @@ void vrep_sim_inputs(void)
 	//------------------------------------------------------------------------------------------------------------------------------------
 	//sonar
 	{
-		unsigned char sensor=0;
-		simxInt sensors[] = {sonar0, sonar1, sonar2}; 
+		static unsigned char sensor=0;
+		simxInt sensors[] = {sonar0, sonar1, sonar2, sonar3, sonar4}; 
 		float point[3],surface[3];
 		float distance;
 		int handle;
@@ -401,7 +406,7 @@ void vrep_sim_inputs(void)
 		}
 		s.inputs.sonar[sensor] = (u16)distance;
 		sensor++;
-		if(sensor>2) sensor=0;
+		if(sensor>4) sensor=0;
 	}
 	//------------------------------------------------------------------------------------------------------------------------------------
 
@@ -446,6 +451,8 @@ void vrep_sim_init(void)
 	simxGetObjectHandle(clientID,"sonar0",&sonar0,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"sonar1",&sonar1,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID,"sonar2",&sonar2,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"sonar3",&sonar3,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID,"sonar4",&sonar4,simx_opmode_oneshot_wait);
 
 	simxGetObjectHandle(clientID,"Robot",&robot,simx_opmode_oneshot_wait);
 

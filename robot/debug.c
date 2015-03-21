@@ -57,14 +57,20 @@ int	usb_printf(const char *__fmt, ...)
 //typically around 100us
 int	dbg_printf(const char *__fmt, ...)
 {
-#if 1
-	return 0;
-#else
 	int size,i;
 	va_list ap;
 	va_start(ap, __fmt);
 	size = vsprintf(_b, __fmt, ap);
 	va_end(ap);
+
+#ifdef WIN32
+	printf("%s",_b);
+#endif
+
+	//doing this debug printf's over the wireless link gets in the way of data capture and playback
+#if 1
+	return 0;
+#else
 	for(i=0;i<size;i++)
 	{
 		dbg_buffer[dbg_buffer_write] = _b[i];

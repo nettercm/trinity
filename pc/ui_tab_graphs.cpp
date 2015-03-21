@@ -69,6 +69,7 @@ namespace robot_ui
 			else if(graphs_comboBox_series_1a->Text == "sonar[1]") y = inputs_history[x].sonar[1];
 			else if(graphs_comboBox_series_1a->Text == "sonar[2]") y = inputs_history[x].sonar[2];
 			else if(graphs_comboBox_series_1a->Text == "sonar[3]") y = inputs_history[x].sonar[3];
+			else if(graphs_comboBox_series_1a->Text == "sonar[4]") y = inputs_history[x].sonar[4];
 			else if(graphs_comboBox_series_1a->Text == "theta") y = inputs_history[x].theta;
 			else y = x % 500;
 			graphs_chart->Series[0]->Points->AddXY(x, y);
@@ -94,6 +95,7 @@ namespace robot_ui
 			else if(graphs_comboBox_series_1b->Text == "sonar[1]") y = inputs_history[x].sonar[1];
 			else if(graphs_comboBox_series_1b->Text == "sonar[2]") y = inputs_history[x].sonar[2];
 			else if(graphs_comboBox_series_1b->Text == "sonar[3]") y = inputs_history[x].sonar[3];
+			else if(graphs_comboBox_series_1b->Text == "sonar[4]") y = inputs_history[x].sonar[4];
 			else if(graphs_comboBox_series_1b->Text == "theta") y = inputs_history[x].theta;
 			else y = x % 200;
 			graphs_chart->Series[2]->Points->AddXY(x, y);
@@ -119,6 +121,7 @@ namespace robot_ui
 			else if(graphs_comboBox_series_2a->Text == "sonar[1]") y = inputs_history[x].sonar[1];
 			else if(graphs_comboBox_series_2a->Text == "sonar[2]") y = inputs_history[x].sonar[2];
 			else if(graphs_comboBox_series_2a->Text == "sonar[3]") y = inputs_history[x].sonar[3];
+			else if(graphs_comboBox_series_2a->Text == "sonar[4]") y = inputs_history[x].sonar[4];
 			else if(graphs_comboBox_series_2a->Text == "theta") y = inputs_history[x].theta;
 			else y = x % 500;
 			graphs_chart->Series[1]->Points->AddXY(x, y);
@@ -182,7 +185,7 @@ namespace robot_ui
 		graphs_comboBox_series_2a->Items->Clear();
 		graphs_comboBox_series_2b->Items->Clear();
 
-		graphs_comboBox_series_1a->Items->AddRange(gcnew cli::array< System::Object^  >(33) 
+		graphs_comboBox_series_1a->Items->AddRange(gcnew cli::array< System::Object^  >(34) 
 		{
 			L"--NONE--", 
 			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"analog[10]", L"analog[11]", L"analog[12]", L"analog[13]", L"analog[14]",
@@ -190,10 +193,10 @@ namespace robot_ui
 			L"actual_speed[0]", L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", 
 			L"x", L"y", L"theta", 
 			L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]",
-			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]",
+			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]", L"sonar[4]",
 		});
 
-		graphs_comboBox_series_1b->Items->AddRange(gcnew cli::array< System::Object^  >(33) 
+		graphs_comboBox_series_1b->Items->AddRange(gcnew cli::array< System::Object^  >(34) 
 		{
 			L"--NONE--", 
 			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"analog[10]", L"analog[11]", L"analog[12]", L"analog[13]", L"analog[14]",
@@ -201,10 +204,10 @@ namespace robot_ui
 			L"actual_speed[0]", L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", 
 			L"x", L"y", L"theta", 
 			L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]",
-			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]",
+			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]", L"sonar[4]",
 		});
 
-		graphs_comboBox_series_2a->Items->AddRange(gcnew cli::array< System::Object^  >(33) 
+		graphs_comboBox_series_2a->Items->AddRange(gcnew cli::array< System::Object^  >(34) 
 		{
 			L"--NONE--", 
 			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"analog[10]", L"analog[11]", L"analog[12]", L"analog[13]", L"analog[14]",
@@ -212,10 +215,10 @@ namespace robot_ui
 			L"actual_speed[0]", L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", 
 			L"x", L"y", L"theta", 
 			L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]",
-			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]",
+			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]", L"sonar[4]",
 		});
 
-		graphs_comboBox_series_2b->Items->AddRange(gcnew cli::array< System::Object^  >(33) 
+		graphs_comboBox_series_2b->Items->AddRange(gcnew cli::array< System::Object^  >(34) 
 		{
 			L"--NONE--", 
 			L"analog[0]", L"analog[1]", L"analog[2]", L"analog[3]", L"analog[4]", L"analog[5]", L"analog[6]", L"analog[7]", L"analog[10]", L"analog[11]", L"analog[12]", L"analog[13]", L"analog[14]",
@@ -223,7 +226,7 @@ namespace robot_ui
 			L"actual_speed[0]", L"actual_speed[1]", L"target_speed[0]", L"target_speed[1]", 
 			L"x", L"y", L"theta", 
 			L"watch[0]", L"watch[1]", L"watch[2]", L"watch[3]",
-			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]",
+			L"sonar[0]", L"sonar[1]", L"sonar[2]", L"sonar[3]", L"sonar[4]",
 		});
 
 		graphs_comboBox_series_1a->SelectedIndex = 0;

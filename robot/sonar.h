@@ -39,9 +39,9 @@ extern volatile uint8 us_timeout;
 5 = SE
 6 = SW
 */
-#define US_NE 0
-#define US_N  1
-#define US_NW 2
+#define US_NE 2
+#define US_N  0
+#define US_NW 1
 #define US_E  3
 #define US_W  4
 #define US_SE 5

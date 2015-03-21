@@ -28,6 +28,23 @@ t_pan_tilt_pos pan_tilt_pos[]=
 };
 
 
+void track_candle(void)
+{
+	s16 bias;
+	static s16 ne=0, nw=0;
+	t_config_value v;
+
+	ne = (ne + (s16) s.inputs.analog[AI_FLAME_NE])/2;
+	nw = (nw + (s16) s.inputs.analog[AI_FLAME_NW])/2;
+	bias = 0;
+	if( (ne>245) && (nw>245) ) bias = 0;
+	else if( abs(ne-nw) < 10 ) bias = 0;
+	else if( ne>nw ) bias = -1;
+	else if( nw>ne ) bias =  1;
+	v.u16 = cfg_get_u16_by_grp_id(15,6);
+	v.u16 += bias;
+	cfg_set_value_by_grp_id(15,6, v);
+}
 
 void find_flame_fsm(u08 cmd, u08 *param)
 {
@@ -36,7 +53,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 	static enum states last_state=s_disabled;
 	static u32 t_entry=0;
 	static u08 initialized=0;
-	static s16 bias=0;
+	static s16 bias=0,  last_bias=0;
 	static u08 count;
 	static u32 t_start;
 	u32 t_delta;
@@ -90,6 +107,8 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			enter_(s_scanning) 
 			{ 
 				NOP();
+				MOVE(20,100);
+				task_wait(500);
 			}
 
 			//TODO:  need to deal w/ reflections from the wall. can result in undershoot. sensor readings are almost maxed out by reflextion.
@@ -119,9 +138,26 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				NOP();
 			}
 
-			if( (s.inputs.sonar[0] > 60) && (s.inputs.sonar[1] > 60)  && (s.inputs.sonar[2] > 60) )
+			bias = 0;
+
+			if( (s.inputs.sonar[0] < 70) || (s.inputs.sonar[1] < 70)  || (s.inputs.sonar[2] < 70) )
 			{
-				bias = 0;
+				motor_command(2,0,0,0,0);
+				switch_(s_moving_towards_candle,s_extinguish);
+			}
+			else if(s.inputs.ir[IR_NE] < 40) //( s.inputs.sonar[US_E] < 20 )
+			{
+				//TODO: need to remember the fact that we are sliding/tracking along the wall - need a separate state
+				bias = -1;
+				track_candle();
+			}
+			else if(s.inputs.ir[IR_NW] < 40) //if( s.inputs.sonar[US_W] < 20 )
+			{
+				bias = 1;
+				track_candle();
+			}
+			else
+			{
 				if(s.inputs.analog[AI_FLAME_NE]>s.inputs.analog[AI_FLAME_NW]) bias = 2;
 				if(s.inputs.analog[AI_FLAME_NW]>s.inputs.analog[AI_FLAME_NE]) bias = -2;
 				if( (s.inputs.analog[AI_FLAME_NW]<40) && (s.inputs.analog[AI_FLAME_NE]<40) ) 
@@ -129,13 +165,8 @@ void find_flame_fsm(u08 cmd, u08 *param)
 					//in case of overshoot, need to make a harder correction
 					bias = -10;
 				}
-				motor_command(7,2,2,40+bias,40-bias);
 			}
-			else
-			{
-				motor_command(2,0,0,0,0);
-				state = s_extinguish;
-			}
+			motor_command(7,2,2,20+bias,20-bias);
 
 			exit_(s_moving_towards_candle) 
 			{ 
@@ -177,6 +208,9 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				PUMP_OFF();
 			}
 		}
+
+		if(state != last_state) { dbg_printf("FF:state: %3d -> %3d\n", last_state,state); }
+		if(bias != last_bias)	{ dbg_printf("FF:bias:  %3d -> %3d\n", last_bias,bias); last_bias=bias; }
 		OS_SCHEDULE;
 	}
 	task_close();
