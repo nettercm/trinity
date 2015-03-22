@@ -29,7 +29,7 @@
 #include "inConnection.h"
 #include "simxUtils.h"
 #define HEADER_LENGTH 6 // WORD0=1 (to detect endianness), WORD1=packetSize, WORD2=packetsLeftToRead
-#define SOCKET_TIMEOUT_READ 10000 // in ms
+#define SOCKET_TIMEOUT_READ 180000 // CMN:  3min timeout;  there are other places too where something had to be set to 180s / 180000ms
 #define TCP_SEVER_CONNECT_TIMEOUT_USEC (5000*1000)
 
 CInConnection::CInConnection(int theConnectionPort,int maxPacketSize,bool newVersion)
@@ -241,7 +241,7 @@ bool CInConnection::connectToClient()
 
 				// Following since 13/12/2013:
 				#ifdef _WIN32
-					int to = 2000;
+					int to = 180000; //2000;
 					setsockopt(_accepted_socket, SOL_SOCKET, SO_RCVTIMEO,(char*)&to,sizeof(int));
 					setsockopt(_accepted_socket, SOL_SOCKET, SO_SNDTIMEO,(char*)&to,sizeof(int));
 					int yes = 1;
@@ -299,7 +299,7 @@ bool CInConnection::connectToClient()
 
 			// Following since 13/12/2013:
 			#ifdef _WIN32
-				int to=2000;
+				int to=180000; //2000;
 				setsockopt(_socketClient, SOL_SOCKET, SO_RCVTIMEO,(char*)&to,sizeof(int));
 				setsockopt(_socketClient, SOL_SOCKET, SO_SNDTIMEO,(char*)&to,sizeof(int));
 				int yes = 1;
@@ -498,7 +498,7 @@ int CInConnection::_receiveSimplePacket(std::vector<char>& packet)
 	}
 	else
 	{
-		_socketTimeOut.tv_sec=10; // 1 second max between successive receive for the same packet
+		_socketTimeOut.tv_sec=180; //10; // 1 second max between successive receive for the same packet
 		_socketTimeOut.tv_usec=0;
 		FD_ZERO(&_socketTheSet);
 		FD_SET(_socketClient,&_socketTheSet);
