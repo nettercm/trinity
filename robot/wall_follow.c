@@ -175,7 +175,10 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		
 		next_(s_turning_corner)
 		{
-			enter_(s_turning_corner) { odometry_set_checkpoint(); }
+			enter_(s_turning_corner) 
+			{ 
+				odometry_set_checkpoint(); 
+			}
 			
 			if(target_speed > corner_speed) target_speed -= down_ramp;
 			if(target_speed < corner_speed) target_speed += up_ramp;
@@ -202,13 +205,22 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 				if( side > lost_wall_distance) state = s_turning_sharp_corner;
 			}			
 			
-			exit_(s_turning_corner) { }
+			exit_(s_turning_corner) 
+			{
+				if ( abs(odometry_get_rotation_since_checkpoint()) >= 70)
+				{
+					s.right_turns++;
+				}
+			}
 		}
 
 
 		next_(s_turning_sharp_corner)
 		{
-			enter_(s_turning_sharp_corner)	{ odometry_set_checkpoint(); }
+			enter_(s_turning_sharp_corner)	
+			{ 
+				odometry_set_checkpoint(); 
+			}
 
 			if( target_speed > corner_speed )	target_speed -= down_ramp;
 			if( target_speed < corner_speed )	target_speed += up_ramp;
@@ -223,7 +235,13 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 			}
 			//if( s.ir[IR_N] <= 50 ) state = 2;
 			
-			exit_(s_turning_sharp_corner) { }
+			exit_(s_turning_sharp_corner) 
+			{ 
+				if (abs(odometry_get_rotation_since_checkpoint()) >= 70)
+				{
+					s.right_turns++;
+				}
+			}
 		}
 		/*	
 		s.inputs.watch[0]=error;

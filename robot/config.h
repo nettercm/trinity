@@ -178,6 +178,7 @@ extern  void cfg_get_value_by_index(u08 index, u08 type_id, void* value);
 
 extern void cfg_set_s16_by_index(uint8 index, s16 value);
 extern void cfg_set_value_by_grp_id(uint8 grp, uint8 id, t_config_value v);
+extern void cfg_set_flt_by_grp_id(uint8 grp, uint8 id, float f);
 
 extern u08 cfg_get_u08_by_grp_id(uint8 grp, uint8 id);
 extern u16 cfg_get_u16_by_grp_id(uint8 grp, uint8 id);

@@ -21,7 +21,7 @@ static int ir0,ir1,ir2,ir3,ir4,ir5,ir6,ir7;
 static int line_left,line_right;
 static int flame0,flame1,flame2;
 static int sonar0,sonar1,sonar2,sonar3,sonar4;
-static int robot;
+static int robot,candle;
 
 typedef struct
 {
@@ -30,6 +30,13 @@ typedef struct
 } t_simulation_state;
 
 t_simulation_state sim_state;
+
+typedef struct
+{
+	float x;
+	float y;
+} t_xy;
+
 
 float *auxValues=NULL;
 int *auxValuesCount=NULL;
@@ -44,6 +51,47 @@ static double pi=3.1415926535897932384626433832795;
 
 #define STREAMING_MODE (simx_opmode_streaming+5)
 //#define STREAMING_MODE simx_opmode_oneshot_wait
+
+void move_candle(float x, float y)
+{
+	int prop;
+	int result;
+	float candle_position[3];
+
+	/*
+	result = simxGetModelProperty(clientID, candle, &prop, simx_opmode_oneshot_wait);
+	prop |= sim_modelproperty_not_dynamic;
+	prop |= sim_modelproperty_not_respondable;
+	result = simxSetModelProperty(clientID, candle, prop, simx_opmode_oneshot_wait);
+	*/
+	simxGetObjectPosition(clientID, candle, -1, candle_position, simx_opmode_oneshot_wait);
+	candle_position[0] = x;
+	candle_position[1] = y;
+	simxSetObjectPosition(clientID, candle, -1, candle_position, simx_opmode_oneshot_wait);
+
+}
+
+
+void move_object(const char *object_name, float x, float y)
+{
+	int prop;
+	int result;
+	float object_position[3];
+	int handle;
+
+	result = simxGetObjectHandle(clientID, object_name, &handle, simx_opmode_oneshot_wait);
+
+	/*
+	result = simxGetModelProperty(clientID, handle, &prop, simx_opmode_oneshot_wait);
+	prop |= sim_modelproperty_not_dynamic;
+	prop |= sim_modelproperty_not_respondable;
+	result = simxSetModelProperty(clientID, handle, prop, simx_opmode_oneshot_wait);
+	*/
+	simxGetObjectPosition(clientID, handle, -1, object_position, simx_opmode_oneshot_wait);
+	object_position[0] = x;
+	object_position[1] = y;
+	simxSetObjectPosition(clientID, handle, -1, object_position, simx_opmode_oneshot_wait);
+}
 
 void vrep_sim_step(void)
 {
@@ -103,13 +151,52 @@ void vrep_sim_step(void)
 			s.behavior_state[11]=5;
 		}
 
-		if(c=='1') //find room #1
+		if (c == '0') //assume candle is in room 1
 		{
-			s.behavior_state[MASTER_LOGIC_FSM]=7;
+			m.candle_location = 0;
+			printf("No candle\n");
 		}
+		if (c == '1') //assume candle is in room 1
+		{
+			static int door_configuration = 0;
+
+			m.candle_location = 1;
+			move_candle(1.355, 0.845);
+			if (door_configuration) { move_object("wall_E", 1.23, 0.23); door_configuration = 0; }
+			else { move_object("wall_E", 1.23, 0.68); door_configuration = 1; }
+			printf("Candle will be in room #1.  door location = %d\n", door_configuration);
+		}
+		if (c == '2') //assume candle is in room 1
+		{
+			const t_xy location[] = { { 0.63, 0.97 }, { 0.13, 0.97 }, { 0.13, 0.12 }, { 0.655, 0.545 }, { 0.33, 0.32 } };
+			static int cc = 0;
+			cc++;
+			if (cc > 4) cc = 0;
+			m.candle_location = 2;
+			move_candle(location[cc].x, location[cc].y);
+			printf("Candle will be in room #2, location %d\n",cc);
+		}
+		if (c == '3') //assume candle is in room 1
+		{
+			const t_xy location[] = { { 0.655, 1.62 }, { 0.655, 2.32 }, { 0.08, 2.32 }, { 0.305, 2.095 } };
+			static int cc = 0;
+			cc++;
+			if (cc > 3) cc = 0;
+			m.candle_location = 3;
+			move_candle(location[cc].x,location[cc].y);
+			printf("Candle will be in room #3, location %d\n", cc);
+		}
+		if (c == '4') //assume candle is in room 1
+		{
+			m.candle_location = 4;
+		}
+
+
+
 		if(c=='s')
 		{
-			m.start_signal=1;
+			//m.start_signal=1;
+			force_start_signal(1);
 		}
 
 		if(c=='x')
@@ -455,6 +542,7 @@ void vrep_sim_init(void)
 	simxGetObjectHandle(clientID,"sonar4",&sonar4,simx_opmode_oneshot_wait);
 
 	simxGetObjectHandle(clientID,"Robot",&robot,simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID, "Candle", &candle, simx_opmode_oneshot_wait);
 
 	result = simxStartSimulation(clientID,simx_opmode_oneshot_wait);
 	if(result != simx_return_ok) printf("simxStartSimulation() failed!\n");

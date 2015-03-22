@@ -28,6 +28,22 @@ t_pan_tilt_pos pan_tilt_pos[]=
 };
 
 
+u08 is_flame_present(void)
+{
+#ifdef WIN32
+	if ((s.current_room == m.candle_location) && (m.candle_location > 0))
+	{
+		return 1;
+	}
+	else return 0;
+#endif
+	if (s.inputs.analog[AI_FLAME_N] > 100) //TODO: use parameter to define the threshold for the omni flame sensor
+	{
+		return 1;
+	}
+	else return 0;
+}
+
 void track_candle(void)
 {
 	s16 bias;
@@ -107,7 +123,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			enter_(s_scanning) 
 			{ 
 				NOP();
-				MOVE(20,100);
+				MOVE(20,150);
 				task_wait(500);
 			}
 
@@ -119,7 +135,14 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			else
 			{
 				motor_command(2,0,0,0,0);
-				task_wait(200); //allow the robot tocome to a complete stop
+				task_wait(100); //allow the robot tocome to a complete stop
+				//in case of overshoot, need to make a correction
+				while (/*(s.inputs.analog[AI_FLAME_NW]<40) && */(s.inputs.analog[AI_FLAME_NE]<40))
+				{
+					motor_command(7, 2, 2, -5, 5);
+					OS_SCHEDULE;
+				}
+				motor_command(2, 0, 0, 0, 0);
 				switch_(s_scanning, s_moving_towards_candle);
 			}
 
@@ -160,11 +183,6 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			{
 				if(s.inputs.analog[AI_FLAME_NE]>s.inputs.analog[AI_FLAME_NW]) bias = 2;
 				if(s.inputs.analog[AI_FLAME_NW]>s.inputs.analog[AI_FLAME_NE]) bias = -2;
-				if( (s.inputs.analog[AI_FLAME_NW]<40) && (s.inputs.analog[AI_FLAME_NE]<40) ) 
-				{
-					//in case of overshoot, need to make a harder correction
-					bias = -10;
-				}
 			}
 			motor_command(7,2,2,20+bias,20-bias);
 
@@ -216,6 +234,149 @@ void find_flame_fsm(u08 cmd, u08 *param)
 	task_close();
 }
 
+
+/*
+
+static s16 bias=0;
+
+enter_(s_move_to_candle) {}
+
+//move a little bit into the room
+MOVE(turn_speed, search4_distance_1); //100);
+
+//make sure we are not in front of some obstacle (in case we saw a reflection from the wall)
+
+//now move forward until we reach the candle circle;
+RESET_LINE_DETECTION();
+
+play_frequency(440,25000,15);
+//task_wait(500);
+//PUMP_ON();
+
+
+//start moving straight
+motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
+s.inputs.watch[0] = 1;
+stop=0;
+while(stop==0)
+{
+s.inputs.watch[0] = 2;
+motor_command(6,1,1,30-bias,30+bias);
+OS_SCHEDULE;
+if(s.ir[IR_NE] < 70) bias=10;
+else if(s.ir[IR_NW] < 70) bias=-10;
+else bias=0;
+
+//TODO: if the candle is in the middle of the room, we might not see it if we are facing it slightly off-center
+if( (s.ir[IR_N] <= 100) ) stop |= 0x01;
+//if( (s.ir[IR_NE] <= 50)) stop |= 0x02;
+//if( (s.ir[IR_NW] <= 50)) stop |= 0x04;
+if( (s.inputs.sonar[0] <= 100) ) stop |= 0x08;
+
+//if(LINE_WAS_DETECTED()) stop |= 0x10;
+
+
+//just comment out the following 2 if() statements if we are not doing "arbitrary candle locaction"
+if ((!stop) && (bias < 0) )
+{
+s.inputs.watch[0] = 3; OS_SCHEDULE;
+//wall on the left!
+dbg_printf("wall on the left!\n");
+HARD_STOP();
+s.inputs.watch[0] = 4; OS_SCHEDULE;
+TURN_IN_PLACE(30,-90);
+s.inputs.watch[0] = 5; OS_SCHEDULE;
+MOVE(30,100);
+s.inputs.watch[0] = 6; OS_SCHEDULE;
+TURN_IN_PLACE_AND_SCAN(turn_speed, 180, flame_scan_filter);
+s.inputs.watch[0] = 7; OS_SCHEDULE;
+scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+if(scan_result.flame_center_value > flame_found_threashold)
+{
+s.inputs.watch[0] = 8; OS_SCHEDULE;
+TURN_IN_PLACE( turn_speed, -(180-scan_result.center_angle) );
+s.inputs.watch[0] = 9; OS_SCHEDULE;
+}
+//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
+bias=0;
+//PUMP_ON();
+}
+if( (!stop) && (bias > 0) )
+{
+s.inputs.watch[0] = 10; OS_SCHEDULE;
+//wall on the right!
+dbg_printf("wall on the right!\n");
+HARD_STOP();
+s.inputs.watch[0] = 11; OS_SCHEDULE;
+TURN_IN_PLACE(30, 90);
+s.inputs.watch[0] = 12; OS_SCHEDULE;
+MOVE(30,100);
+s.inputs.watch[0] = 13; OS_SCHEDULE;
+TURN_IN_PLACE_AND_SCAN(turn_speed, -180, flame_scan_filter);
+s.inputs.watch[0] = 14; OS_SCHEDULE;
+scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+if(scan_result.flame_center_value > flame_found_threashold)
+{
+s.inputs.watch[0] = 15; OS_SCHEDULE;
+TURN_IN_PLACE( turn_speed, (180+scan_result.center_angle) );
+s.inputs.watch[0] = 16; OS_SCHEDULE;
+}
+//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
+bias=0;
+//PUMP_ON();
+}
+
+}
+dbg_printf("stopped! reason: 0x%02x\n",stop);
+HARD_STOP();
+s.inputs.watch[0] = 17; OS_SCHEDULE;
+PUMP_ON();
+
+
+TURN_IN_PLACE(turn_speed, -45);
+s.inputs.watch[0] = 18; OS_SCHEDULE;
+TURN_IN_PLACE_AND_SCAN(turn_speed, 90, flame_scan_filter);
+s.inputs.watch[0] = 19; OS_SCHEDULE;
+scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
+if(scan_result.flame_center_value > flame_found_threashold)
+{
+s.inputs.watch[0] = 20; OS_SCHEDULE;
+TURN_IN_PLACE( turn_speed, -(90-scan_result.center_angle) );
+s.inputs.watch[0] = 21; OS_SCHEDULE;
+}
+
+s.inputs.watch[0] = 22; OS_SCHEDULE;
+while( (s.inputs.sonar[0] > 70) && (s.ir[IR_N] > 70) )
+{
+motor_command(7,1,1,10,10);
+OS_SCHEDULE;
+}
+s.inputs.watch[0] = 23; OS_SCHEDULE;
+HARD_STOP();
+
+
+//now turn on the fan and sweep left and right for some time
+PUMP_ON();
+//task_wait(1000);
+{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
+TURN_IN_PLACE(5,-10);
+//task_wait(1000);
+{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
+TURN_IN_PLACE(5, 10);
+//task_wait(1000);
+{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
+TURN_IN_PLACE(5, 10);
+//task_wait(1000);
+{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
+TURN_IN_PLACE(5,-10);
+//task_wait(1000);
+{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
+PUMP_OFF();
+
+//TODO: go back to the home circle (optional)
+state = s_exit_from_room;
+
+*/
 
 void test_flame(void)
 {

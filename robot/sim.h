@@ -22,6 +22,8 @@ typedef struct
 	s16 actual_enc_ab_ticks_per_interval;
 	s16 actual_enc_cd_ticks_per_interval;
 
+	//some information about the arena
+	u08 candle_location; //don't have a simulated omni-directional flame sensor....
 } t_robot_model;
 
 extern void sim_task(u08 cmd, u08 *param);

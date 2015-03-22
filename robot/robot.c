@@ -13,6 +13,9 @@ Issues:
 	o	Do a sweep and use IR and/or flame sensor data to find the correct peak position
 	o	If the wall is known to be on the left, sweep from the right until the right sensor is maxed out
 
+•	When the candle is in the bottom right corner of room 3, the "door frame" might be seen by the sonar and so the robot won't go closer to the candle
+	(similar situations possible in other rooms) solution: move further into the room before locating candle?
+
 •	When doing a 360 spin to look for the candle, need to make sure we don’t get confused by any IR potentially coming from outside the room
 	o	Need to look at the angle associated with the reading, i.e. ignore if it is coming from behind the robot
 	o	Don’t do a 360 degree spin – turn right >90deg and then left >180deg
@@ -35,6 +38,16 @@ Issues:
 •	too slow when make 90deg inside turns
 
 
+Notes:
+
+s.U:
+Home:	0
+Rm#3:	1500
+Rm#2:	3380
+Rm#1:	3980  (configuration 1 - door on the bottom)
+Rm#1:	4160  (configuration 2 - door on the top)
+
+
 */
 
 
@@ -49,7 +62,7 @@ extern void lcd_update_fsm(u08 cmd, u08 *param);
 extern void analog_update_fsm(u08 cmd, u08 *param);
 extern u08 line_alignment_fsm_v2(u08 cmd, u08 *param);
 extern void find_flame_fsm(u08 cmd, u08 *param);
-
+extern void return_home_fsm(u08 cmd, u08 *param);
 //char buffer[128];
 
 uint32 t_last_output_update = 0;
@@ -204,7 +217,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		s_finding_room_4,		//9
 		s_searching_room_4,		//10
 		s_move_to_candle,		//11
-		s_exit_from_room,		//12
+		s_exit_from_room,
 
 		s_none=255
 	};
@@ -217,6 +230,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static u08 dog_position=0; //1=N side of Rm#4,  2=E side,    3=S side
 	static u08 stop;
 	static u08 last_room=0;
+	static float checkpoint;
 
 	DEFINE_CFG2(s16,turn_speed,						9,10);
 	DEFINE_CFG2(s16,cmd,							9,11);
@@ -372,10 +386,13 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				RESET_LINE_DETECTION();
 				dog_position=0;
 				s.inputs.watch[0] = s.inputs.watch[1] = s.inputs.watch[2] = s.inputs.watch[3] = 0;
+				odometry_set_checkpoint();
+				reset_start_signal(); //mainly required to make sure we don't restart the whole thing in simulation mode
 			}
 
 			//if(s.behavior_state[MASTER_LOGIC_FSM]!=0) state = s.behavior_state[MASTER_LOGIC_FSM]; //s_waiting_for_start;
 			state = s_waiting_for_start;
+			s.current_room = 0;
 			s.behavior_state[MASTER_LOGIC_FSM] = s_waiting_for_start;
 
 			exit_(s_disabled)  { }
@@ -415,7 +432,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			enter_(s_aligning_south) 
 			{
-				NOP();
+				checkpoint = s.U;
 			}
 			
 			TURN_IN_PLACE(turn_speed, -90);
@@ -442,10 +459,11 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			{
 				START_BEHAVIOR(FOLLOW_WALL_FSM,RIGHT_WALL); //start following the RIGHT wall
 				RESET_LINE_DETECTION();
+				checkpoint = s.U;
 			}
 
 			//take into account the fact that initially we'll be on the home circle
-			if( LINE_WAS_DETECTED() && (time_since_entry_()<2000) )
+			if( LINE_WAS_DETECTED() && (s.U - checkpoint < 500) )
 			{
 				RESET_LINE_DETECTION();
 			}
@@ -463,6 +481,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			exit_(s_finding_room_3) { }
 		}
 
+
 		//-------------------------------------------------------------------------------------------------------
 		//  We are standing at the entrance to room 3 - let's see if there is a candle in this room
 		//-------------------------------------------------------------------------------------------------------
@@ -471,21 +490,22 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(s_searching_room_3)
 			{
 				s.current_room = 3;
-				task_wait(500);
+				checkpoint = s.U;
+				task_wait(100);
 			}
 
 			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			odometry_update_postion( ((float)(s.ir[IR_NW]))/16.0f , 65.0f, 90.0f);
 
-			//TODO: read the omni-directional flame sensor to determine if this room contains the flame or not
-			if(/* omni flame sensor sees the flame */1)
+			if(is_flame_present())
 			{
 				START_BEHAVIOR(FIND_FLAME_FSM,1);
-				while(1)
+				while (s.behavior_state[FIND_FLAME_FSM]>0)
 				{
 					OS_SCHEDULE;
 				}
+				state = s_exit_from_room;
 			}
 			else
 			{
@@ -544,22 +564,33 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(s_searching_room_2) 
 			{ 
 				s.current_room = 2;
+				checkpoint = s.U;
 			}
 
 			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			odometry_update_postion(27.0f, ((float)(s.ir[IR_NW]))/16.0f , 180.0f);
 
-			//if there was no candle, go on to the next room.
-			//we should be facing the wall more or less SE, we just need to start following the right wall
-			still_inside_room = 1;
-			RESET_LINE_DETECTION();
+			if (is_flame_present())
+			{
+				START_BEHAVIOR(FIND_FLAME_FSM, 1);
+				while (s.behavior_state[FIND_FLAME_FSM]>0)
+				{
+					OS_SCHEDULE;
+				}
+				state = s_exit_from_room;
+			}
+			else
+			{
+				TURN_IN_PLACE(turn_speed, room3_turn_3);
+				still_inside_room = 1;
+				state = s_finding_room_1;
+			}
 
-			TURN_IN_PLACE(turn_speed, room2_turn_3);
-
-			state = s_finding_room_1;
-
-			exit_(s_searching_room_2) { }
+			exit_(s_searching_room_2) 
+			{
+				NOP();
+			}
 		}
 
 		//-------------------------------------------------------------------------------------------------------
@@ -574,7 +605,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			if( LINE_WAS_DETECTED() )
 			{
 				//we'll be crossing the line while exiting from the prev. room!!!!
-				if(still_inside_room) 
+				if (s.U - checkpoint < 200)
 				{
 					play_note(C(4), 50, 10);
 					//s.inputs.watch[2]++;
@@ -600,30 +631,43 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(s_searching_room_1) 
 			{ 
 				s.current_room = 1; 
+				checkpoint = s.U;
 			}
 
 			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			//which door are we enterhing through?
 
-			still_inside_room = 1;
-			RESET_LINE_DETECTION();
-
-			//if there was no candle, go on to the next room.
-			//we should be facing more or less SW, but too far away from the wall depending on door location
-			//we first need to find the wall before we can follow it; let's turn left to face SE, then go straight towards the wall
-			TURN_IN_PLACE(turn_speed, room1_turn_3);
-
-			motor_command(6,accel,decel,turn_speed,turn_speed);
-			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) )
+			if (is_flame_present())
 			{
-				OS_SCHEDULE; //TODO: use parameters here!
+				START_BEHAVIOR(FIND_FLAME_FSM, 1);
+				while (s.behavior_state[FIND_FLAME_FSM]>0)
+				{
+					OS_SCHEDULE;
+				}
+				state = s_exit_from_room;
 			}
-			motor_command(cmd,accel,decel,0,0);
+			else
+			{
+				//if there was no candle, go on to the next room.
+				still_inside_room = 1;
+				RESET_LINE_DETECTION();
+				//we should be facing more or less SW, but too far away from the wall depending on door location
+				//we first need to find the wall before we can follow it; let's turn left to face SE, then go straight towards the wall
+				TURN_IN_PLACE(turn_speed, room1_turn_3);
+				motor_command(6, accel, decel, turn_speed, turn_speed);
+				while ((s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100))
+				{
+					OS_SCHEDULE; //TODO: use parameters here!
+				}
+				motor_command(cmd, accel, decel, 0, 0);
+				state = s_finding_room_4;
+			}
 
-			state = s_finding_room_4;
-
-			exit_(s_searching_room_1) { }
+			exit_(s_searching_room_1) 
+			{
+				NOP();
+			}
 		}
 
 		//-------------------------------------------------------------------------------------------------------
@@ -758,7 +802,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			RESET_LINE_DETECTION();
 			switch_(s_finding_room_4, s_searching_room_4);
 
-			exit_(s_finding_room_4) {}
+			exit_(s_finding_room_4) 
+			{
+				NOP();
+			}
 		}
 
 
@@ -771,6 +818,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(s_searching_room_4) 
 			{ 
 				s.current_room = 4; 
+				checkpoint = s.U;
 			}
 
 			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
@@ -778,12 +826,25 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//else odometry_update_postion(66.0f, 76.0f, 270.0f);
 
 			//we are facing either North or South, but it doesn't really matter...
-			switch_(s_searching_room_4, s_move_to_candle);
-
+			if (is_flame_present())
+			{
+				START_BEHAVIOR(FIND_FLAME_FSM, 1);
+				while (s.behavior_state[FIND_FLAME_FSM]>0)
+				{
+					OS_SCHEDULE;
+				}
+				state = s_exit_from_room;
+			}
+			else
+			{
+			}
 			//if there was no candle, then we messed up, because Room #4 is alwasy the last room we search!
 			//state = s_disabled;
 
-			exit_(s_searching_room_4) {}
+			exit_(s_searching_room_4) 
+			{
+				NOP();
+			}
 		}
 
 
@@ -791,194 +852,34 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		//-------------------------------------------------------------------------------------------------------
 		//    Move closer to the candle and blow it out
 		//-------------------------------------------------------------------------------------------------------
-		next_(s_move_to_candle)
-		{
-			static s16 bias=0;
-
-			enter_(s_move_to_candle) {}
-
-			//move a little bit into the room
-			MOVE(turn_speed, search4_distance_1); //100);
-
-			//make sure we are not in front of some obstacle (in case we saw a reflection from the wall)
-
-			//now move forward until we reach the candle circle; 
-			RESET_LINE_DETECTION();
-
-			play_frequency(440,25000,15);
-			//task_wait(500);
-			//PUMP_ON(); 
-
-
-			//start moving straight
-			motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
-			s.inputs.watch[0] = 1;
-			stop=0;
-			while(stop==0) 
-			{
-				s.inputs.watch[0] = 2;
-				motor_command(6,1,1,30-bias,30+bias);		
-				OS_SCHEDULE;
-				if(s.ir[IR_NE] < 70) bias=10;
-				else if(s.ir[IR_NW] < 70) bias=-10;
-				else bias=0;
-
-				//TODO: if the candle is in the middle of the room, we might not see it if we are facing it slightly off-center
-				if( (s.ir[IR_N] <= 100) ) stop |= 0x01;
-				//if( (s.ir[IR_NE] <= 50)) stop |= 0x02;
-				//if( (s.ir[IR_NW] <= 50)) stop |= 0x04;
-				if( (s.inputs.sonar[0] <= 100) ) stop |= 0x08;
-
-				//if(LINE_WAS_DETECTED()) stop |= 0x10;
-
-
-				//just comment out the following 2 if() statements if we are not doing "arbitrary candle locaction"
-				if ((!stop) && (bias < 0) )
-				{
-					s.inputs.watch[0] = 3; OS_SCHEDULE;
-					//wall on the left!
-					dbg_printf("wall on the left!\n");
-					HARD_STOP();
-					s.inputs.watch[0] = 4; OS_SCHEDULE;
-					TURN_IN_PLACE(30,-90);
-					s.inputs.watch[0] = 5; OS_SCHEDULE;
-					MOVE(30,100);
-					s.inputs.watch[0] = 6; OS_SCHEDULE;
-					TURN_IN_PLACE_AND_SCAN(turn_speed, 180, flame_scan_filter);
-					s.inputs.watch[0] = 7; OS_SCHEDULE;
-					scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
-					if(scan_result.flame_center_value > flame_found_threashold) 
-					{
-						s.inputs.watch[0] = 8; OS_SCHEDULE;
-						TURN_IN_PLACE( turn_speed, -(180-scan_result.center_angle) );
-						s.inputs.watch[0] = 9; OS_SCHEDULE;
-					}
-					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
-					bias=0;
-					//PUMP_ON(); 
-				}
-				if( (!stop) && (bias > 0) )
-				{
-					s.inputs.watch[0] = 10; OS_SCHEDULE;
-					//wall on the right!
-					dbg_printf("wall on the right!\n");
-					HARD_STOP();
-					s.inputs.watch[0] = 11; OS_SCHEDULE;
-					TURN_IN_PLACE(30, 90);
-					s.inputs.watch[0] = 12; OS_SCHEDULE;
-					MOVE(30,100);
-					s.inputs.watch[0] = 13; OS_SCHEDULE;
-					TURN_IN_PLACE_AND_SCAN(turn_speed, -180, flame_scan_filter);
-					s.inputs.watch[0] = 14; OS_SCHEDULE;
-					scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
-					if(scan_result.flame_center_value > flame_found_threashold) 
-					{
-						s.inputs.watch[0] = 15; OS_SCHEDULE;
-						TURN_IN_PLACE( turn_speed, (180+scan_result.center_angle) );
-						s.inputs.watch[0] = 16; OS_SCHEDULE;
-					}
-					//motor_command(7,2,2,10,10); motor_command(6,1,1,30,30);
-					bias=0;
-					//PUMP_ON(); 
-				}
-
-			}
-			dbg_printf("stopped! reason: 0x%02x\n",stop);
-			HARD_STOP();
-			s.inputs.watch[0] = 17; OS_SCHEDULE;
-			PUMP_ON(); 
-
-
-			TURN_IN_PLACE(turn_speed, -45);
-			s.inputs.watch[0] = 18; OS_SCHEDULE;
-			TURN_IN_PLACE_AND_SCAN(turn_speed, 90, flame_scan_filter);
-			s.inputs.watch[0] = 19; OS_SCHEDULE;
-			scan_result = find_flame_in_scan(scan_data,360,flame_scan_edge_threashold);
-			if(scan_result.flame_center_value > flame_found_threashold) 
-			{
-				s.inputs.watch[0] = 20; OS_SCHEDULE;
-				TURN_IN_PLACE( turn_speed, -(90-scan_result.center_angle) );
-				s.inputs.watch[0] = 21; OS_SCHEDULE;
-			}
-
-			s.inputs.watch[0] = 22; OS_SCHEDULE;
-			while( (s.inputs.sonar[0] > 70) && (s.ir[IR_N] > 70) )
-			{
-				motor_command(7,1,1,10,10);
-				OS_SCHEDULE;
-			}
-			s.inputs.watch[0] = 23; OS_SCHEDULE;
-			HARD_STOP();
-
-
-			//now turn on the fan and sweep left and right for some time
-			PUMP_ON(); 
-			//task_wait(1000);
-			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
-			TURN_IN_PLACE(5,-10); 
-			//task_wait(1000);
-			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
-			TURN_IN_PLACE(5, 10);
-			//task_wait(1000);
-			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
-			TURN_IN_PLACE(5, 10);
-			//task_wait(1000);
-			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
-			TURN_IN_PLACE(5,-10);
-			//task_wait(1000);
-			{ static int delay_ticks=50; while(delay_ticks>0) {delay_ticks--; OS_SCHEDULE; } }
-			PUMP_OFF(); 
-
-			//TODO: go back to the home circle (optional)
-			state = s_exit_from_room;
-
-			exit_(s_move_to_candle) {}
-		}
-
 		next_(s_exit_from_room)
 		{
-			enter_(s_exit_from_room) 
+			enter_(s_exit_from_room)
 			{
 				NOP();
 			}
 
-			//at this point we are looking straight at the candle
-			TURN_IN_PLACE(50, 90);
-			RESET_LINE_DETECTION();
-			GO(50);
-			while( (s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) && (s.inputs.sonar[0] > 100) ) 
+			START_BEHAVIOR(RETURN_HOME_FSM, s.current_room);
+			while (s.behavior_state[RETURN_HOME_FSM]>0)
 			{
-				OS_SCHEDULE; //TODO: use parameters here!
+				OS_SCHEDULE;
 			}
-			if( (s.ir[IR_N] < 100) || (s.inputs.sonar[0] < 100) ) 
-			{
-				TURN_IN_PLACE(50, 90);
-			}
-			START_BEHAVIOR(FOLLOW_WALL_FSM,LEFT_WALL);
-			WAIT_FOR_LINE_DETECTION();
-			STOP_BEHAVIOR(FOLLOW_WALL_FSM);
-			HARD_STOP();
-			RESET_LINE_DETECTION();
-			/*
-			HARD_STOP();
-			if(s.current_room==3) state = s_finding_room_2;
-			if(s.current_room==2) state = s_finding_room_1;
-			if(s.current_room==1) state = s_finding_room_4; //TODO: this one has different pre-conditions, so it won't work as is
-			if(s.current_room==4) state = s_disabled;
-			*/
 			state = s_disabled;
 
-			exit_(s_exit_from_room) 
+			exit_(s_exit_from_room)
 			{
 				NOP();
 			}
 		}
+
+
+
 
 		s.inputs.watch[2]=state;
 		if(s.behavior_state[3]!=0) s.behavior_state[3]=state;
 		if(state!=last_state) 
 		{
-			dbg_printf("ML:state: %d->%d\n", last_state,state);
+			dbg_printf("%6ld: ML:  %d->%d.  Rm#=%d  s.U=%f  s.U-checkpoint=%f  r-t=%d\n", get_ms(), last_state, state, s.current_room, s.U, s.U-checkpoint, s.right_turns);
 		}
 
 		//task_wait(25);
@@ -1278,6 +1179,8 @@ void main_loop(void)
 	wall_follow_fsm(0,0);
 	line_alignment_fsm_v2(0,0);
 
+	task_run(return_home_fsm, 0, 0); //ml fsm makes sleep statements, so it is a task and not just a simply fsm
+
 	//outputs
 	motor_command(0,0,0,0,0);
 	servo_task(0,0);
@@ -1426,6 +1329,7 @@ int main(void)
 	task_create( find_flame_fsm	,			2,  NULL, 0, 0);
 	task_create( master_logic_fsm,			3,  NULL, 0, 0);
 	task_create( lcd_update_fsm,			4,  NULL, 0, 0);
+	task_create( return_home_fsm,			5,  NULL, 0, 0);
 
 	//don't want the OS to schedule those tasks. we'll do that manually as part of the main loop
 	//os_task_suspend(ml_tid);

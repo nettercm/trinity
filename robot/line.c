@@ -5,11 +5,12 @@
 //line crossing / candle circle / home circle detection
 u08 lines_crossed=0;
 u08 last_lines_crossed=0;
-DEFINE_CFG2(u08,black,6,1);					
-DEFINE_CFG2(u08,white,6,2);					
 Evt_t line_alignment_start_evt;
 Evt_t line_alignment_done_evt;
 
+DEFINE_CFG2(u08, black, 6, 1);
+DEFINE_CFG2(u08, white, 6, 2);
+DEFINE_CFG2(s16, alignment_speed, 6, 3);
 
 
 //normalizing the left/right line sensors via code is not needed if the "weaker" one of the 2 is driven via an additional resistor
@@ -62,12 +63,14 @@ void line_detection_fsm_v2(u08 cmd, u08 *param)
 
 		PREPARE_CFG2(black);					
 		PREPARE_CFG2(white);					
+		PREPARE_CFG2(alignment_speed);
 	}
 
 	//while(1)
 	{
 		UPDATE_CFG2(black);					
 		UPDATE_CFG2(white);
+		UPDATE_CFG2(alignment_speed);
 
 		if(l_state==0) //current on black...
 		{
@@ -173,7 +176,7 @@ u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
 	{
 		if(s.line[RIGHT_LINE] <= white)
 		{
-			motor_command(7,0,0,0,40);
+			motor_command(7,0,0,0,alignment_speed);
 		}
 		else 
 		{
@@ -185,7 +188,7 @@ u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
 	{
 		if(s.line[RIGHT_LINE] > white)
 		{
-			motor_command(7,0,0,0,-40);
+			motor_command(7, 0, 0, 0, -alignment_speed);
 		}
 		else 
 		{
@@ -197,7 +200,7 @@ u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
 	{
 		if(s.line[LEFT_LINE] <= white)
 		{
-			motor_command(7,0,0,40,0);
+			motor_command(7, 0, 0, alignment_speed, 0);
 		}
 		else 
 		{
@@ -209,7 +212,7 @@ u08 line_alignment_fsm_v2(u08 cmd, u08 *param)
 	{
 		if(s.line[LEFT_LINE] > white)
 		{
-			motor_command(7,0,0,-40,0);
+			motor_command(7, 0, 0, -alignment_speed, 0);
 		}
 		else 
 		{

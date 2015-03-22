@@ -14,10 +14,24 @@ u16 button_count=0;
 u32 frequency_in_hz=0;
 
 static u08 force = 0;
+static u08 start_button_state = 0;
+static u08 start_button_count = 0;
 
-void force_start_signal()
+
+void force_start_signal(u08 f)
 {
-	force = 1;
+	force = f;
+}
+
+
+void reset_start_signal(void)
+{
+	force = 0;
+	start_button_state = 0;
+	start_button_count = 0;
+	sound_start_count = 0;
+	consecutive_sound_start_count = 0;
+	button_count = 0;
 }
 
 int check_for_start_signal()
@@ -26,8 +40,6 @@ int check_for_start_signal()
 	static unsigned char state;		// current state of input (1 if high, 0 if low)
 	static u32 t_last=0;
 	static u32 t_now;
-	static u08 start_button_state=0;
-	static u08 start_button_count=0;
 	t_now = get_ms();
 
 

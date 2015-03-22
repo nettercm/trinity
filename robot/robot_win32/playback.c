@@ -17,7 +17,7 @@ void playback_sim_init(char *path)
 	m.elapsed_milliseconds = 0;
 	m.enc_ab = 0;
 	m.enc_cd = 0;
-	capture_file=fopen("c:\\Temp\\2015-03-18-21-50-21-capture_file.txt","r");
+	capture_file=fopen("c:\\Temp\\2015-03-21-18-10-54-capture_file.txt","r");
 }
 
 
@@ -113,7 +113,7 @@ void playback_sim_inputs(void)
 		printf("%6d:  ML should change state:  s.behavior_state[3]=%d  i.watch[2]=%d\n", i.timestamp, s.behavior_state[3], i.watch[2]);
 		if ((s.behavior_state[3] == 1) && (i.watch[2] == 2))
 		{
-			force_start_signal();
+			force_start_signal(1);
 		}
 	}
 

@@ -324,6 +324,9 @@
     <ClCompile Include="vrep.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\return_home.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\.gitattributes" />

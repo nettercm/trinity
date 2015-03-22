@@ -36,7 +36,7 @@ extern t_scan_result find_flame_in_scan(t_scan *data, u16 number_of_points, uint
 extern uint8 hone_in_on_candle(uint8 cmd, uint8 range);
 extern void find_flame_fsm(u08 cmd, u08 *param);
 extern t_scan_result find_path_in_scan(t_scan *data, u16 number_of_points, u16 threashold, u16 hysteresis, u08 use_far_north);
-
+extern u08 is_flame_present(void);
 extern void test_flame(void);
 
 #endif

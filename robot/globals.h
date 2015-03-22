@@ -57,6 +57,8 @@ typedef struct
 
 	//navigation
 	u08 current_room;
+	u08 right_turns;
+	u08 left_turns;
 	
 } t_state;
 

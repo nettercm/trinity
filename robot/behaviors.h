@@ -7,7 +7,7 @@
 #define MASTER_LOGIC_FSM	3 
 #define LINE_ALIGNMENT_FSM	4
 #define FIND_FLAME_FSM		5
-
+#define RETURN_HOME_FSM		6
 #define TEST_LOGIC_FSM		11
 
 

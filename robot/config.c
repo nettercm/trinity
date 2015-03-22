@@ -137,6 +137,16 @@ void cfg_test(void)
 }
 
 
+void cfg_set_flt_by_grp_id(uint8 grp, uint8 id, float f)
+{
+	u08 i;
+	for (i = 0; i<MAX_CFG_ITEMS; i++)
+	{
+		if ((config[i].grp == grp) && (config[i].id == id)) config[i].v.f = f;
+		if (config[i].grp == 255) return;
+	}
+}
+
 void cfg_set_value_by_grp_id(uint8 grp, uint8 id, t_config_value v)
 {
 	u08 i;

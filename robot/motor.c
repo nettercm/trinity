@@ -40,8 +40,8 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	s.dy  = s.dy + d_y;
 	s.dU  = s.dU + d_U;
 	s.dtheta = s.dtheta + d_theta;
-	if(s.dtheta > 2.0*PI) s.dtheta -= 2.0f*PI;
-	if(s.dtheta < -2.0*PI) s.dtheta += 2.0f*PI;
+	if(s.dtheta > 1.0*PI) s.dtheta -= 2.0f*PI;
+	if(s.dtheta < -1.0*PI) s.dtheta += 2.0f*PI;
 }
 
 
@@ -86,6 +86,9 @@ void encoders_reset(void)
 
 void odometry_set_checkpoint(void)
 {
+#ifdef WIN32
+	printf("odometry_set_checkpoint()\n");
+#endif
 	s.dx = s.dy = s.dtheta = s.dU =  0.0f;
 }
 
