@@ -17,7 +17,7 @@ void playback_sim_init(char *path)
 	m.elapsed_milliseconds = 0;
 	m.enc_ab = 0;
 	m.enc_cd = 0;
-	capture_file=fopen("c:\\Temp\\2015-03-21-18-10-54-capture_file.txt","r");
+	capture_file=fopen("c:\\Temp\\2015-03-22-09-42-20-capture_file.txt","r");
 }
 
 

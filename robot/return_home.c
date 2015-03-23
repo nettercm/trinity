@@ -121,9 +121,9 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			{
 				OS_SCHEDULE; //TODO: use parameters here!
 			}
-			if ((s.ir[IR_N] < 100) || (s.inputs.sonar[0] < 100))
+			if ((s.ir[IR_N] < 100) || (s.inputs.sonar[0] < 100)) //is a wall right in front?
 			{
-				TURN_IN_PLACE(50, 90);
+				TURN_IN_PLACE(50, 60); //turning 90 is too much
 			}
 			START_BEHAVIOR(FOLLOW_WALL_FSM, RIGHT_WALL);
 			WAIT_FOR_LINE_DETECTION();
@@ -131,7 +131,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			HARD_STOP();
 			RESET_LINE_DETECTION();
 			line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
-			MOVE(20, 200);
+			MOVE(20, 230);
 			TURN_IN_PLACE(20, 90);
 			MOVE(20, 180);
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);

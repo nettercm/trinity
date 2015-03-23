@@ -320,7 +320,7 @@ void display_inputs_and_state(t_inputs *inputs)
 	if( (t_delta >= update_interval) || (memcmp(watch,inputs->watch,4)!=0) )
 	{
 		printf(s.msg);
-		log_printf(s.msg);
+		//log_printf(s.msg);
 		memcpy(watch,inputs->watch,4);
 		t_last=t_now;
 	}
