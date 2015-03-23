@@ -135,7 +135,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			TURN_IN_PLACE(20, 90);
 			MOVE(20, 180);
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
-			cfg_set_flt_by_grp_id(10, 13, 600);
+			cfg_set_flt_by_grp_id(10, 13, 600); //corner_distance = 600, i.e. make sure we don't turn into the intersection but keep going straight
 
 			while (s.inputs.sonar[US_N] > 100)
 			{

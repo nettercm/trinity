@@ -140,6 +140,7 @@
     <ClCompile Include="..\line.c" />
     <ClCompile Include="..\motion.c" />
     <ClCompile Include="..\os.c" />
+    <ClCompile Include="..\return_home.c" />
     <ClCompile Include="..\servo.c" />
     <ClCompile Include="..\sim.c" />
     <ClCompile Include="..\start_signal.c" />

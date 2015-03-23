@@ -49,6 +49,7 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 //t=theta is in degrees;  a value of NO_CHANGE_IN_POSITION (999999.0) indicates "don't make a change"
 void odometry_update_postion(float x, float y, float t)
 {
+	//TODO:  HACK:  In SIL mode under V-REP, we have the option to force the calculated pos to match that robot's actual pos, so need to disable this
 #if 0
 	dbg_printf("odo_upd_pos(): x,y,t:  %d=>%d, %d=>%d, %d=>%d\n", 
 		(int)(s.inputs.x / 25.4f), (int)x,

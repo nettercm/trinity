@@ -23,6 +23,12 @@ static int flame0,flame1,flame2;
 static int sonar0,sonar1,sonar2,sonar3,sonar4;
 static int robot,candle;
 
+const float IGNORE_X = 9999999.0f;
+const float IGNORE_Y = 9999999.0f;
+const float IGNORE_Z = 9999999.0f;
+const float IGNORE_THETA = 9999999.0f;
+const float INVALID_XYZ = 9999999.0f;
+
 typedef struct
 {
 	float robot_position[3];
@@ -36,6 +42,13 @@ typedef struct
 	float x;
 	float y;
 } t_xy;
+
+typedef struct
+{
+	float x;
+	float y;
+	float t;
+} t_xyt;
 
 
 float *auxValues=NULL;
@@ -72,25 +85,33 @@ void move_candle(float x, float y)
 }
 
 
-void move_object(const char *object_name, float x, float y)
+void move_object(const char *object_name, float x, float y, float theta)
 {
-	int prop;
+	int new_prop, org_prop;
 	int result;
 	float object_position[3];
+	float object_orientation[3];
 	int handle;
 
 	result = simxGetObjectHandle(clientID, object_name, &handle, simx_opmode_oneshot_wait);
 
 	/*
-	result = simxGetModelProperty(clientID, handle, &prop, simx_opmode_oneshot_wait);
-	prop |= sim_modelproperty_not_dynamic;
-	prop |= sim_modelproperty_not_respondable;
-	result = simxSetModelProperty(clientID, handle, prop, simx_opmode_oneshot_wait);
+	result = simxGetModelProperty(clientID, handle, &org_prop, simx_opmode_oneshot_wait);
+	new_prop = org_prop | sim_modelproperty_not_dynamic;
+	new_prop = org_prop | sim_modelproperty_not_respondable;
+	result = simxSetModelProperty(clientID, handle, new_prop, simx_opmode_oneshot_wait);
 	*/
+
+	simxGetObjectOrientation(clientID, handle,-1, object_orientation,simx_opmode_oneshot_wait);
+	if(theta!=IGNORE_THETA) object_orientation[2] = theta;
+	simxSetObjectOrientation(clientID, handle, -1, object_orientation, simx_opmode_oneshot_wait);
+
 	simxGetObjectPosition(clientID, handle, -1, object_position, simx_opmode_oneshot_wait);
-	object_position[0] = x;
-	object_position[1] = y;
+	if(x!=IGNORE_X) object_position[0] = x;
+	if(y!=IGNORE_Y) object_position[1] = y;
 	simxSetObjectPosition(clientID, handle, -1, object_position, simx_opmode_oneshot_wait);
+
+	//result = simxSetModelProperty(clientID, handle, org_prop, simx_opmode_oneshot_wait);
 }
 
 void vrep_sim_step(void)
@@ -138,12 +159,27 @@ void vrep_sim_step(void)
 
 		if(c=='r')
 		{
-			s.behavior_state[FOLLOW_WALL_FSM]=2;
+			const t_xyt rls[]=
+			{
+				{0.9,2.2,-1.571}, //home
+				{0.2758,1.557,1.389}, //Rm 3
+				{0.709,0.299,3.028}, //Rm 2
+				{1.255,0.208,0.060}, //Rm 1a (bottom)
+				{1.239,0.625,-0.036} //Rm 1b (top)
+			};
+			const int start_state[] = {2, 4, 6, 8, 8};
+			static int rl = 0;
+
+			m.start_location = start_state[rl];
+			move_object("Robot",rls[rl].x, rls[rl].y, rls[rl].t);
+			rl++;
+			if(rl>4) rl=0;
 		}
 
 		if(c=='a')
 		{
-			s.behavior_state[MASTER_LOGIC_FSM]=12;
+			s.behavior_state[MASTER_LOGIC_FSM]=m.start_location;
+			result = simxSetModelProperty(clientID,robot,0,simx_opmode_oneshot_wait);
 		}
 
 		if(c=='b')
@@ -156,16 +192,18 @@ void vrep_sim_step(void)
 			m.candle_location = 0;
 			printf("No candle\n");
 		}
+
 		if (c == '1') //assume candle is in room 1
 		{
 			static int door_configuration = 0;
 
 			m.candle_location = 1;
 			move_candle(1.355, 0.845);
-			if (door_configuration) { move_object("wall_E", 1.23, 0.23); door_configuration = 0; }
-			else { move_object("wall_E", 1.23, 0.68); door_configuration = 1; }
+			if (door_configuration) { move_object("wall_E", 1.23, 0.23, IGNORE_THETA); door_configuration = 0; }
+			else { move_object("wall_E", 1.23, 0.68, IGNORE_THETA); door_configuration = 1; }
 			printf("Candle will be in room #1.  door location = %d\n", door_configuration);
 		}
+
 		if (c == '2') //assume candle is in room 1
 		{
 			const t_xy location[] = { { 0.63, 0.97 }, { 0.13, 0.97 }, { 0.13, 0.12 }, { 0.655, 0.545 }, { 0.33, 0.32 } };
@@ -176,6 +214,7 @@ void vrep_sim_step(void)
 			move_candle(location[cc].x, location[cc].y);
 			printf("Candle will be in room #2, location %d\n",cc);
 		}
+
 		if (c == '3') //assume candle is in room 1
 		{
 			const t_xy location[] = { { 0.655, 1.62 }, { 0.655, 2.32 }, { 0.08, 2.32 }, { 0.305, 2.095 } };
@@ -186,6 +225,7 @@ void vrep_sim_step(void)
 			move_candle(location[cc].x,location[cc].y);
 			printf("Candle will be in room #3, location %d\n", cc);
 		}
+
 		if (c == '4') //assume candle is in room 1
 		{
 			m.candle_location = 4;
@@ -197,6 +237,8 @@ void vrep_sim_step(void)
 		{
 			//m.start_signal=1;
 			force_start_signal(1);
+			result = simxSetModelProperty(clientID,robot,0,simx_opmode_oneshot_wait);
+
 		}
 
 		if(c=='x')
@@ -411,15 +453,15 @@ void vrep_sim_inputs(void)
 	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,STREAMING_MODE);
 	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,STREAMING_MODE);
 
-	if(0)
+	if(1)
 	{
 		static double enc_ab=0, enc_cd=0;
 		enc_ab += lticks;
 		enc_cd += rticks;
 		//printf("l=%d, r=%d\n",enc_ab,enc_cd);
 
-		printf("actual x,y,theta = %7.4f, %7.4f, %7.4f   l,r=%7.3f,%7.3f   ab,cd=%7.3f,%7.3f   calc x,y,theta = %7.4f, %7.4f, %7.4f\n",
-			sim_state.robot_position[0],sim_state.robot_position[1], sim_state.robot_orientation[2] * (180.0f/3.1415926535897932384626433832795f),
+		printf("actual x,y,theta = %7.4f, %7.4f, %7.4frad/%7.4fdeg   l,r=%7.3f,%7.3f   ab,cd=%7.3f,%7.3f   calc x,y,theta = %7.4f, %7.4f, %7.4f\n",
+			sim_state.robot_position[0],sim_state.robot_position[1], sim_state.robot_orientation[2], sim_state.robot_orientation[2] * (180.0f/3.1415926535897932384626433832795f),
 			lticks,rticks,enc_ab,enc_cd,
 			s.inputs.x, s.inputs.y, s.inputs.theta * (180.0f/3.1415926535897932384626433832795f)
 		);	
@@ -571,8 +613,7 @@ void vrep_sim_init(void)
 
 	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,simx_opmode_oneshot_wait);
 
-	//when playing back previously recorded data, we need to programmatically move the robot, but to do this, it must not be dynamic.
-	if(0)
+	//start out w/ Robot properties such that we can programmatically move it
 	{
 		int prop;
 		result = simxGetModelProperty(clientID,robot,&prop,simx_opmode_oneshot_wait);
@@ -581,7 +622,19 @@ void vrep_sim_init(void)
 		result = simxSetModelProperty(clientID,robot,prop,simx_opmode_oneshot_wait);
 	}
 
-	while(0)
+
+#if 0
+	//when playing back previously recorded data, we need to programmatically move the robot, but to do this, it must not be dynamic.
+	if(1)
+	{
+		int prop;
+		result = simxGetModelProperty(clientID,robot,&prop,simx_opmode_oneshot_wait);
+		prop |= sim_modelproperty_not_dynamic;
+		prop |= sim_modelproperty_not_respondable;
+		result = simxSetModelProperty(clientID,robot,prop,simx_opmode_oneshot_wait);
+	}
+
+	while(1)
 	{
 		static int t,t_last=0;
 		static u32 t_real_now, t_real_last=0; 
@@ -617,4 +670,5 @@ void vrep_sim_init(void)
 			}
 		}
 	}
+#endif
 }

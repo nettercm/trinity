@@ -71,8 +71,6 @@ const unsigned char demuxPins[] = SERVO_DEMUX_PINS; // eight servos
 extern void commands_process_fsm(u08 cmd, u08 *param);
 extern void lcd_update_fsm(u08 cmd, u08 *param);
 extern void analog_update_fsm(u08 cmd, u08 *param);
-extern u08 line_alignment_fsm_v2(u08 cmd, u08 *param);
-extern void find_flame_fsm(u08 cmd, u08 *param);
 extern void return_home_fsm(u08 cmd, u08 *param);
 //char buffer[128];
 
@@ -424,7 +422,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			if(check_for_start_signal()) 
 			{
 				state = s_aligning_south;
-				//START_BEHAVIOR(TEST_LOGIC_FSM,5); //TODO:  fix this
+				//if(s.behavior_state[MASTER_LOGIC_FSM]>1) state = s.behavior_state[MASTER_LOGIC_FSM];
 			}
 			else if(s.behavior_state[MASTER_LOGIC_FSM]!=0) state = s.behavior_state[MASTER_LOGIC_FSM]; //s_waiting_for_start;
 
@@ -452,7 +450,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//if so, then we were facing south initially, and now we are facing west; turn back...
 			if( (s.ir[IR_N] < 120) || (s.inputs.sonar[0] < 120) )  TURN_IN_PLACE(turn_speed, 90);
 
-			odometry_update_postion(35.0f, 92.0f, 270.0f);
+			//odometry_update_postion(35.0f, 92.0f, 270.0f);
 
 			//on to the next state...
 			state = s_finding_room_3;
@@ -507,7 +505,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
-			odometry_update_postion( ((float)(s.ir[IR_NW]))/16.0f , 65.0f, 90.0f);
+			//odometry_update_postion( ((float)(s.ir[IR_NW]))/16.0f , 65.0f, 90.0f);
 
 			if(is_flame_present())
 			{
@@ -580,7 +578,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
-			odometry_update_postion(27.0f, ((float)(s.ir[IR_NW]))/16.0f , 180.0f);
+			//odometry_update_postion(27.0f, ((float)(s.ir[IR_NW]))/16.0f , 180.0f);
 
 			if (is_flame_present())
 			{
@@ -702,7 +700,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 			//TODO: make a note how far away we are from the wall on the right, because it affects a maneuver further down. (but watch out for mirrors!)
 
-			odometry_update_postion(89.0f, ((float)(s.ir[IR_NE]))/16.0f, 90.0f);
+			//odometry_update_postion(89.0f, ((float)(s.ir[IR_NE]))/16.0f, 90.0f);
 
 
 			//completely exit from room 1 until we have reached the center of the intersection
