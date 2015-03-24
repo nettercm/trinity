@@ -265,6 +265,9 @@
     <Compile Include="os.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="return_home.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="servo.c">
       <SubType>compile</SubType>
     </Compile>
