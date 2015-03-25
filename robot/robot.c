@@ -11,31 +11,19 @@
 /*
 
 Todo:
-* turn sound back on for improved debuggin? (don't initialize servo feature until when its needed)
 
+* convert the various flame detection threasholds into config parameters
+* finish return home logic
 
 Issues:
-
-*   what about carpet bump at the entrance to a room?  how will it affect the line sensor readings?
 
 •	When the flame is close to a wall, the flame’s reflection from the wall can max out the flame sensors => may end up to looking straight at the candle when stopped
 	o	Do a sweep and use IR and/or flame sensor data to find the correct peak position
 	o	If the wall is known to be on the left, sweep from the right until the right sensor is maxed out
 
-•	When the candle is in the bottom right corner of room 3, the "door frame" might be seen by the sonar and so the robot won't go closer to the candle
-	(similar situations possible in other rooms) solution: move further into the room before locating candle?
-
-
-•	line detection: signal-to-noise ration on analog[10]/right line is bad;   also,  missing the entrance to room 1 (maybe exit from room 2 confuses the line detector)
-
-
 
 
 Low Priority:
-
-•	acceleration from 0 to min speed / turn speed needs to be more smooth if target speed is > 30
-
-•	When exiting room number 1 after extinguishing,  the door chosen depends on where the candle was
 
 •	too slow when make 90deg inside turns
 
@@ -45,7 +33,12 @@ Low Priority:
 	o	Need to look at the angle associated with the reading, i.e. ignore if it is coming from behind the robot
 	o	Don’t do a 360 degree spin – turn right >90deg and then left >180deg
 
+
+
+
 Solved Issues:
+*	turn sound back on for improved debuggin? (don't initialize servo feature until when its needed)
+	=> done, but only for playing sequences and it is only done on powerup / reset. servos get initialized later
 
 •	If the candle is in the middle of a large room, the robot will crash into it if we are approaching it off-center (sonar won’t see it)
 	o	Solution: add a NE and NW facing sonar
@@ -54,6 +47,18 @@ Solved Issues:
 	o	may have to do w/ recently added front sensor logic,
 	o	it improved after tweaking wall_following.c line 120)
 
+*   what about carpet bump at the entrance to a room?  how will it affect the line sensor readings?
+	=> added "suspension" to the back side to dampen the bobble.  Seems to work
+
+•	When the candle is in the bottom right corner of room 3, the "door frame" might be seen by the sonar and so the robot won't go closer to the candle
+	(similar situations possible in other rooms) 
+	=> move further into the room before locating candle
+
+•	line detection: signal-to-noise ration on analog[10]/right line is bad;   also,  missing the entrance to room 1 (maybe exit from room 2 confuses the line detector)
+	=> since we may or may not see the line while exiting from a room, now using odometry to ignore a line that is "too close" to the room we are coming from
+
+•	acceleration from 0 to min speed / turn speed needs to be more smooth if target speed is > 30
+	=> added suspension to the back to prevent back-and-forth wobble
 
 
 Notes:
@@ -232,43 +237,28 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	//update the parameter values the first time through and then everyh 500ms
 	if( (context_switch_counter==0) || (get_ms()-t_last) > 500 )  
 	{
-		UPDATE_CFG2(turn_speed);
-		UPDATE_CFG2(cmd);
-		UPDATE_CFG2(accel);
-		UPDATE_CFG2(decel);
-		UPDATE_CFG2(flame_scan_edge_threashold);
-		UPDATE_CFG2(flame_found_threashold);
+		UPDATE_CFG2(turn_speed);					UPDATE_CFG2(cmd);
+		UPDATE_CFG2(accel);							UPDATE_CFG2(decel);
+		UPDATE_CFG2(flame_scan_edge_threashold);	UPDATE_CFG2(flame_found_threashold);
 
-		UPDATE_CFG2(room3_enter				);
-		UPDATE_CFG2(room3_turn_1			);
-		UPDATE_CFG2(room3_turn_2			);
-		UPDATE_CFG2(room3_turn_3			);
+		UPDATE_CFG2(room3_enter				);		UPDATE_CFG2(room3_turn_1			);
+		UPDATE_CFG2(room3_turn_2			);		UPDATE_CFG2(room3_turn_3			);
 
-		UPDATE_CFG2(room2_enter				);
-		UPDATE_CFG2(room2_turn_1			);
-		UPDATE_CFG2(room2_turn_2			);
-		UPDATE_CFG2(room2_turn_3			);
+		UPDATE_CFG2(room2_enter				);		UPDATE_CFG2(room2_turn_1			);
+		UPDATE_CFG2(room2_turn_2			);		UPDATE_CFG2(room2_turn_3			);
 
-		UPDATE_CFG2(room1_enter				);
-		UPDATE_CFG2(room1_turn_1			);
-		UPDATE_CFG2(room1_turn_2			);
-		UPDATE_CFG2(room1_turn_3			);
+		UPDATE_CFG2(room1_enter				);		UPDATE_CFG2(room1_turn_1			);
+		UPDATE_CFG2(room1_turn_2			);		UPDATE_CFG2(room1_turn_3			);
 
-		UPDATE_CFG2(dog_scan_distance		);
-		UPDATE_CFG2(dog_scan_sensor		);
+		UPDATE_CFG2(dog_scan_distance		);		UPDATE_CFG2(dog_scan_sensor		);
 		UPDATE_CFG2(dog_scan_angle			);
 
-		UPDATE_CFG2(find4_distance_1		);
-		UPDATE_CFG2(find4_turn_1			);
-		UPDATE_CFG2(find4_distance_2		);
-		UPDATE_CFG2(find4_left_margin_1	);
-		UPDATE_CFG2(find4_right_margin_1	);
-		UPDATE_CFG2(find4_distance_3		);
-		UPDATE_CFG2(find4_left_margin_2	);
-		UPDATE_CFG2(find4_right_margin_2	);
+		UPDATE_CFG2(find4_distance_1		);		UPDATE_CFG2(find4_turn_1			);
+		UPDATE_CFG2(find4_distance_2		);		UPDATE_CFG2(find4_left_margin_1	);
+		UPDATE_CFG2(find4_right_margin_1	);		UPDATE_CFG2(find4_distance_3		);
+		UPDATE_CFG2(find4_left_margin_2	);			UPDATE_CFG2(find4_right_margin_2	);
 
-		UPDATE_CFG2(search4_distance_1);
-		UPDATE_CFG2(search4_turn_1	);
+		UPDATE_CFG2(search4_distance_1);			UPDATE_CFG2(search4_turn_1	);
 		UPDATE_CFG2(search4_turn_2	);	
 		t_last = get_ms();
 	}
@@ -387,19 +377,16 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			}
 
 			//take into account the fact that initially we'll be on the home circle
-			if( LINE_WAS_DETECTED() && (s.U - checkpoint < 500) )
-			{
-				RESET_LINE_DETECTION();
-			}
-
 			if( LINE_WAS_DETECTED() )
 			{
-
 				RESET_LINE_DETECTION();
-				play_note(C(3), 50, 10);
-				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
-				HARD_STOP();
-				state = s_searching_room_3;
+				if((s.U - checkpoint > 500) )
+				{
+					play_note(C(3), 50, 10);
+					HARD_STOP();
+					STOP_BEHAVIOR(FOLLOW_WALL_FSM);
+					state = s_searching_room_3;
+				}
 			}
 
 			exit_(s_finding_room_3) 
@@ -461,14 +448,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			if( LINE_WAS_DETECTED() )
 			{
-				//we'll be crossing the line while exiting from the prev. room, so let's take that into account!!!!
-				if(still_inside_room) 
-				{
-					play_note(C(4), 50, 10);
-					RESET_LINE_DETECTION();
-					still_inside_room=0;
-				}
-				else
+				RESET_LINE_DETECTION();
+				if((s.U - checkpoint > 500) )
 				{
 					play_note(C(3), 50, 10);
 					HARD_STOP();
@@ -535,15 +516,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			if( LINE_WAS_DETECTED() )
 			{
-				//we'll be crossing the line while exiting from the prev. room!!!!
-				if (s.U - checkpoint < 200)
-				{
-					play_note(C(4), 50, 10);
-					//s.inputs.watch[2]++;
-					RESET_LINE_DETECTION();
-					still_inside_room=0;
-				}
-				else
+				RESET_LINE_DETECTION();
+				if((s.U - checkpoint > 200) )
 				{
 					play_note(C(3), 50, 10);
 					HARD_STOP();
@@ -552,7 +526,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				}
 			}
 
-			exit_(s_finding_room_1) { }
+			exit_(s_finding_room_1) 
+			{ 
+				NOP();
+			}
 		}
 
 

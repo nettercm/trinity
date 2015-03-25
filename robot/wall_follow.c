@@ -126,7 +126,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 	u08 at_limit_flag=0;
 	static s16 target_speed=0;
 	static u08 which_wall = LEFT_WALL; //left
-	static s16 side=0, front=0;
+	static s16 side=0, side2=0, front=0;
 
 	DEFINE_CFG2(u08,interval,			10,1);			DEFINE_CFG2(s16,nominal_speed,		10,2);
 	DEFINE_CFG2(s16,target_distance,	10,3);			DEFINE_CFG2(s16,max_error,			10,4);
@@ -181,7 +181,17 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 	//the following state transition applies to all states
 	if(s.behavior_state[FOLLOW_WALL_FSM]==0) state = s_disabled;
 
-	side =  (which_wall == LEFT_WALL ? s.ir[IR_NW] : s.ir[IR_NE]);
+	if(which_wall == LEFT_WALL)
+	{
+		side = s.ir[IR_NW];
+		side2 = s.inputs.sonar[US_W];
+	}
+	else
+	{
+		side = s.ir[IR_NE];
+		side2 = s.inputs.sonar[US_E];
+	}
+
 	front = s.ir[IR_N];
 	if(s.inputs.sonar[0] < front)
 	{
@@ -275,7 +285,13 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		if(target_speed > corner_speed) target_speed -= down_ramp;
 		if(target_speed < corner_speed) target_speed += up_ramp;
 		motor_command(8,0,0,target_speed,target_speed);
-		if( odometry_get_distance_since_checkpoint() >= corner_distance ) state = s_turning_corner;
+		if( odometry_get_distance_since_checkpoint() >= corner_distance ) 
+		{
+			//if( side2 > 150)  //TODO: consider using a side sensor (e.g. US_E and/or IR_E) to confirm that it's OK to turn the corner
+			{
+				state = s_turning_corner;
+			}
+		}
 		if( side <= found_wall_distance ) state = s_tracking_wall;
 
 		exit_(s_lost_wall) { }	

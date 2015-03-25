@@ -253,6 +253,9 @@
     <Compile Include="line.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="motion.c">
       <SubType>compile</SubType>
     </Compile>

@@ -239,7 +239,7 @@ int main(void)
 
 
 	play_from_program_space(welcome);
-	//delay_ms(500);
+	delay_ms(500);
 	
 	usb_printf("robot.c::main()\n");
 

@@ -299,8 +299,8 @@ int read_ir(int handle,int min, int max, float noise_factor)
 		float point[3],surface[3];
 		float distance;
 		float noise;
-		//float noise_factor = 0.0002f; //  +/- 2%
 		int result;
+		static int count=0;
 
 		result = simxReadProximitySensor(clientID,handle,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
 		distance = max;
@@ -312,7 +312,24 @@ int read_ir(int handle,int min, int max, float noise_factor)
 			noise = noise*noise_factor;
 			distance += distance * noise;
 		}
+
+		count++;
+#if 0
+		if(count<50)
+		{
+			return distance;
+		}
+		else if(count <100)
+		{
+			return max;
+		}
+		else
+		{
+			count=0;
+		}
+#else
 		return distance;
+#endif
 }
 
 
@@ -485,12 +502,9 @@ void vrep_sim_inputs(void)
 	{
 		ir_update_countdown=2;
 
-		s.inputs.ir[IR_NW] = s.ir[IR_NW]		= (u16)read_ir(ir7,40,300,0.0002);
-		s.inputs.ir[IR_NE] = s.ir[IR_NE]		= (u16)read_ir(ir1,40,300,0.0002);
-		s.inputs.ir[IR_N]  = s.ir[IR_N]			= 600; //(u16)read_ir(ir0,60,600,0.0002);
-
-		//s.inputs.ir[3] = s.ir[IR_N_long]		= (u16)read_ir(ir0,60,600,0.0002);
-
+		s.inputs.ir[IR_NW]  = s.ir[IR_NW]		= (u16)read_ir(ir7,40,300,0.0002);
+		s.inputs.ir[IR_NE]  = s.ir[IR_NE]		= (u16)read_ir(ir1,40,300,0.0002);
+		s.inputs.ir[IR_N]   = s.ir[IR_N]		= (u16)read_ir(ir0,60,600,0.0002);
 		s.inputs.ir[IR_E]	= s.ir[IR_E]		= (u16)read_ir(ir2,40,400,0.0002);
 		s.inputs.ir[IR_NR]	= s.ir[IR_NR]		= (u16)read_ir(ir3,40,400,0.0002);
 		s.inputs.ir[IR_NL]	= s.ir[IR_NL]		= (u16)read_ir(ir5,40,400,0.0002);
