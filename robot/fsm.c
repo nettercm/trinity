@@ -3,6 +3,15 @@
 
 //use this as a template...
 
+
+void stop_all_fsm(void)
+{
+	uint8 i;
+	
+	for(i=0;i<16;i++) s.behavior_state[i] = 0;
+}
+
+
 void fsm_test_task(u08 cmd, u08 *param)
 {
 	enum states { s_none=0, s_disabled=1, s_foo };

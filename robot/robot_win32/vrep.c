@@ -165,15 +165,17 @@ void vrep_sim_step(void)
 				{0.2758,1.557,1.389}, //Rm 3
 				{0.709,0.299,3.028}, //Rm 2
 				{1.255,0.208,0.060}, //Rm 1a (bottom)
-				{1.239,0.625,-0.036} //Rm 1b (top)
+				{1.239,0.625,-0.036}, //Rm 1b (top)
+				{2.23, 0.54, 1.59}, //just before exiting Rm 1 via the north side door
+				{1.7, 1.9, -1.644}  //Rm 4 (north side)
 			};
-			const int start_state[] = {2, 4, 6, 8, 8};
+			const int start_state[] = {2, 4, 6, 8, 8, 9, 10};
 			static int rl = 0;
 
 			m.start_location = start_state[rl];
 			move_object("Robot",rls[rl].x, rls[rl].y, rls[rl].t);
 			rl++;
-			if(rl>4) rl=0;
+			if(rl>6) rl=0;
 		}
 
 		if(c=='a')
@@ -184,7 +186,8 @@ void vrep_sim_step(void)
 
 		if(c=='b')
 		{
-			s.behavior_state[11]=5;
+			s.behavior_state[FIND_WALL_FSM]=1;
+			result = simxSetModelProperty(clientID,robot,0,simx_opmode_oneshot_wait);
 		}
 
 		if (c == '0') //assume candle is in room 1
@@ -228,7 +231,11 @@ void vrep_sim_step(void)
 
 		if (c == '4') //assume candle is in room 1
 		{
+			const t_xy location[] = { { 1.845, 1.475 } };
+			static int cc = 0;
 			m.candle_location = 4;
+			move_candle(location[cc].x,location[cc].y);
+			printf("Candle will be in room #3, location %d\n", cc);
 		}
 
 
@@ -480,14 +487,14 @@ void vrep_sim_inputs(void)
 
 		s.inputs.ir[IR_NW] = s.ir[IR_NW]		= (u16)read_ir(ir7,40,300,0.0002);
 		s.inputs.ir[IR_NE] = s.ir[IR_NE]		= (u16)read_ir(ir1,40,300,0.0002);
-		s.inputs.ir[IR_N]  = s.ir[IR_N]			= (u16)read_ir(ir0,60,600,0.0002);
+		s.inputs.ir[IR_N]  = s.ir[IR_N]			= 600; //(u16)read_ir(ir0,60,600,0.0002);
 
 		//s.inputs.ir[3] = s.ir[IR_N_long]		= (u16)read_ir(ir0,60,600,0.0002);
 
-		s.inputs.ir[IR_E]						= (u16)read_ir(ir2,40,400,0.0002);
-		s.inputs.ir[IR_NR]						= (u16)read_ir(ir3,40,400,0.0002);
-		s.inputs.ir[IR_NL]						= (u16)read_ir(ir5,40,400,0.0002);
-		s.inputs.ir[IR_W]						= (u16)read_ir(ir6,40,400,0.0002);
+		s.inputs.ir[IR_E]	= s.ir[IR_E]		= (u16)read_ir(ir2,40,400,0.0002);
+		s.inputs.ir[IR_NR]	= s.ir[IR_NR]		= (u16)read_ir(ir3,40,400,0.0002);
+		s.inputs.ir[IR_NL]	= s.ir[IR_NL]		= (u16)read_ir(ir5,40,400,0.0002);
+		s.inputs.ir[IR_W]	= s.ir[IR_W]		= (u16)read_ir(ir6,40,400,0.0002);
 	}
 	//------------------------------------------------------------------------------------------------------------------------------------
 

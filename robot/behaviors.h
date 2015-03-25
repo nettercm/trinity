@@ -2,18 +2,6 @@
 #include "typedefs.h"
 
 
-#define FOLLOW_WALL_FSM		1
-#define LINE_DETECTION_FSM	2
-#define MASTER_LOGIC_FSM	3 
-#define LINE_ALIGNMENT_FSM	4
-#define FIND_FLAME_FSM		5
-#define RETURN_HOME_FSM		6
-#define TEST_LOGIC_FSM		11
-
-
-#define START_BEHAVIOR(b,signal)	s.behavior_state[b]=signal
-#define STOP_BEHAVIOR(b)			s.behavior_state[b]=0
-
 
 //the following is not yet used
 typedef struct 

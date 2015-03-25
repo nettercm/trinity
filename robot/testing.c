@@ -4,6 +4,146 @@
 extern void scan(u08 cmd, u16 moving_avg);
 
 
+
+
+
+//480us (math only - no grid update)
+void update_grid( int ir_sensor_index,float x1, float y1, float t1)
+{
+	float d,t2,x2,y2,x3,y3,x4,y4;
+
+	d=((float)s.inputs.ir[ir_sensor_index]/10.0)*25.4;
+	t2= s.inputs.theta;
+	x2=x1+d*cos(t1);
+	y2=y1+d*sin(t1);
+	x3=x2*cos(t2)-y2*sin(t2);
+	y3=x2*sin(t2)+y2*cos(t2);
+	x3+=s.inputs.x;
+	y3+=s.inputs.y;
+	x4=x1*cos(t2)-y1*sin(t2);
+	y4=x1*sin(t2)+y1*cos(t2);
+	x4+=s.inputs.x;
+	y4+=s.inputs.y;
+
+	if(d<750)
+	{
+		//plotLine((int)(x4/25.4),(int)(y4/25.4), (int)(x3/25.4),(int)(y3/25.4) , -1);
+		//grid[(int)(x3/25.4)][(int)(y3/25.4)]+=2;
+		volatile float a,b;
+		a=x3;
+		b=y3;
+		a=x4;
+		b=y4;
+	}
+}
+	
+
+typedef struct
+{
+	u32 time;
+	s16 l_speed;
+	s16 r_speed;
+} t_speed_profile;
+
+t_speed_profile speed_profile[]=
+{
+	{   0,		0,		0},
+	{ 500,		40,		-40},
+	{1000,		100,	-100},
+	{1500,		40,		-40},
+	{2000,		100,	-100},
+	{2500,		0,		0}
+};
+
+
+void test_fsm(u08 cmd, u08 *param)
+{
+	//enum states { s_disabled=0, s_tracking_wall=1, s_lost_wall=2, s_turning_corner=3, s_turning_sharp_corner=4 };
+	static u08 state=0;
+	static u08 last_state=255;
+	static u32 t_start;
+	static s16 bias=0;
+	static u08 count;
+	u32 t_delta;
+	u08 i;
+	t_config_value v;
+	
+	static u08 initialized=0;
+	
+
+	if(!initialized)
+	{
+		initialized=1;
+		usb_printf("wall_follow_fsm()\n");
+	}
+
+	if(s.behavior_state[TEST_LOGIC_FSM]==1) 
+	{
+		PUMP_ON();
+		s.behavior_state[TEST_LOGIC_FSM]=0;
+	}
+
+	if(s.behavior_state[TEST_LOGIC_FSM]==2) 
+	{
+		PUMP_OFF();
+		s.behavior_state[TEST_LOGIC_FSM]=0;
+	}
+
+	if(s.behavior_state[TEST_LOGIC_FSM]==3) 
+	{
+		dbg_printf("start = %d\n",is_digital_input_high(IO_B3));
+		s.behavior_state[TEST_LOGIC_FSM]=0;
+	}
+
+	if(s.behavior_state[TEST_LOGIC_FSM]==4) 
+	{
+		switch(state)
+		{
+		case 0:
+			t_start = get_ms();
+			motor_command(8,0,0,speed_profile[0].l_speed,speed_profile[0].r_speed);
+			state++;
+			break;
+		case 1:
+			t_delta = get_ms() - t_start;
+			i=0;
+			while(speed_profile[i].time < t_delta) i++;
+			motor_command(8,0,0,speed_profile[i-1].l_speed,speed_profile[i-1].r_speed);
+			break;
+		}
+	}
+
+	if(s.behavior_state[TEST_LOGIC_FSM]==5) 
+	{
+		static s16 ne=0, nw=0;
+
+		ne = (ne + (s16) s.inputs.analog[AI_FLAME_NE])/2;
+		nw = (nw + (s16) s.inputs.analog[AI_FLAME_NW])/2;
+		bias = 0;
+		if( (ne>245) && (nw>245) ) bias = 0;
+		else if( abs(ne-nw) < 10 ) bias = 0;
+		else if( ne>nw ) bias = -1;
+		else if( nw>ne ) bias =  1;
+		v.u16 = cfg_get_u16_by_grp_id(15,6);
+		v.u16 += bias;
+		cfg_set_value_by_grp_id(15,6, v);
+	}
+
+	if(s.behavior_state[TEST_LOGIC_FSM]==6) 
+	{
+		if(s.inputs.analog[AI_FLAME_NW]<80)
+		{
+			motor_command(6,3,3,-40,40);
+		}
+		else
+		{
+			motor_command(2,0,0,0,0);
+			s.behavior_state[TEST_LOGIC_FSM]=0;
+		}
+	}
+}
+
+
 void test_task(u08 cmd, u08 *param)
 {
 	static u16 i;

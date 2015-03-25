@@ -138,6 +138,7 @@
     <ClCompile Include="..\commands.c" />
     <ClCompile Include="..\fsm.c" />
     <ClCompile Include="..\line.c" />
+    <ClCompile Include="..\main.c" />
     <ClCompile Include="..\motion.c" />
     <ClCompile Include="..\os.c" />
     <ClCompile Include="..\return_home.c" />

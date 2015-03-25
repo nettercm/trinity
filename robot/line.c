@@ -5,8 +5,6 @@
 //line crossing / candle circle / home circle detection
 u08 lines_crossed=0;
 u08 last_lines_crossed=0;
-Evt_t line_alignment_start_evt;
-Evt_t line_alignment_done_evt;
 
 DEFINE_CFG2(u08, black, 6, 1);
 DEFINE_CFG2(u08, white, 6, 2);
