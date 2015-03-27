@@ -162,23 +162,20 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			}
 
 			//at this point we are looking straight at the candle
-			TURN_IN_PLACE(50, -120);
-			GO(20);
-			while ((s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100) && (s.inputs.sonar[0] > 100))
+			TURN_IN_PLACE(50, -90);
+			START_BEHAVIOR(FIND_WALL_FSM, LEFT_WALL);
+			while (s.behavior_state[FIND_WALL_FSM]>0)
 			{
-				OS_SCHEDULE; //TODO: use parameters here!
+				OS_SCHEDULE;
 			}
-			if ((s.ir[IR_N] < 100) || (s.inputs.sonar[0] < 100))
-			{
-				TURN_IN_PLACE(50, -90);
-			}
+
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 			WAIT_FOR_LINE_DETECTION();
 			STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 			HARD_STOP();
 			RESET_LINE_DETECTION();
 			line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
-			MOVE(20, 200);
+			MOVE(20, 230);
 			TURN_IN_PLACE(20, -90);
 			MOVE(20, 180);
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);

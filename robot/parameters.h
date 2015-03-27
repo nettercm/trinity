@@ -7,6 +7,8 @@ U08(1, 3, "V(Batt) low-pass filter window", 0, 0, 32)
 U08(1, 4, "A/D input update interval",		0, 0, 5)
 //----------------------------------------------------------
 
+
+
 //----------------------------------------------------------
 GRP(2, "IR RANGE")
 
@@ -14,6 +16,7 @@ S16(2, 1, "short-range lp filter thresh.",			0, 0, 240)
 S16(2, 2, "short-range lp filter amount",			0, 0, 2)
 S16(2, 3, "long-range lp filter threshold",			0, 0, 480)
 S16(2, 4, "long-range lp filter amount",			0, 0, 2)
+
 
 
 //----------------------------------------------------------
@@ -24,6 +27,7 @@ S16(3, 2, "ticks/interval to PWM",			0, 0, 1.75*16)
 S16(3, 3, "Kp",								0, 0, 1.00*16)
 S16(3, 4, "Ki",								0, 0, 0.10*16)
 //----------------------------------------------------------
+
 
 
 //----------------------------------------------------------
@@ -39,9 +43,6 @@ U32(4, 3, "minimum delay between sensors",	0, 0, 20)
 //----------------------------------------------------------
 GRP(5, "ODOMETRY")
 
-//FLT(5, 1, "odo_cml",						0, 0, 0.1346671682494093856046448480279)
-//FLT(5, 2, "odo_cmr",						0, 0, 0.1346671682494093856046448480279)
-//FLT(5, 3, "odo_b",							0, 0, 156.5)
 FLT(5, 1, "odo_cml",						0, 0, 0.1539996)
 FLT(5, 2, "odo_cmr",						0, 0, 0.1539996)
 FLT(5, 3, "odo_b",							0, 0, 154.0) //154 in sim, 160 on the physical robot
@@ -58,6 +59,16 @@ S16(6, 3, "alignment speed",				0, 0, 20)//11)//50)
 //----------------------------------------------------------
 
 
+
+//----------------------------------------------------------
+GRP(7, "EXTINGUISHING")
+
+FLT(7, 1, "room entry distance",			0, 0, 150.0)
+U08(7, 2, "omni flame threashold",			0, 0, 100)
+//----------------------------------------------------------
+
+
+
 //----------------------------------------------------------
 GRP(9, "MASTER LOGIC")
 
@@ -70,19 +81,19 @@ S16(9,15, "flame_found_threashold ",		0, 0, 180)
 U16(9,16, "flame scan filter ",				0, 0, 4)
 
 S16(9,20, "search Rm #3: enter distance",	0, 0, 180)		//distance is in mm here
-S16(9,21, "search Rm #3: turn #1",			0, 0,-120)
-S16(9,22, "search Rm #3: turn #2",			0, 0, 210)		//basically we'll face west after this turn; turn another 90 left to face the door
-S16(9,23, "search Rm #3: turn #3",			0, 0, 180)		//basically we'll face sount (the door)
+S16(9,21, "search Rm #3: turn #1",			0, 0, 180)
+S16(9,22, "search Rm #3: turn #2",			0, 0, 0)		//basically we'll face west after this turn; turn another 90 left to face the door
+S16(9,23, "search Rm #3: turn #3",			0, 0, 0)		//basically we'll face sount (the door)
 
 S16(9,30, "search Rm #2: enter distance",	0, 0, 180)
-S16(9,31, "search Rm #2: turn #1",			0, 0,-120)
-S16(9,32, "search Rm #2: turn #2",			0, 0, 210)		//we'll face south at the end - need to turn another 90deg left to face the door
-S16(9,33, "search Rm #2: turn #3",			0, 0, 180)		//we'll face south at the end - need to turn another 90deg left to face the door
+S16(9,31, "search Rm #2: turn #1",			0, 0, 180)
+S16(9,32, "search Rm #2: turn #2",			0, 0, 0)		//we'll face south at the end - need to turn another 90deg left to face the door
+S16(9,33, "search Rm #2: turn #3",			0, 0, 0)		//we'll face south at the end - need to turn another 90deg left to face the door
 
 S16(9,40, "search Rm #1: etner distance",	0, 0, 180)
-S16(9,41, "search Rm #1: turn #1",			0, 0,-100)
-S16(9,42, "search Rm #1: turn #2",			0, 0, 220)
-S16(9,43, "search Rm #1: turn #3",			0, 0,-45)
+S16(9,41, "search Rm #1: turn #1",			0, 0,-45)
+S16(9,42, "search Rm #1: turn #2",			0, 0, 0)		//not used
+S16(9,43, "search Rm #1: turn #3",			0, 0, 0)		//not used
 
 S16(9,51, "find Rm #4:   dog scan distance",0, 0, 280)
 S16(9,52, "find Rm #4:   dog scan sensor",  0, 0, 1)
@@ -101,9 +112,8 @@ S16(9,67, "find Rm #4:   riggt margin 2",	0, 0, 135)
 S16(9,71, "search Rm #4: distance #1",		0, 0, 100)
 S16(9,72, "search Rm #4: turn #1",			0, 0,-100)
 S16(9,73, "search Rm #4: turn #2",			0, 0, 200)
-
-
 //----------------------------------------------------------
+
 
 
 //----------------------------------------------------------
@@ -134,16 +144,14 @@ S16(10,19, "sharp corner radius",0,0, 22)
 
 
 //----------------------------------------------------------
-GRP(15, "SERVO")
+GRP(15, "SERVO (PAN/TILT)")
 
-U16(15, 1, "servo 1 - speed",	0, 0, 200)
-U16(15, 2, "servo 2 - speed",	0, 0, 200)
-U16(15, 3, "servo 3 - speed",	0, 0, 200)
-U16(15, 4, "servo 4 - speed",	0, 0, 200)
-U16(15, 5, "servo 1 - position",	0, 0, 145)
-U16(15, 6, "servo 2 - position",	0, 0, 125)
-U16(15, 7, "servo 3 - position",	0, 0, 130)
-U16(15, 8, "servo 4 - position",	0, 0, 130)
+U16(15, 1, "servo 1 (tilt) - speed",	0, 0, 200)
+U16(15, 2, "servo 2 (pan)  - speed",	0, 0, 200)
+U16(15, 5, "servo 1 (tilt) - position",	0, 0, 145)
+U16(15, 6, "servo 2 (pan)  - position",	0, 0, 125)
+U16(15, 9, "servo 1 (tilt) - center",	0, 0, 145)
+U16(15,10, "servo 2 (pan)  - center",	0, 0, 125)
 //----------------------------------------------------------
 
 

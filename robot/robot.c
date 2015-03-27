@@ -98,6 +98,7 @@ void scan(u08 cmd, u16 moving_avg)
 	static u16 ir_fn_avg;
 	u16 ir_n;
 	u16 ir_fn;
+	u16 flame_c, flame_l, flame_r;
 
 	if(moving_avg == 0 ) moving_avg = 1;
 	if(moving_avg >= 16) moving_avg = 16;
@@ -108,12 +109,16 @@ void scan(u08 cmd, u16 moving_avg)
 	ir_n = s.ir[IR_N];	   if(ir_n >  600) ir_n =  600;
 	ir_fn= ir_n; //s.ir[IR_FAR_N]; if(ir_fn > 600) ir_fn = 600;
 
+	flame_l = s.inputs.analog[AI_FLAME_NW];
+	flame_r = s.inputs.analog[AI_FLAME_NE];
+	flame_c = (flame_l+flame_r)/2;
+
 
 	if(cmd==1) //initialize the state and our moving average
 	{
 		last_angle = angle;
 		memset(scan_data,0,sizeof(scan_data));
-		flame_avg = 255 - s.inputs.analog[AI_FLAME_N];
+		flame_avg = flame_c;
 		ir_n_avg  = ir_n;
 		ir_fn_avg = ir_fn;
 		i=0;
@@ -122,13 +127,13 @@ void scan(u08 cmd, u16 moving_avg)
 	else //update
 	{
 		//use a moving average to filter out any noise spikes; prevent noise spikes from showing up as "peak" values later
-		flame_avg = ((flame_avg * (moving_avg-1)) + ((u16)(255 - s.inputs.analog[AI_FLAME_N])) ) / moving_avg;
-		ir_n_avg  = ((ir_n_avg  * (moving_avg-1)) + ((u16)(ir_n)) ) / moving_avg;
-		ir_fn_avg = ((ir_fn_avg * (moving_avg-1)) + ((u16)(ir_fn)) ) / moving_avg;
+		flame_avg = ((flame_avg * (moving_avg-1)) + (flame_c) ) / moving_avg;
+		ir_n_avg  = ((ir_n_avg  * (moving_avg-1)) + (ir_n) ) / moving_avg;
+		ir_fn_avg = ((ir_fn_avg * (moving_avg-1)) + (ir_fn) ) / moving_avg;
 		if(angle != last_angle) 
 		{
-			scan_data[i].angle = angle;
-			scan_data[i].abs_angle = (s16)(s.inputs.theta * K_rad_to_deg);
+			scan_data[i].angle			= angle;
+			scan_data[i].abs_angle		= (s16)(s.inputs.theta * K_rad_to_deg);
 			scan_data[i].flame			= (u08) flame_avg; //255 - s.inputs.analog[AI_FLAME_N];
 			scan_data[i].ir_north		= ir_n_avg; //s.ir[IR_N];
 			scan_data[i].ir_far_north	= ir_fn_avg; //s.ir[IR_FAR_N];
@@ -421,7 +426,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			}
 			else
 			{
-				TURN_IN_PLACE(turn_speed, room3_turn_3);
+				TURN_IN_PLACE(turn_speed, room3_turn_1);
 				still_inside_room = 1;
 				//at this point we should be able to just follow the wall a gain
 				state = s_finding_room_2;
@@ -490,7 +495,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			}
 			else
 			{
-				TURN_IN_PLACE(turn_speed, room3_turn_3);
+				TURN_IN_PLACE(turn_speed, room2_turn_1);
 				still_inside_room = 1;
 				state = s_finding_room_1;
 			}
@@ -566,7 +571,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				RESET_LINE_DETECTION();
 				//we should be facing more or less SW, but too far away from the wall depending on door location
 				//we first need to find the wall before we can follow it; let's turn left to face SE, then go straight towards the wall
-				TURN_IN_PLACE(turn_speed, room1_turn_3);
+				TURN_IN_PLACE(turn_speed, room1_turn_1);
 				motor_command(6, accel, decel, turn_speed, turn_speed);
 				while ((s.ir[IR_NE] > 120) && (s.ir[IR_N] > 100))
 				{
@@ -791,6 +796,17 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		}
 
 
+
+		next_(100)
+		{
+			static t_scan_result scan_result;
+			enter_(100) {   NOP();   }
+			TURN_IN_PLACE_AND_SCAN(20,360,2);
+			scan_result = find_flame_in_scan(scan_data,360,60);
+			TURN_IN_PLACE( turn_speed, -(360-scan_result.center_angle) );
+			state = s_disabled;
+			exit_(100)  {   NOP();   }
+		}
 
 
 		s.inputs.watch[2]=state;

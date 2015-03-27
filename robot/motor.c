@@ -40,8 +40,9 @@ void odometry_update(s16 l_ticks, s16 r_ticks, float odo_cml, float odo_cmr, flo
 	s.dy  = s.dy + d_y;
 	s.dU  = s.dU + d_U;
 	s.dtheta = s.dtheta + d_theta;
-	if(s.dtheta > 1.0*PI) s.dtheta -= 2.0f*PI;
-	if(s.dtheta < -1.0*PI) s.dtheta += 2.0f*PI;
+	//wrap-around logic here needs to be different so we can do turn-in-place for 360deg
+	if(s.dtheta > 3.0*PI) s.dtheta -= 3.0f*PI;  
+	if(s.dtheta < -3.0*PI) s.dtheta += 3.0f*PI;
 }
 
 

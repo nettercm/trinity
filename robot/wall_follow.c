@@ -50,7 +50,7 @@ u08 is_wall_in_front(void)
 
 void wall_finding_fsm(u08 cmd, u08 *param)
 {
-	enum states { s_disabled=0, s_moving_towards_wall , s_none=255};
+	enum states { s_disabled=0, s_moving_towards_wall , s_aligning_to_wall, s_none=255};
 	static enum states state=s_disabled;
 	static enum states last_state=s_none;
 	static u32 t_entry=0;
@@ -58,6 +58,8 @@ void wall_finding_fsm(u08 cmd, u08 *param)
 	static u08 which_wall = LEFT_WALL; //left
 	static u08 initialized = 0;
 	u08 result;
+	u16 side_sonar, side_ir;
+	s16 direction;
 
 
 	if(!initialized)
@@ -71,6 +73,18 @@ void wall_finding_fsm(u08 cmd, u08 *param)
 	//the following state transition applies to all states
 	if(s.behavior_state[FIND_WALL_FSM]==0) state = s_disabled;
 
+	if(which_wall==LEFT_WALL)   
+	{
+		side_sonar = s.inputs.sonar[US_W];
+		side_ir    = s.inputs.ir[IR_NW];
+		direction  = 1;
+	}
+	else
+	{
+		side_sonar = s.inputs.sonar[US_E];
+		side_ir    = s.inputs.ir[IR_NE];
+		direction  = -1;
+	}
 
 	first_(s_disabled)
 	{
@@ -92,21 +106,62 @@ void wall_finding_fsm(u08 cmd, u08 *param)
 	}
 
 
+
 	next_(s_moving_towards_wall)
 	{
 		enter_(s_moving_towards_wall) 
 		{ 
-			GO(20);
+			GO(30);
 		}
 
 		result = is_wall_in_front();
 		if(result)
 		{
 			motor_command(2,0,0,0,0);
-			state = s_disabled;
+			state = s_aligning_to_wall;
 		}
 
 		exit_(s_moving_towards_wall) 
+		{ 
+			NOP();
+		}
+	}
+
+
+
+	next_(s_aligning_to_wall)
+	{
+		u08 turn=0;
+
+		enter_(s_aligning_to_wall) 
+		{ 
+			NOP();
+		}
+
+		turn=0;
+		if (is_wall_in_front() )
+		{
+			turn |= 1;
+		}
+		if (side_sonar > 70 )
+		{
+			turn |= 2;
+		}
+		if( side_ir > 100)
+		{
+			turn |= 4;
+		}
+		if(turn)
+		{
+			motor_command(7,1,1,direction*30,-direction*30);
+		}
+		else
+		{
+			motor_command(2,0,0,0,0);
+			state = s_disabled;
+		}
+
+		exit_(s_aligning_to_wall) 
 		{ 
 			NOP();
 		}

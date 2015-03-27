@@ -178,6 +178,16 @@ void vrep_sim_step(void)
 			if(rl>6) rl=0;
 		}
 
+		if(c=='m')
+		{
+			result = simxSetModelProperty(clientID,robot,0,simx_opmode_oneshot_wait);
+		}
+
+		if(c=='M')
+		{
+			result = simxSetModelProperty(clientID, robot, sim_modelproperty_not_dynamic | sim_modelproperty_not_respondable, simx_opmode_oneshot_wait);
+		}
+
 		if(c=='a')
 		{
 			s.behavior_state[MASTER_LOGIC_FSM]=m.start_location;
@@ -190,6 +200,12 @@ void vrep_sim_step(void)
 			result = simxSetModelProperty(clientID,robot,0,simx_opmode_oneshot_wait);
 		}
 
+		if(c=='c')
+		{
+			s.behavior_state[FIND_WALL_FSM]=2;
+			result = simxSetModelProperty(clientID,robot,0,simx_opmode_oneshot_wait);
+		}
+
 		if (c == '0') //assume candle is in room 1
 		{
 			m.candle_location = 0;
@@ -198,13 +214,25 @@ void vrep_sim_step(void)
 
 		if (c == '1') //assume candle is in room 1
 		{
-			static int door_configuration = 0;
-
+			const t_xy location[] = { { 1.285, 0.845 }, { 1.94, 0.845 }, { 2.345, 0.095 }, { 1.285, 0.485 }, { 1.70, 0.095 } };
+			static int cc = 0;
+			cc++;
+			if (cc > 4) cc = 0;
 			m.candle_location = 1;
-			move_candle(1.355, 0.845);
+			move_candle(location[cc].x, location[cc].y);
+			printf("Candle will be in room #1.\n");
+		}
+		if (c == 'w')
+		{
+			static int door_configuration = 0;
 			if (door_configuration) { move_object("wall_E", 1.23, 0.23, IGNORE_THETA); door_configuration = 0; }
 			else { move_object("wall_E", 1.23, 0.68, IGNORE_THETA); door_configuration = 1; }
-			printf("Candle will be in room #1.  door location = %d\n", door_configuration);
+		}
+		if (c == 'W')
+		{
+			static int door_configuration = 0;
+			if (door_configuration) { move_object("wall_E", 1.23, 0.23, IGNORE_THETA); door_configuration = 0; }
+			else { move_object("wall_E", 1.23, 0.68, IGNORE_THETA); door_configuration = 1; }
 		}
 
 		if (c == '2') //assume candle is in room 1
@@ -477,7 +505,7 @@ void vrep_sim_inputs(void)
 	simxGetObjectPosition(clientID,robot,-1,sim_state.robot_position,STREAMING_MODE);
 	simxGetObjectOrientation(clientID,robot,-1,sim_state.robot_orientation,STREAMING_MODE);
 
-	if(1)
+	if(0)
 	{
 		static double enc_ab=0, enc_cd=0;
 		enc_ab += lticks;

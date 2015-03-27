@@ -1,7 +1,13 @@
 
 #include "standard_includes.h"
 
+
+DEFINE_CFG2(flt,room_entry_distance,	7,1);			
+DEFINE_CFG2(u08,omni_flame_threashold,	7,2);			
+
+
 extern uint8 align_to_line(uint8 cmd);
+
 
 
 typedef struct
@@ -10,7 +16,8 @@ typedef struct
 	u16 y;
 } t_pan_tilt_pos;
 
-
+//pan-center = 125
+//tilt-center = 145
 //Ly: -10 ... 40  (-10 = top) = 140...155    Lx: -10....30 (-10 = right) = 115...140   top-left  x,y = 30,-10 bottom-right = -10,40
 t_pan_tilt_pos pan_tilt_pos[]=
 {
@@ -33,18 +40,19 @@ u08 is_flame_present(void)
 	}
 	else return 0;
 #endif
-	if (s.inputs.analog[AI_FLAME_N] > 100) //TODO: use parameter to define the threshold for the omni flame sensor
+	if (s.inputs.analog[AI_FLAME_N] > omni_flame_threashold) //TODO: use parameter to define the threshold for the omni flame sensor
 	{
 		return 1;
 	}
 	else return 0;
 }
 
+
+
 void track_candle(void)
 {
 	s16 bias;
 	static s16 ne=0, nw=0;
-	t_config_value v;
 
 	ne = (ne + (s16) s.inputs.analog[AI_FLAME_NE])/2;
 	nw = (nw + (s16) s.inputs.analog[AI_FLAME_NW])/2;
@@ -53,10 +61,10 @@ void track_candle(void)
 	else if( abs(ne-nw) < 10 ) bias = 0;
 	else if( ne>nw ) bias = -1;
 	else if( nw>ne ) bias =  1;
-	v.u16 = cfg_get_u16_by_grp_id(15,6);
-	v.u16 += bias;
-	cfg_set_value_by_grp_id(15,6, v);
+	pan_relative(bias);
 }
+
+
 
 void find_flame_fsm(u08 cmd, u08 *param)
 {
@@ -68,6 +76,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 	static s16 bias=0,  last_bias=0;
 	static u08 count;
 	static u32 t_start;
+	static s16 pan_offset, tilt_offset;
 	u32 t_delta;
 	u08 i;
 	t_config_value v;
@@ -81,10 +90,12 @@ void find_flame_fsm(u08 cmd, u08 *param)
 		initialized=1;
 		usb_printf("find_flame_fsm()\n");
 
-		//PREPARE_CFG2(sharp_corner_radius);
+		PREPARE_CFG2(room_entry_distance);
+		PREPARE_CFG2(omni_flame_threashold);
 	}
 
-	//UPDATE_CFG2(sharp_corner_radius);
+	UPDATE_CFG2(room_entry_distance);
+	UPDATE_CFG2(omni_flame_threashold);
 
 	//the following state transition applies to all states
 	if(s.behavior_state[FIND_FLAME_FSM]==0) state = s_disabled;
@@ -108,6 +119,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 
 			exit_(s_disabled)  
 			{
+				pan_tilt_center();
 				NOP();
 			}
 		}
@@ -119,8 +131,8 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			enter_(s_scanning) 
 			{ 
 				NOP();
-				MOVE(20,150);
-				task_wait(500);
+				MOVE(20,room_entry_distance); //enter the room a little bit before scanning for the flame
+				task_wait(100);
 			}
 
 			//TODO:  need to deal w/ reflections from the wall. can result in undershoot. sensor readings are almost maxed out by reflextion.
@@ -164,13 +176,13 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				motor_command(2,0,0,0,0);
 				switch_(s_moving_towards_candle,s_extinguish);
 			}
-			else if(s.inputs.ir[IR_NE] < 40) //( s.inputs.sonar[US_E] < 20 )
+			else if( (s.inputs.ir[IR_NE] < 40) || ( s.inputs.sonar[US_E] < 20 ) )
 			{
 				//TODO: need to remember the fact that we are sliding/tracking along the wall - need a separate state
 				bias = -1;
 				track_candle();
 			}
-			else if(s.inputs.ir[IR_NW] < 40) //if( s.inputs.sonar[US_W] < 20 )
+			else if( (s.inputs.ir[IR_NW] < 40) || ( s.inputs.sonar[US_W] < 20 ) )
 			{
 				bias = 1;
 				track_candle();
@@ -194,6 +206,8 @@ void find_flame_fsm(u08 cmd, u08 *param)
 		{
 			enter_(s_extinguish) 
 			{
+				pan_offset = cfg_get_u16_by_grp_id(15,6) - cfg_get_u16_by_grp_id(15,10);
+				tilt_offset= cfg_get_u16_by_grp_id(15,5) - cfg_get_u16_by_grp_id(15,9);
 				PUMP_ON();
 				t_start = get_ms();
 				count = 0;
@@ -207,9 +221,10 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				t_start = get_ms(); 
 				count++;
 			}
-			//TODO: create pan() and tilt() api
-			v.u16 = pan_tilt_pos[i].x;  cfg_set_value_by_grp_id(15,6, v);
-			v.u16 = pan_tilt_pos[i].y;  cfg_set_value_by_grp_id(15,5, v);
+			pan_absolute(pan_tilt_pos[i].x + pan_offset);
+			tilt_absolute(pan_tilt_pos[i].y+ tilt_offset);
+			//v.u16 = pan_tilt_pos[i].x;  cfg_set_value_by_grp_id(15,6, v);
+			//v.u16 = pan_tilt_pos[i].y;  cfg_set_value_by_grp_id(15,5, v);
 
 			if(count>10)
 			{
@@ -220,6 +235,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			exit_(s_extinguish)  
 			{
 				PUMP_OFF();
+				pan_tilt_center();
 			}
 		}
 
