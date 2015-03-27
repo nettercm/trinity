@@ -387,9 +387,9 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 		exit_(s_turning_corner) 
 		{
-			if ( abs(odometry_get_rotation_since_checkpoint()) >= 70)
+			if ( abs(odometry_get_rotation_since_checkpoint()) >= 60)
 			{
-				s.right_turns++;
+				if(which_wall==LEFT_WALL) s.left_turns++; else s.right_turns++;
 			}
 		}
 	}
@@ -417,9 +417,9 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 		exit_(s_turning_sharp_corner) 
 		{ 
-			if (abs(odometry_get_rotation_since_checkpoint()) >= 70)
+			if (abs(odometry_get_rotation_since_checkpoint()) >= 60)
 			{
-				s.right_turns++;
+				if(which_wall==LEFT_WALL) s.left_turns++; else s.right_turns++;
 			}
 		}
 	}

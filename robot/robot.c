@@ -10,8 +10,27 @@
 
 /*
 
+
+
+Room 4 permutations:
+#	Dog				Door	Lt, rt	dU		Dog, door	Exit strategy
+1	K2 / North		North	3,0		3050	1,2			F, r, f, r, f, Rwf around Rm#4 for some distance, then do Lwf until we see the wall
+2	K2 / North		South	0,0		1250	1,1			F, r, f, r, f, Lwf 
+3	R5 / East		North	0,3		2900	2,2			F, l, Rwf
+4	R5 / East		South	0,0		1250	2,1			F, r, f, r, f, Lwf
+5	L10 / South		North	1,0		1600	3, ?		F, l, Rwf
+6	O10 / South		South	3-4,0	3500	3, 1		F, r, f, r, f, Lwf
+  
+
 Todo:
 
+* test finding room 4
+* label the start button etc.
+* wire up the kill switch 
+* wire up the "detected" LED
+* add code to turn on the "detected" LED
+* secure all sensors
+* add a cover on top of the omni IR sensor to limit amount of ambient IR seen by the sensor
 * convert the various flame detection threasholds into config parameters
 * finish return home logic (room 4)
 * use larger water tank
@@ -189,7 +208,6 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 	static u08 still_inside_room=0;
 	static u32 context_switch_counter=0;
 	static u32 t_last=0;
-	static u08 dog_position=0; //1=N side of Rm#4,  2=E side,    3=S side
 	static u08 stop;
 	static u08 last_room=0;
 	static float checkpoint;
@@ -302,7 +320,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 				//STOP_BEHAVIOR(MASTER_LOGIC_FSM);
 				RESET_LINE_DETECTION();
-				dog_position=0;
+				s.dog_position=0;
 				s.inputs.watch[0] = s.inputs.watch[1] = s.inputs.watch[2] = s.inputs.watch[3] = 0;
 				odometry_set_checkpoint();
 				reset_start_signal(); //mainly required to make sure we don't restart the whole thing in simulation mode
@@ -623,6 +641,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//odometry_update_postion(89.0f, ((float)(s.ir[IR_NE]))/16.0f, 90.0f);
 
+			s.left_turns = 0;
+			s.right_turns = 0;
+			checkpoint = s.U;
+
 
 			//completely exit from room 1 until we have reached the center of the intersection
 			MOVE(turn_speed, find4_distance_1); //260); //TODO: make this a parameter
@@ -635,10 +657,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			{
 				//OK so there is a dog blocking this hallway. let's take note of that. 
 				//if this is 100% reliable, we basically know that we'll have to take the other route
-				dog_position=2;
+				s.dog_position=2;
 			}
 
-			if(dog_position==0) //if we didn't already see the dog, scan the other hallway for it ...
+			if(s.dog_position==0) //if we didn't already see the dog, scan the other hallway for it ...
 			{
 				//now scan for another 90 degrees, i.e. from NW to SW - this covers the west facing hallway
 				TURN_IN_PLACE_AND_SCAN( 40, 90 , dog_scan_filter);
@@ -649,9 +671,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				TURN_IN_PLACE(turn_speed, 45);	//now we are facing West again
 			}
 
-			if( (dog_position == 0) && (scan_result.opening < dog_scan_angle) ) //TODO: fix this angle
+			if( (s.dog_position == 0) && (scan_result.opening < dog_scan_angle) ) //TODO: fix this angle
 			{
-				dog_position=3;
+				s.dog_position=3;
 				//if there is a dog / obstacle right in front, then there won't be a 2nd dog to worry about...
 				//just fallow the left wall...//eventually we'll wind up inside room 4, either via door on North side or on South side
 				//so this takes care of 2 of 6 possible cases
@@ -660,7 +682,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				MOVE2(turn_speed, find4_distance_2,find4_left_margin_1,find4_right_margin_1);
 				RESET_LINE_DETECTION();
 				START_BEHAVIOR(FOLLOW_WALL_FSM,LEFT_WALL); //start  following the LEFT wall
-
+				s.left_turns=0;
 				//keep following the left wall until we have passed through the door
 				WAIT_FOR_LINE_DETECTION();
 				play_note(C(3), 50, 10);
@@ -673,9 +695,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//there is no dog at south side of room #4
 			//...check for a door on the South side of room #4
-			if(dog_position==0)//if we still have not yet seen the dog yet, then it means we did a bunch of looking around so we need to re-align ourselves...
+			if(s.dog_position==0)//if we still have not yet seen the dog yet, then it means we did a bunch of looking around so we need to re-align ourselves...
 			{
 				TURN_IN_PLACE(turn_speed, -45);	//now we are facing West again
+				s.dog_position=1; //if we have not seen the dog, it must be in position 1 (North)
 			}
 
 			//MOVE(turn_speed, 32*25);		//move forward about 30inches so that we are in the position where the door could be
@@ -690,6 +713,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				//yes...
 				//at this point we are facing north and a door into room #4 is right in front of us
 				//this takes care of another 2 of the 6 possbile cases
+				s.door_position = 1;
 				RESET_LINE_DETECTION();
 				GO(turn_speed);
 				WAIT_FOR_LINE_DETECTION();
@@ -700,8 +724,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//nope...there's no door here....we are looking at the south side wall of room #4
 
-			if(dog_position==0) /*..if there was no dog on the east side of room 4 when we checked earlier, then just go around that side....*/
+			if(s.dog_position!=2) /*..if there was no dog on the east side of room 4 when we checked earlier, then just go around that side....*/
 			{
+				s.door_position = 2;
 				TURN_IN_PLACE(turn_speed, -90);  //turn rigth to face East
 
 				//keep following the left wall until we have passed through the door;  i.e. going counter-clockwise around Rm #4
@@ -719,8 +744,9 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			//at this point, we can conclude that the only way to get into Room #4 is to follow the right wall clock-wise around Rom #4
 			
+			s.door_position = 2;
 			TURN_IN_PLACE(turn_speed, 90);  //turn left to face West
-			//keep following the left wall until we have passed through the door;  i.e. going counter-clockwise around Rm #4
+			//keep following the right wall until we have passed through the door;  i.e. going counter-clockwise around Rm #4
 			RESET_LINE_DETECTION();
 			START_BEHAVIOR(FOLLOW_WALL_FSM,RIGHT_WALL);
 			WAIT_FOR_LINE_DETECTION();
@@ -734,7 +760,17 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			exit_(s_finding_room_4) 
 			{
-				NOP();
+				if(s.dog_position==3) //distance travelled tells us which door we ultimately went through into Room #4
+				{
+					if(s.U-checkpoint < 2500)
+					{
+						s.door_position=2;
+					}
+					else
+					{
+						s.door_position=1;
+					}
+				}
 			}
 		}
 

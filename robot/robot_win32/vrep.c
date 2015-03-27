@@ -22,6 +22,7 @@ static int line_left,line_right;
 static int flame0,flame1,flame2;
 static int sonar0,sonar1,sonar2,sonar3,sonar4;
 static int robot,candle;
+static int mirror[10] = {0,0,0,0,0,0,0,0,0,0};
 
 const float IGNORE_X = 9999999.0f;
 const float IGNORE_Y = 9999999.0f;
@@ -355,9 +356,11 @@ int read_ir(int handle,int min, int max, float noise_factor)
 		float distance;
 		float noise;
 		int result;
+		int i;
+		int detected_handle=0;
 		static int count=0;
 
-		result = simxReadProximitySensor(clientID,handle,&state,&(point[0]),&handle,&(surface[0]),STREAMING_MODE);
+		result = simxReadProximitySensor(clientID,handle,&state,&(point[0]),&detected_handle,&(surface[0]),STREAMING_MODE);
 		distance = max;
 		if(state) 
 		{
@@ -366,6 +369,15 @@ int read_ir(int handle,int min, int max, float noise_factor)
 			noise = 100 - (rand() % 200);
 			noise = noise*noise_factor;
 			distance += distance * noise;
+		}
+
+		for(i=0; i<sizeof(mirror);i++)
+		{
+			if(detected_handle==mirror[i])
+			{
+				distance = max;
+				printf("Mirror!\n");
+			}
 		}
 
 		count++;
@@ -661,6 +673,16 @@ void vrep_sim_init(void)
 
 	simxGetObjectHandle(clientID,"Robot",&robot,simx_opmode_oneshot_wait);
 	simxGetObjectHandle(clientID, "Candle", &candle, simx_opmode_oneshot_wait);
+
+	simxGetObjectHandle(clientID, "Mirror0", &(mirror[0]), simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID, "Mirror1", &(mirror[1]), simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID, "Mirror2", &(mirror[2]), simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID, "Mirror3", &(mirror[3]), simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID, "Mirror4", &(mirror[4]), simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID, "Mirror5", &(mirror[5]), simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID, "Mirror6", &(mirror[6]), simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID, "Mirror7", &(mirror[6]), simx_opmode_oneshot_wait);
+	simxGetObjectHandle(clientID, "Mirror8", &(mirror[6]), simx_opmode_oneshot_wait);
 
 	result = simxStartSimulation(clientID,simx_opmode_oneshot_wait);
 	if(result != simx_return_ok) printf("simxStartSimulation() failed!\n");

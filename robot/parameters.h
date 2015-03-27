@@ -103,8 +103,8 @@ U16(9,54, "find Rm #4:   dog scan m. avg.", 0, 0, 2)
 S16(9,60, "find Rm #4:   distance #1",		0, 0, 260)		//how far to move into the intersection after exitinig from Rm #1
 S16(9,61, "find Rm #4:   turn #1",			0, 0, 15)		//how far to turn left before starting to follow the left wall 
 S16(9,62, "find Rm #4:   distance #2",		0, 0, 240)		//how far to move into the hallway before starting to follow the left wall
-S16(9,63, "find Rm #4:   left margin 1",	0, 0, 110)		//margin
-S16(9,64, "find Rm #4:   riggt margin 1",	0, 0, 150)		//margin while moving into the hallway
+S16(9,63, "find Rm #4:   left margin 1",	0, 0, 90)		//margin
+S16(9,64, "find Rm #4:   riggt margin 1",	0, 0, 140)		//margin while moving into the hallway
 S16(9,65, "find Rm #4:   distance #3",		0, 0, 800)		//how far to move into the hallway before starting to follow the left wall
 S16(9,66, "find Rm #4:   left margin 2",	0, 0, 135)
 S16(9,67, "find Rm #4:   riggt margin 2",	0, 0, 135)

@@ -210,6 +210,20 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 				RESET_LINE_DETECTION();
 			}
 			
+			//at this point we are looking straight at the candle
+			TURN_IN_PLACE(50, 90);  //left
+			START_BEHAVIOR(FIND_WALL_FSM, RIGHT_WALL);
+			while (s.behavior_state[FIND_WALL_FSM]>0)
+			{
+				OS_SCHEDULE;
+			}
+			START_BEHAVIOR(FOLLOW_WALL_FSM, RIGHT_WALL);
+			WAIT_FOR_LINE_DETECTION();
+			STOP_BEHAVIOR(FOLLOW_WALL_FSM);
+			HARD_STOP();
+			RESET_LINE_DETECTION();
+			line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
+
 			state = s_disabled;
 
 			exit_(s_exit_from_room_4)

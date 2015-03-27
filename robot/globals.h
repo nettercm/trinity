@@ -57,6 +57,8 @@ typedef struct
 
 	//navigation
 	u08 current_room;
+	u08 dog_position; //0 means we don't know (yet) 1=N side of Rm#4,  2=E side,  3=S side
+	u08 door_position; //0 means we don't know; Rm#4 North door = 2
 	u08 right_turns;
 	u08 left_turns;
 	
