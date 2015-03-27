@@ -165,27 +165,30 @@ void vrep_sim_step(void)
 				{0.2758,1.557,1.389}, //Rm 3
 				{0.709,0.299,3.028}, //Rm 2
 				{1.255,0.208,0.060}, //Rm 1a (bottom)
-				{1.239,0.625,-0.036}, //Rm 1b (top)
+				{1.24,0.625,0}, //Rm 1b (top)
 				{2.23, 0.54, 1.59}, //just before exiting Rm 1 via the north side door
-				{1.7, 1.9, -1.644}  //Rm 4 (north side)
+				{1.7, 1.9, -1.644},  //Rm 4 (north side)
+				{1.425, 1.45, 1.59}  //Rm 4 (north side)
 			};
-			const int start_state[] = {2, 4, 6, 8, 8, 9, 10};
+			const int start_state[] = {2, 4, 6, 8, 8, 9, 10, 10};
 			static int rl = 0;
 
 			m.start_location = start_state[rl];
 			move_object("Robot",rls[rl].x, rls[rl].y, rls[rl].t);
 			rl++;
-			if(rl>6) rl=0;
+			if(rl>7) rl=0;
 		}
 
 		if(c=='m')
 		{
 			result = simxSetModelProperty(clientID,robot,0,simx_opmode_oneshot_wait);
+			printf("Robot is NOT movale now!\n");
 		}
 
 		if(c=='M')
 		{
 			result = simxSetModelProperty(clientID, robot, sim_modelproperty_not_dynamic | sim_modelproperty_not_respondable, simx_opmode_oneshot_wait);
+			printf("Robot is movable now!\n");
 		}
 
 		if(c=='a')
@@ -206,33 +209,55 @@ void vrep_sim_step(void)
 			result = simxSetModelProperty(clientID,robot,0,simx_opmode_oneshot_wait);
 		}
 
-		if (c == '0') //assume candle is in room 1
+		if (c == 'd') //dog location
 		{
-			m.candle_location = 0;
-			printf("No candle\n");
-		}
-
-		if (c == '1') //assume candle is in room 1
-		{
-			const t_xy location[] = { { 1.285, 0.845 }, { 1.94, 0.845 }, { 2.345, 0.095 }, { 1.285, 0.485 }, { 1.70, 0.095 } };
+			const t_xy location[] = { { 1.8, 1.175 }, { 2.175, 1.8 }, {1.325, 2.175 }};
 			static int cc = 0;
 			cc++;
-			if (cc > 4) cc = 0;
-			m.candle_location = 1;
-			move_candle(location[cc].x, location[cc].y);
+			if (cc > 2) cc = 0;
+			move_object("Dog", location[cc].x, location[cc].y, IGNORE_THETA);
 			printf("Candle will be in room #1.\n");
 		}
+
 		if (c == 'w')
 		{
 			static int door_configuration = 0;
 			if (door_configuration) { move_object("wall_E", 1.23, 0.23, IGNORE_THETA); door_configuration = 0; }
 			else { move_object("wall_E", 1.23, 0.68, IGNORE_THETA); door_configuration = 1; }
 		}
+
 		if (c == 'W')
 		{
 			static int door_configuration = 0;
-			if (door_configuration) { move_object("wall_E", 1.23, 0.23, IGNORE_THETA); door_configuration = 0; }
-			else { move_object("wall_E", 1.23, 0.68, IGNORE_THETA); door_configuration = 1; }
+			if (door_configuration) 
+			{ 
+				move_object("wall_H", 1.58, 1.415, IGNORE_THETA); 
+				move_object("wall_J", 1.34, 1.915, IGNORE_THETA); 
+				door_configuration = 0; 
+			}
+			else 
+			{ 
+				move_object("wall_H", 1.58, 1.915, IGNORE_THETA); 
+				move_object("wall_J", 1.79, 1.415, IGNORE_THETA); 
+				door_configuration = 1; 
+			}
+		}
+		if (c == '0') //assume candle is in room 1
+		{
+			m.candle_location = 0;
+			printf("No candle\n");
+			move_candle(0.78, 2.395);
+		}
+
+		if (c == '1') //assume candle is in room 1
+		{
+			const t_xy location[] = { { 1.285, 0.845 }, { 1.94, 0.845 }, { 2.345, 0.095 }, { 1.285, 0.485 }, { 1.70, 0.095 }, { 1.28, 0.12 } };
+			static int cc = 0;
+			cc++;
+			if (cc > 5) cc = 0;
+			m.candle_location = 1;
+			move_candle(location[cc].x, location[cc].y);
+			printf("Candle will be in room #1.\n");
 		}
 
 		if (c == '2') //assume candle is in room 1
@@ -259,11 +284,13 @@ void vrep_sim_step(void)
 
 		if (c == '4') //assume candle is in room 1
 		{
-			const t_xy location[] = { { 1.845, 1.475 } };
+			const t_xy location[] = { { 1.845, 1.475 }, {1.28, 1.47}, {1.845, 1.87}, {1.28, 1.87} };
 			static int cc = 0;
+			cc++;
+			if (cc > 3) cc = 0;
 			m.candle_location = 4;
 			move_candle(location[cc].x,location[cc].y);
-			printf("Candle will be in room #3, location %d\n", cc);
+			printf("Candle will be in room #4, location %d\n", cc);
 		}
 
 

@@ -13,9 +13,18 @@
 Todo:
 
 * convert the various flame detection threasholds into config parameters
-* finish return home logic
+* finish return home logic (room 4)
+* use larger water tank
+
+
 
 Issues:
+
+* entering room 4 south has some issues
+
+* exiting room 1 top door while going home not reliable
+
+* while returning home, ther eare cases where the US_N might pick up the corner of the intersection and we consider it as having reached the end...
 
 •	When the flame is close to a wall, the flame’s reflection from the wall can max out the flame sensors => may end up to looking straight at the candle when stopped
 	o	Do a sweep and use IR and/or flame sensor data to find the correct peak position

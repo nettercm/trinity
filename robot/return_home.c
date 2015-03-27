@@ -131,9 +131,12 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			HARD_STOP();
 			RESET_LINE_DETECTION();
 			line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
-			MOVE(20, 230);
+			MOVE(20, 220);
 			TURN_IN_PLACE(20, 90);
-			MOVE(20, 180);
+			odometry_set_checkpoint();
+			GO(20);
+			while( (s.ir[IR_NW] > 160) && (odometry_get_distance_since_checkpoint()<180) ) { OS_SCHEDULE; }
+			//MOVE(20, 180);
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 			cfg_set_flt_by_grp_id(10, 13, 600); //corner_distance = 600, i.e. make sure we don't turn into the intersection but keep going straight
 
@@ -175,9 +178,12 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			HARD_STOP();
 			RESET_LINE_DETECTION();
 			line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
-			MOVE(20, 230);
+			MOVE(20, 270);
 			TURN_IN_PLACE(20, -90);
-			MOVE(20, 180);
+			odometry_set_checkpoint();
+			GO(20);
+			while( (s.ir[IR_NW] > 160) && (odometry_get_distance_since_checkpoint()<180) ) { OS_SCHEDULE; }
+			//MOVE(20, 180);
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 			cfg_set_flt_by_grp_id(10, 13, 600);
 
