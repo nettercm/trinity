@@ -445,7 +445,8 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			if(is_flame_present())
 			{
-				START_BEHAVIOR(FIND_FLAME_FSM,1);
+				line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
+				START_BEHAVIOR(FIND_FLAME_FSM, 1);
 				while (s.behavior_state[FIND_FLAME_FSM]>0)
 				{
 					OS_SCHEDULE;
@@ -508,12 +509,12 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 				checkpoint = s.U;
 			}
 
-			//line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 
 			//odometry_update_postion(27.0f, ((float)(s.ir[IR_NW]))/16.0f , 180.0f);
 
 			if (is_flame_present())
 			{
+				line_alignment_fsm_v2(1,0);  while(line_alignment_fsm_v2(0,0)!=0) { OS_SCHEDULE; }
 				START_BEHAVIOR(FIND_FLAME_FSM, 1);
 				while (s.behavior_state[FIND_FLAME_FSM]>0)
 				{
@@ -585,6 +586,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 
 			if (is_flame_present())
 			{
+				line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
 				START_BEHAVIOR(FIND_FLAME_FSM, 1);
 				while (s.behavior_state[FIND_FLAME_FSM]>0)
 				{
@@ -796,6 +798,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			//we are facing either North or South, but it doesn't really matter...
 			if (is_flame_present())
 			{
+				line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
 				START_BEHAVIOR(FIND_FLAME_FSM, 1);
 				while (s.behavior_state[FIND_FLAME_FSM]>0)
 				{
