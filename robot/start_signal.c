@@ -115,7 +115,7 @@ int check_for_start_signal()
 		// the numerator to get a properly rounded result
 		unsigned long duty_cycle_percent = (100 * high_pulse + period_in_ticks/2) / period_in_ticks;
 
-		if( (frequency_in_hz > 3600) && (frequency_in_hz < 4000) )
+		if( (frequency_in_hz > 3400) && (frequency_in_hz < 4200) )
 		{
 			sound_start_count++;
 		}
