@@ -123,10 +123,12 @@ namespace robot_ui
 		CMD_set_behavior_state(2,0);	CMD_send();		Sleep(50);
 		CMD_set_behavior_state(3,0);	CMD_send();		Sleep(50);
 		CMD_set_behavior_state(4,0);	CMD_send();		Sleep(50);
+		CMD_set_behavior_state(5,0);	CMD_send();		Sleep(50);
+		CMD_set_behavior_state(6,0);	CMD_send();		Sleep(50);
+		CMD_set_behavior_state(7,0);	CMD_send();		Sleep(50);
 		CMD_set_behavior_state(10,0);	CMD_send();		Sleep(50);
 		CMD_set_behavior_state(11,0);	CMD_send();		Sleep(50);
 		CMD_motor_command(2,0,0,0,0);	CMD_send();		Sleep(50);
-
 	}
 
 

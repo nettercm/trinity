@@ -45,7 +45,7 @@ GRP(5, "ODOMETRY")
 
 FLT(5, 1, "odo_cml",						0, 0, 0.1539996)
 FLT(5, 2, "odo_cmr",						0, 0, 0.1539996)
-FLT(5, 3, "odo_b",							0, 0, 154.0) //154 in sim, 160 on the physical robot
+FLT(5, 3, "odo_b",							0, 0, 160.0) //154 in sim, 160 on the physical robot
 //----------------------------------------------------------
 
 
@@ -65,6 +65,13 @@ GRP(7, "EXTINGUISHING")
 
 FLT(7, 1, "room entry distance",			0, 0, 150.0)
 U08(7, 2, "omni flame threashold",			0, 0, 100)
+U08(7, 3, "pan left",						0, 0, 141)
+U08(7, 4, "pan right",						0, 0, 115)
+U08(7, 5, "tilt up",						0, 0, 155)
+U08(7, 6, "tilt down",						0, 0, 135)
+U16(7, 7, "pan tilt speed",					0, 0, 300)
+U08(7, 8, "flame threashold #1",			0, 0, 70)
+U08(7, 9, "flame threashold #2",			0, 0, 70)
 //----------------------------------------------------------
 
 
@@ -146,8 +153,8 @@ S16(10,19, "sharp corner radius",0,0, 22)
 //----------------------------------------------------------
 GRP(15, "SERVO (PAN/TILT)")
 
-U16(15, 1, "servo 1 (tilt) - speed",	0, 0, 200)
-U16(15, 2, "servo 2 (pan)  - speed",	0, 0, 200)
+U16(15, 1, "servo 1 (tilt) - speed",	0, 0, 150)
+U16(15, 2, "servo 2 (pan)  - speed",	0, 0, 150)
 U16(15, 5, "servo 1 (tilt) - position",	0, 0, 145)
 U16(15, 6, "servo 2 (pan)  - position",	0, 0, 125)
 U16(15, 9, "servo 1 (tilt) - center",	0, 0, 145)

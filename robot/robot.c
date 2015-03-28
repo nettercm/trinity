@@ -25,7 +25,6 @@ Room 4 permutations:
 Todo:
 
 * test finding room 4
-* label the start button etc.
 * wire up the kill switch 
 * wire up the "detected" LED
 * add code to turn on the "detected" LED
@@ -38,6 +37,8 @@ Todo:
 
 
 Issues:
+
+* when the candle is very close right after entering the room, candle finding fails
 
 * entering room 4 south has some issues
 
@@ -846,9 +847,10 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 		{
 			static t_scan_result scan_result;
 			enter_(100) {   NOP();   }
-			TURN_IN_PLACE_AND_SCAN(20,360,2);
+			TURN_IN_PLACE(20,-120);
+			TURN_IN_PLACE_AND_SCAN(20,270,2);
 			scan_result = find_flame_in_scan(scan_data,360,60);
-			TURN_IN_PLACE( turn_speed, -(360-scan_result.center_angle) );
+			TURN_IN_PLACE( turn_speed, -(270-scan_result.center_angle) );
 			state = s_disabled;
 			exit_(100)  {   NOP();   }
 		}

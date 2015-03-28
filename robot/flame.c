@@ -4,10 +4,17 @@
 
 DEFINE_CFG2(flt,room_entry_distance,	7,1);			
 DEFINE_CFG2(u08,omni_flame_threashold,	7,2);			
+DEFINE_CFG2(u08,pan_left,				7,3);			
+DEFINE_CFG2(u08,pan_right,				7,4);			
+DEFINE_CFG2(u08,tilt_up,				7,5);			
+DEFINE_CFG2(u08,tilt_down,				7,6);			
+DEFINE_CFG2(u16,pan_tilt_speed,			7,7);			
+DEFINE_CFG2(u08,flame_threshold_1,		7,8);			
+DEFINE_CFG2(u08,flame_threshold_2,		7,9);			
 
 
 extern uint8 align_to_line(uint8 cmd);
-
+extern void scan(u08 cmd, u16 moving_avg);
 
 
 typedef struct
@@ -59,8 +66,8 @@ void track_candle(void)
 	bias = 0;
 	if( (ne>245) && (nw>245) ) bias = 0;
 	else if( abs(ne-nw) < 10 ) bias = 0;
-	else if( ne>nw ) bias = -1;
-	else if( nw>ne ) bias =  1;
+	else if( ne>nw ) bias = -2;
+	else if( nw>ne ) bias =  2;
 	pan_relative(bias);
 }
 
@@ -68,7 +75,7 @@ void track_candle(void)
 
 void find_flame_fsm(u08 cmd, u08 *param)
 {
-	enum states { s_disabled=0, s_scanning=1, s_moving_towards_candle=2, s_extinguish=3, s_turning_sharp_corner=4 };
+	enum states { s_disabled=0, s_scanning=1, s_scanning_v2, s_moving_towards_candle, s_extinguish, s_turning_sharp_corner };
 	static enum states state=s_disabled;
 	static enum states last_state=s_disabled;
 	static u32 t_entry=0;
@@ -92,10 +99,34 @@ void find_flame_fsm(u08 cmd, u08 *param)
 
 		PREPARE_CFG2(room_entry_distance);
 		PREPARE_CFG2(omni_flame_threashold);
+		PREPARE_CFG2(pan_left);
+		PREPARE_CFG2(pan_right);
+		PREPARE_CFG2(tilt_up);
+		PREPARE_CFG2(tilt_down);
+		PREPARE_CFG2(pan_tilt_speed);
+		PREPARE_CFG2(flame_threshold_1);
+		PREPARE_CFG2(flame_threshold_2);
 	}
 
 	UPDATE_CFG2(room_entry_distance);
 	UPDATE_CFG2(omni_flame_threashold);
+	UPDATE_CFG2(pan_left);
+	UPDATE_CFG2(pan_right);
+	UPDATE_CFG2(tilt_up);
+	UPDATE_CFG2(tilt_down);
+	UPDATE_CFG2(pan_tilt_speed);
+	UPDATE_CFG2(flame_threshold_1);
+	UPDATE_CFG2(flame_threshold_2);
+
+	pan_tilt_pos[0].x = pan_left;
+	pan_tilt_pos[0].y = tilt_down;
+	pan_tilt_pos[1].x = pan_right;
+	pan_tilt_pos[1].y = tilt_down;
+	pan_tilt_pos[2].x = pan_right;
+	pan_tilt_pos[2].y = tilt_up;
+	pan_tilt_pos[3].x = pan_left;
+	pan_tilt_pos[3].y = tilt_up;
+
 
 	//the following state transition applies to all states
 	if(s.behavior_state[FIND_FLAME_FSM]==0) state = s_disabled;
@@ -112,6 +143,8 @@ void find_flame_fsm(u08 cmd, u08 *param)
 		{
 			enter_(s_disabled) 
 			{
+				PUMP_OFF();
+				pan_tilt_center();
 				motor_command(2,0,0,0,0);
 			}
 
@@ -136,7 +169,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			}
 
 			//TODO:  need to deal w/ reflections from the wall. can result in undershoot. sensor readings are almost maxed out by reflextion.
-			if(s.inputs.analog[AI_FLAME_NE]<60)
+			if(s.inputs.analog[AI_FLAME_NE]<flame_threshold_1)
 			{
 				motor_command(6,3,3,40,-40);
 			}
@@ -145,7 +178,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				motor_command(2,0,0,0,0);
 				task_wait(100); //allow the robot tocome to a complete stop
 				//in case of overshoot, need to make a correction
-				while (/*(s.inputs.analog[AI_FLAME_NW]<40) && */(s.inputs.analog[AI_FLAME_NE]<40))
+				while (/*(s.inputs.analog[AI_FLAME_NW]<40) && */(s.inputs.analog[AI_FLAME_NE]<flame_threshold_2))
 				{
 					motor_command(7, 2, 2, -5, 5);
 					OS_SCHEDULE;
@@ -155,6 +188,30 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			}
 
 			exit_(s_scanning) 
+			{ 
+				NOP();
+			}
+		}
+		//------------------------------------------------------------------------------------------------------------------
+		//
+		//------------------------------------------------------------------------------------------------------------------
+		next_(s_scanning_v2)
+		{
+			static t_scan_result scan_result;
+			enter_(s_scanning_v2) 
+			{ 
+				NOP();
+				MOVE(20,room_entry_distance); //enter the room a little bit before scanning for the flame
+				task_wait(100);
+			}
+
+			TURN_IN_PLACE( 20, -130 );
+			TURN_IN_PLACE_AND_SCAN(20,300,2);
+			scan_result = find_flame_in_scan(scan_data,360,flame_threshold_1);
+			TURN_IN_PLACE( 20, -(300-scan_result.center_angle) );
+			switch_(s_scanning_v2, s_moving_towards_candle);
+
+			exit_(s_scanning_v2) 
 			{ 
 				NOP();
 			}
@@ -179,12 +236,12 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			else if( (s.inputs.ir[IR_NE] < 40) || ( s.inputs.sonar[US_E] < 20 ) )
 			{
 				//TODO: need to remember the fact that we are sliding/tracking along the wall - need a separate state
-				bias = -1;
+				bias = -2;
 				track_candle();
 			}
 			else if( (s.inputs.ir[IR_NW] < 40) || ( s.inputs.sonar[US_W] < 20 ) )
 			{
-				bias = 1;
+				bias = 2;
 				track_candle();
 			}
 			else
@@ -192,7 +249,16 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				if(s.inputs.analog[AI_FLAME_NE]>s.inputs.analog[AI_FLAME_NW]) bias = 2;
 				if(s.inputs.analog[AI_FLAME_NW]>s.inputs.analog[AI_FLAME_NE]) bias = -2;
 			}
+
+			if(s.inputs.analog[AI_FLAME_NE]<flame_threshold_2)
+			{
+				//ISSUE:  this overrides the bias if we are sliding along the wall and so we will turn too far left
+				//bias = -5;
+			}
+
+
 			motor_command(7,2,2,20+bias,20-bias);
+
 
 			exit_(s_moving_towards_candle) 
 			{ 
@@ -214,7 +280,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			}
 
 			t_delta = get_ms() - t_start;
-			i=t_delta / 200;
+			i=t_delta / pan_tilt_speed;
 			if(i>3) 
 			{
 				i = 0; 

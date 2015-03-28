@@ -441,8 +441,9 @@ void vrep_sim_inputs(void)
 	}
 
 
-	v.u08 = 61;  cfg_set_value_by_grp_id(6,1, v); //black
-	v.u08 = 60;  cfg_set_value_by_grp_id(6,2, v); //white
+	v.u08 = 61;		cfg_set_value_by_grp_id(6,1, v); //black
+	v.u08 = 60;		cfg_set_value_by_grp_id(6,2, v); //white
+	v.f   = 154.0;  cfg_set_value_by_grp_id(5,3, v); //odo_b
 
 
 	//------------------------------------------------------------------------------------------------------------------------------------
