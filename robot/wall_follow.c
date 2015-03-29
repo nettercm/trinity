@@ -181,7 +181,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 	u08 at_limit_flag=0;
 	static s16 target_speed=0;
 	static u08 which_wall = LEFT_WALL; //left
-	static s16 side=0, side2=0, front=0;
+	static s16 side=0, side1, side2=0, front=0;
 
 	DEFINE_CFG2(u08,interval,			10,1);			DEFINE_CFG2(s16,nominal_speed,		10,2);
 	DEFINE_CFG2(s16,target_distance,	10,3);			DEFINE_CFG2(s16,max_error,			10,4);
@@ -239,11 +239,13 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 	if(which_wall == LEFT_WALL)
 	{
 		side = s.ir[IR_NW];
+		side1 = s.ir[IR_NL];
 		side2 = s.inputs.sonar[US_W];
 	}
 	else
 	{
 		side = s.ir[IR_NE];
+		side1 = s.ir[IR_NR];
 		side2 = s.inputs.sonar[US_E];
 	}
 
@@ -407,7 +409,15 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		if( which_wall==LEFT_WALL )			motor_command(8,0,0,(target_speed*10)/sharp_corner_radius,target_speed);
 		else motor_command(8,0,0,target_speed,(target_speed*10)/sharp_corner_radius);
 
-		if( side <= target_distance ) state = s_tracking_wall;
+		if (side <= target_distance)
+		{
+			state = s_tracking_wall;
+		}
+
+		if (side1 < target_distance)
+		{
+			//state = s_tracking_wall;
+		}
 		if ( abs(odometry_get_rotation_since_checkpoint()) >= 90 ) 
 		{
 			state = s_tracking_wall; //by default, go back to racking the wall, unless....

@@ -18,37 +18,30 @@ Room 4 permutations:
 2	K2 / North		South	0,0		1250	1,1			F, r, f, r, f, Lwf 
 3	R5 / East		North	0,3		2900	2,2			F, l, Rwf
 4	R5 / East		South	0,0		1250	2,1			F, r, f, r, f, Lwf
-5	L10 / South		North	1,0		1600	3, ?		F, l, Rwf
+5	L10 / South		North	1,0		1600	3, 2		F, l, Rwf
 6	O10 / South		South	3-4,0	3500	3, 1		F, r, f, r, f, Lwf
   
 
 Todo:
 
 * test finding room 4
-* wire up the kill switch 
 * wire up the "detected" LED
 * add code to turn on the "detected" LED
-* secure all sensors
-* add a cover on top of the omni IR sensor to limit amount of ambient IR seen by the sensor
-* convert the various flame detection threasholds into config parameters
 * finish return home logic (room 4)
-* use larger water tank
+
+* convert the various flame detection threasholds into config parameters
 
 
 
 Issues:
 
-* when the candle is very close right after entering the room, candle finding fails
+* mirror placement can result in sharp_corner turn
 
-* entering room 4 south has some issues
+* entering room 4 south: might get too far down the hallway, i.e. too far to the left of the door
 
 * exiting room 1 top door while going home not reliable
 
-* while returning home, ther eare cases where the US_N might pick up the corner of the intersection and we consider it as having reached the end...
-
-•	When the flame is close to a wall, the flame’s reflection from the wall can max out the flame sensors => may end up to looking straight at the candle when stopped
-	o	Do a sweep and use IR and/or flame sensor data to find the correct peak position
-	o	If the wall is known to be on the left, sweep from the right until the right sensor is maxed out
+* while returning home, there eare cases where the US_N might pick up the corner of the intersection and we consider it as having reached the end...
 
 
 
@@ -66,6 +59,13 @@ Low Priority:
 
 
 Solved Issues:
+
+•	When the flame is close to a wall, the flame’s reflection from the wall can max out the flame sensors => may end up to looking straight at the candle when stopped
+	o	Do a sweep and use IR and/or flame sensor data to find the correct peak position
+	o	If the wall is known to be on the left, sweep from the right until the right sensor is maxed out
+
+* when the candle is very close right after entering the room, candle finding fails
+
 *	turn sound back on for improved debuggin? (don't initialize servo feature until when its needed)
 	=> done, but only for playing sequences and it is only done on powerup / reset. servos get initialized later
 
@@ -852,7 +852,7 @@ void master_logic_fsm(u08 fsm_cmd, u08 *param)
 			enter_(100) {   NOP();   }
 			TURN_IN_PLACE(20,-120);
 			TURN_IN_PLACE_AND_SCAN(20,270,2);
-			scan_result = find_flame_in_scan(scan_data,360,60);
+			scan_result = find_flame_in_scan(scan_data,360,10);
 			TURN_IN_PLACE( turn_speed, -(270-scan_result.center_angle) );
 			state = s_disabled;
 			exit_(100)  {   NOP();   }

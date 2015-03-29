@@ -30,18 +30,37 @@ u08 move_manneuver2(u08 cmd, s16 speed, float distance, s16 safe_left, s16 safe_
 	static u08 state=0;
 	static s16 sign=1;
 	static s16 bias=0;
+	s16 ne, nw;
+
+	ne = s.ir[IR_NE];
+	nw = s.ir[IR_NW];
 
 	if(cmd==1) //start
 	{
 		bias=0;
-		if( (s.ir[IR_NE] < safe_right) && (s.ir[IR_NW] < safe_left) )
+		if( (ne < safe_right) && (nw < safe_left) )
 		{
-			if(s.ir[IR_NE] < s.ir[IR_NW]) bias=5;
-			else bias=-5;
+			if (ne < nw)
+			{
+				bias = 5;
+			}
+			else
+			{
+				bias = -5;
+			}
 		}
-		else if(s.ir[IR_NE] < safe_right) bias=5;
-		else if(s.ir[IR_NW] < safe_left) bias=-5;
-		else bias=0;
+		else if (ne < safe_right)
+		{
+			bias = 5;
+		}
+		else if (nw < safe_left)
+		{
+			bias = -5;
+		}
+		else
+		{
+			bias = 0;
+		}
 		motor_command(7,2,2,(10-bias)*sign,(10+bias)*sign); 
 		odometry_set_checkpoint(); 
 		if(distance < 0) sign=-1; else sign=1;
@@ -62,14 +81,37 @@ u08 move_manneuver2(u08 cmd, s16 speed, float distance, s16 safe_left, s16 safe_
 		}
 		else
 		{
-			if( (s.ir[IR_NE] < safe_right) && (s.ir[IR_NW] < safe_left) )
+			if( (ne < safe_right) && (nw < safe_left) )
 			{
-				if(s.ir[IR_NE] < s.ir[IR_NW]) bias=5;
-				else bias=-5;
+				if (ne < nw)
+				{
+					bias = 5;
+				}
+				else
+				{
+					bias = -5;
+				}
 			}
-			else if(s.ir[IR_NE] < safe_right) bias=5;
-			else if(s.ir[IR_NW] < safe_left) bias=-5;
-			else bias=0;
+			else if (ne < safe_right)
+			{
+				bias = 5;
+			}
+			else if (nw < safe_left)
+			{
+				bias = -5;
+			}
+			else if ( (ne<180) && (ne > safe_right + 5) )
+			{
+				bias = -3;
+			}
+			else if ( (nw<180) && (nw > safe_left + 5) )
+			{
+				bias = 3;
+			}
+			else
+			{
+				bias = 0;
+			}
 			if     (( fabs(odometry_get_distance_since_checkpoint()) >= fabs(distance)    )) { motor_command(2,0,0, 0,  0); state = 0; } //done
 			else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-40 ))   motor_command(7,1,1, sign*(10-bias), sign*(10+bias) );
 			else if(( fabs(odometry_get_distance_since_checkpoint()) >  fabs(distance)-90 ))   motor_command(7,1,1, sign*(20-bias), sign*(20+bias));

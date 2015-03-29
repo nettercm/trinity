@@ -21,6 +21,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 	static u32 context_switch_counter = 0;
 	static u32 t_last = 0;
 	static float checkpoint;
+	u16 us_n,us_nw,us_ne;  
 
 	task_open_1();
 
@@ -36,6 +37,10 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 	}
 
 	context_switch_counter++;
+
+	us_n  = s.inputs.sonar[US_N];
+	us_nw = s.inputs.sonar[US_NW];
+	us_ne = s.inputs.sonar[US_NE];
 
 	task_open_2();
 	//code after this point resumes execution wherever it left off when a context switch happened
@@ -91,7 +96,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			MOVE(20, 180);
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 
-			while (s.inputs.sonar[US_N] > 100)
+			while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
 			{
 				OS_SCHEDULE;
 			}
@@ -140,7 +145,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 			cfg_set_flt_by_grp_id(10, 13, 600); //corner_distance = 600, i.e. make sure we don't turn into the intersection but keep going straight
 
-			while (s.inputs.sonar[US_N] > 100)
+			while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
 			{
 				OS_SCHEDULE;
 			}
@@ -187,7 +192,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 			cfg_set_flt_by_grp_id(10, 13, 600);
 
-			while (s.inputs.sonar[US_N] > 100)
+			while ( (us_n > 100) && (us_ne > 100) && (us_nw > 100) )
 			{
 				OS_SCHEDULE;
 			}
@@ -223,6 +228,63 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			HARD_STOP();
 			RESET_LINE_DETECTION();
 			line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
+
+			if (s.dog_position == 1 && s.door_position == 2)
+			{
+				MOVE(20, 255);
+				TURN_IN_PLACE(20, -90);
+				MOVE(20, 425);
+				TURN_IN_PLACE(20, -90);
+				MOVE(20, 200);
+				START_BEHAVIOR(FOLLOW_WALL_FSM, RIGHT_WALL);
+				s.right_turns = 0;
+				while (s.right_turns < 2)
+				{
+					OS_SCHEDULE;
+				}
+
+				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
+				OS_SCHEDULE;
+				START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
+
+				while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
+				{
+					OS_SCHEDULE;
+				}
+
+				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
+				HARD_STOP();
+			}
+			else if (s.door_position == 2)
+			{
+				MOVE(20, 255);
+				TURN_IN_PLACE(20, 90);
+				START_BEHAVIOR(FOLLOW_WALL_FSM, RIGHT_WALL);
+
+				while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
+				{
+					OS_SCHEDULE;
+				}
+
+				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
+				HARD_STOP();
+			}
+			else if (s.door_position == 1)
+			{
+				MOVE(20, 255);
+				TURN_IN_PLACE(20, -90);
+				MOVE(20, 425);
+				TURN_IN_PLACE(20, -90);
+				MOVE(20, 200);
+				START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
+				while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
+				{
+					OS_SCHEDULE;
+				}
+
+				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
+				HARD_STOP();
+			}
 
 			state = s_disabled;
 

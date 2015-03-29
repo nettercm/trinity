@@ -53,8 +53,8 @@ FLT(5, 3, "odo_b",							0, 0, 160.0) //154 in sim, 160 on the physical robot
 //----------------------------------------------------------
 GRP(6, "LINE DETECTION/ALIGNMENT")
 
-U08(6, 1, "black",							0, 0, 16)//12)//70)
-U08(6, 2, "white",							0, 0, 12)//11)//50)
+U08(6, 1, "black",							0, 0, 35)//12)//70)
+U08(6, 2, "white",							0, 0, 30)//11)//50)
 S16(6, 3, "alignment speed",				0, 0, 20)//11)//50)
 //----------------------------------------------------------
 
@@ -63,15 +63,18 @@ S16(6, 3, "alignment speed",				0, 0, 20)//11)//50)
 //----------------------------------------------------------
 GRP(7, "EXTINGUISHING")
 
-FLT(7, 1, "room entry distance",			0, 0, 150.0)
-U08(7, 2, "omni flame threashold",			0, 0, 100)
-U08(7, 3, "pan left",						0, 0, 141)
-U08(7, 4, "pan right",						0, 0, 115)
+FLT(7, 1, "room entry distance",			0, 0, 170.0)
+U08(7, 2, "omni flame threashold",			0, 0, 180)
+U08(7, 3, "pan left",						0, 0, 140)
+U08(7, 4, "pan right",						0, 0, 114)
 U08(7, 5, "tilt up",						0, 0, 155)
 U08(7, 6, "tilt down",						0, 0, 135)
 U16(7, 7, "pan tilt speed",					0, 0, 300)
-U08(7, 8, "flame threashold #1",			0, 0, 70)
-U08(7, 9, "flame threashold #2",			0, 0, 70)
+U08(7, 8, "flame threashold #1",			0, 0, 4)
+U08(7, 9, "flame threashold #2",			0, 0, 6)
+U16(7, 10, "stopping distance",				0, 0, 60)
+U16(7, 11, "IR wall sensor threashold",		0, 0, 45)
+U16(7, 12, "US wall sensor threashold",		0, 0, 15)
 //----------------------------------------------------------
 
 
@@ -110,10 +113,10 @@ U16(9,54, "find Rm #4:   dog scan m. avg.", 0, 0, 2)
 S16(9,60, "find Rm #4:   distance #1",		0, 0, 260)		//how far to move into the intersection after exitinig from Rm #1
 S16(9,61, "find Rm #4:   turn #1",			0, 0, 15)		//how far to turn left before starting to follow the left wall 
 S16(9,62, "find Rm #4:   distance #2",		0, 0, 240)		//how far to move into the hallway before starting to follow the left wall
-S16(9,63, "find Rm #4:   left margin 1",	0, 0, 90)		//margin
-S16(9,64, "find Rm #4:   riggt margin 1",	0, 0, 140)		//margin while moving into the hallway
+S16(9,63, "find Rm #4:   left margin 1",	0, 0, 100)		//margin
+S16(9,64, "find Rm #4:   riggt margin 1",	0, 0, 135)		//margin while moving into the hallway
 S16(9,65, "find Rm #4:   distance #3",		0, 0, 800)		//how far to move into the hallway before starting to follow the left wall
-S16(9,66, "find Rm #4:   left margin 2",	0, 0, 135)
+S16(9,66, "find Rm #4:   left margin 2",	0, 0, 100)
 S16(9,67, "find Rm #4:   riggt margin 2",	0, 0, 135)
 
 S16(9,71, "search Rm #4: distance #1",		0, 0, 100)
@@ -129,7 +132,7 @@ GRP(10, "WALL FOLLOWING")
 U08(10, 1, "update interval",	0, 0, 25)
 //100,40,100,65,20,55,35,2,4
 S16(10, 2, "nominal speed"	,	0, 0, 120)
-S16(10, 3, "target distance",	0, 0, 80)
+S16(10, 3, "target distance",	0, 0, 90)
 S16(10, 4, "max error"		,	0, 0, 80)
 S16(10, 5, "max correction %",	0, 0, 140)
 S16(10, 6, "Kp"				,	0, 0, 60)
@@ -139,7 +142,7 @@ S16(10, 9, "minimum speed"	,	0, 0, 30)
 S16(10,10, "speed up amount",	0, 0, 1)
 S16(10,11, "slow down amount",	0, 0, 10)
 U08(10,12, "use corner logic",	0, 0, 1)
-FLT(10,13, "corner distance",	0, 0, 90)
+FLT(10,13, "corner distance",	0, 0, 100)
 S16(10,14, "corner speed",		0, 0, 100)
 S16(10,15, "integral limit",	0, 0, 40)
 S16(10,16, "lost wall distance",0, 0, 150)

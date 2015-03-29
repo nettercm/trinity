@@ -223,8 +223,14 @@ void vrep_sim_step(void)
 		if (c == 'w')
 		{
 			static int door_configuration = 0;
-			if (door_configuration) { move_object("wall_E", 1.23, 0.23, IGNORE_THETA); door_configuration = 0; }
-			else { move_object("wall_E", 1.23, 0.68, IGNORE_THETA); door_configuration = 1; }
+			if (door_configuration) 
+			{ 
+				move_object("wall_E", 1.23, 0.23, IGNORE_THETA); door_configuration = 0; 
+			}
+			else 
+			{ 
+				move_object("wall_E", 1.23, 0.68, IGNORE_THETA); door_configuration = 1; 
+			}
 		}
 
 		if (c == 'W')
@@ -235,12 +241,14 @@ void vrep_sim_step(void)
 				move_object("wall_H", 1.58, 1.415, IGNORE_THETA); 
 				move_object("wall_J", 1.34, 1.915, IGNORE_THETA); 
 				door_configuration = 0; 
+				//s.door_position = 1;
 			}
 			else 
 			{ 
 				move_object("wall_H", 1.58, 1.915, IGNORE_THETA); 
 				move_object("wall_J", 1.79, 1.415, IGNORE_THETA); 
 				door_configuration = 1; 
+				//s.door_position = 2;
 			}
 		}
 		if (c == '0') //assume candle is in room 1
@@ -375,8 +383,8 @@ int read_ir(int handle,int min, int max, float noise_factor)
 		{
 			if(detected_handle==mirror[i])
 			{
-				distance = max;
-				printf("Mirror!\n");
+				//distance = max;
+				//printf("Mirror!\n");
 			}
 		}
 

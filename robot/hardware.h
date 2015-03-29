@@ -64,33 +64,30 @@ Analog Mux usage: (sample time for 16 ADC: approx 1.5ms, + overhead => 1.7 - 1.8
 //Start button (may not be needed)
 
 //index into s.ir and s.inputs.ir - does not need to match actual input channel numbers
-//#define IR_N			0
-static const u08 IR_N =  0;
-#define IR_NL			1
-#define IR_NR			2
-#define IR_NW			3
-//#define IR_NE			4
+static const u08 IR_N  = 0;
+static const u08 IR_NL = 1;
+static const u08 IR_NR = 2;
+static const u08 IR_NW = 3;
 static const u08 IR_NE = 4;
-#define IR_W			5
-#define IR_E			6
+static const u08 IR_W  = 5;
+static const u08 IR_E  = 6;
 
 
 //analogs.  The following refer to channel numbers
-//#define AI_IR_N			0
-static const u08 AI_IR_N = 0;
-#define AI_IR_NL		1
-#define AI_IR_NE		2
-#define AI_IR_W			3
-#define AI_IR_E			15
-#define AI_IR_NW		4
-#define AI_IR_NR		5
+static const u08 AI_IR_N		= 0;
+static const u08 AI_IR_NL		= 1;
+static const u08 AI_IR_NE		= 2;
+static const u08 AI_IR_W		= 3;
+static const u08 AI_IR_E		= 15;
+static const u08 AI_IR_NW		= 4;
+static const u08 AI_IR_NR		= 5;
 
-#define AI_LINE_RIGHT	10
-#define AI_LINE_LEFT	11
+static const u08 AI_LINE_RIGHT	= 10;
+static const u08 AI_LINE_LEFT	= 11;
 
-#define AI_FLAME_N		12
-#define AI_FLAME_NW		13
-#define AI_FLAME_NE		14
+static const u08 AI_FLAME_N		= 12;
+static const u08 AI_FLAME_NW	= 13;
+static const u08 AI_FLAME_NE	= 14;
 
 #define AI_START_BUTTON 9
 
