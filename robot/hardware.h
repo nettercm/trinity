@@ -106,7 +106,7 @@ static const u08 AI_FLAME_NE	= 14;
 
 //PORD C
 #define SERVO_DEMUX_PIN			IO_C1
-#define	available_pin_1			IO_C0
+#define	FIRE_ALARM_PIN			IO_C0
 
 //PORT B
 #define PUMP_PIN				IO_B4
@@ -132,6 +132,8 @@ extern const unsigned char pulseInPins[6];
 //servo demux
 extern const unsigned char demuxPins[1];
 #define SERVO_DEMUX_PINS	{ SERVO_DEMUX_PIN }
+
+#define FIRE_ALARM(on_off) 	set_digital_output(FIRE_ALARM_PIN, !on_off)
 
 
 /*
