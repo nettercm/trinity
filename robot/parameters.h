@@ -69,12 +69,13 @@ U08(7, 3, "pan left",						0, 0, 140)
 U08(7, 4, "pan right",						0, 0, 114)
 U08(7, 5, "tilt up",						0, 0, 155)
 U08(7, 6, "tilt down",						0, 0, 135)
-U16(7, 7, "pan tilt speed",					0, 0, 300)
+U16(7, 7, "pan tilt speed",					0, 0, 400)
 U08(7, 8, "flame threashold #1",			0, 0, 4)
 U08(7, 9, "flame threashold #2",			0, 0, 6)
 U16(7, 10, "stopping distance",				0, 0, 60)
 U16(7, 11, "IR wall sensor threashold",		0, 0, 45)
 U16(7, 12, "US wall sensor threashold",		0, 0, 15)
+U16(7, 13, "flame scan moving avg",			0, 0, 3)
 //----------------------------------------------------------
 
 
@@ -156,11 +157,11 @@ S16(10,19, "sharp corner radius",0,0, 22)
 //----------------------------------------------------------
 GRP(15, "SERVO (PAN/TILT)")
 
-U16(15, 1, "servo 1 (tilt) - speed",	0, 0, 150)
-U16(15, 2, "servo 2 (pan)  - speed",	0, 0, 150)
-U16(15, 5, "servo 1 (tilt) - position",	0, 0, 145)
+U16(15, 1, "servo 1 (tilt) - speed",	0, 0, 100)
+U16(15, 2, "servo 2 (pan)  - speed",	0, 0, 100)
+U16(15, 5, "servo 1 (tilt) - position",	0, 0, 150)
 U16(15, 6, "servo 2 (pan)  - position",	0, 0, 125)
-U16(15, 9, "servo 1 (tilt) - center",	0, 0, 145)
+U16(15, 9, "servo 1 (tilt) - center",	0, 0, 150)
 U16(15,10, "servo 2 (pan)  - center",	0, 0, 125)
 //----------------------------------------------------------
 
