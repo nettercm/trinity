@@ -14,6 +14,7 @@ DEFINE_CFG2(u08,flame_threshold_2,		7,9);
 DEFINE_CFG2(u16,stopping_distance,		7,10);
 DEFINE_CFG2(u16, ir_wall_threashold,	7, 11);
 DEFINE_CFG2(u16, us_wall_threashold,	7, 12);
+DEFINE_CFG2(u16, flame_scan_moving_avg, 7, 13);
 
 
 extern uint8 align_to_line(uint8 cmd);
@@ -115,6 +116,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 		PREPARE_CFG2(stopping_distance);
 		PREPARE_CFG2(ir_wall_threashold);
 		PREPARE_CFG2(us_wall_threashold);
+		PREPARE_CFG2(flame_scan_moving_avg);
 	}
 
 	UPDATE_CFG2(room_entry_distance);
@@ -129,6 +131,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 	UPDATE_CFG2(stopping_distance);
 	UPDATE_CFG2(ir_wall_threashold);
 	UPDATE_CFG2(us_wall_threashold);
+	UPDATE_CFG2(flame_scan_moving_avg);
 
 	pan_tilt_pos[0].x = pan_left;
 	pan_tilt_pos[0].y = tilt_down;
@@ -155,6 +158,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 		{
 			enter_(s_disabled) 
 			{
+				FIRE_ALARM(0);
 				flame_is_out = 0;
 				PUMP_OFF();
 				pan_tilt_center();
@@ -166,6 +170,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			exit_(s_disabled)  
 			{
 				pan_tilt_center();
+				FIRE_ALARM(1);
 				NOP();
 			}
 		}
@@ -217,10 +222,10 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				task_wait(100);
 			}
 
-			TURN_IN_PLACE( 20, -130 );
-			TURN_IN_PLACE_AND_SCAN(20,300,2);
+			TURN_IN_PLACE( 40, -130 );
+			TURN_IN_PLACE_AND_SCAN(10, 300, flame_scan_moving_avg);
 			scan_result = find_flame_in_scan(scan_data,360,flame_threshold_1);
-			TURN_IN_PLACE( 20, -(300-scan_result.center_angle) );
+			TURN_IN_PLACE( 30, -(300-scan_result.center_angle) );
 			switch_(s_scanning_v2, s_moving_towards_candle);
 
 			exit_(s_scanning_v2) 
@@ -248,9 +253,9 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				motor_command(2,0,0,0,0);
 				pan_tilt_center();
 				TURN_IN_PLACE(20, -45);
-				TURN_IN_PLACE_AND_SCAN(20, 90, 2);
+				TURN_IN_PLACE_AND_SCAN(10, 90, flame_scan_moving_avg);
 				scan_result = find_flame_in_scan(scan_data, 360, flame_threshold_1);
-				TURN_IN_PLACE(20, -(90 - scan_result.center_angle));
+				TURN_IN_PLACE(10, -(90 - scan_result.center_angle));
 				//if ((s.inputs.sonar[0] < stopping_distance) || (s.inputs.sonar[1] < stopping_distance) || (s.inputs.sonar[2] < stopping_distance))
 				{
 					switch_(s_moving_towards_candle, s_extinguish);
@@ -261,17 +266,17 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			{
 				TURN_IN_PLACE(30, 90);
 				MOVE(30, 150);
-				TURN_IN_PLACE_AND_SCAN(20, -180, 2);
+				TURN_IN_PLACE_AND_SCAN(10, -180, flame_scan_moving_avg);
 				scan_result = find_flame_in_scan(scan_data, 360, flame_threshold_1);
-				TURN_IN_PLACE(20, (180 - abs(scan_result.center_angle)));
+				TURN_IN_PLACE(10, (180 - abs(scan_result.center_angle)));
 			}
 			else if (s.inputs.sonar[US_W] < us_wall_threashold)
 			{
 				TURN_IN_PLACE(30, -90);
 				MOVE(30, 150);
-				TURN_IN_PLACE_AND_SCAN(20, 180, 2);
+				TURN_IN_PLACE_AND_SCAN(10, 180, flame_scan_moving_avg);
 				scan_result = find_flame_in_scan(scan_data, 360, flame_threshold_1);
-				TURN_IN_PLACE(20, -(180 - abs(scan_result.center_angle)));
+				TURN_IN_PLACE(10, -(180 - abs(scan_result.center_angle)));
 			}
 			/*
 			else if( (s.inputs.ir[IR_NE] < ir_wall_threashold) || ( s.inputs.sonar[US_E] < us_wall_threashold) )
@@ -298,9 +303,9 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			{
 				pan_tilt_center();
 				TURN_IN_PLACE(20, -45);
-				TURN_IN_PLACE_AND_SCAN(20, 90, 2);
+				TURN_IN_PLACE_AND_SCAN(10, 90, flame_scan_moving_avg);
 				scan_result = find_flame_in_scan(scan_data, 360, flame_threshold_1);
-				TURN_IN_PLACE(20, -(90 - scan_result.center_angle));
+				TURN_IN_PLACE(5, -(90 - scan_result.center_angle));
 			}
 
 
@@ -351,7 +356,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			}
 
 
-			if ( (count>10) || (flame_is_out>150) )
+			if ( (count>20) || (flame_is_out>150) )
 			{
 				state = s_disabled;
 				s.behavior_state[FIND_FLAME_FSM] = 0; //to make sure we don't restart the whole FSM

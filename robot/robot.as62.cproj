@@ -254,6 +254,9 @@
     <Compile Include="line.c">
       <SubType>compile</SubType>
     </Compile>
+    <Compile Include="main.c">
+      <SubType>compile</SubType>
+    </Compile>
     <Compile Include="motion.c">
       <SubType>compile</SubType>
     </Compile>
@@ -264,6 +267,9 @@
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="os.c">
+      <SubType>compile</SubType>
+    </Compile>
+    <Compile Include="return_home.c">
       <SubType>compile</SubType>
     </Compile>
     <Compile Include="servo.c">

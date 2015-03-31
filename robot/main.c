@@ -93,7 +93,8 @@ int hardware_init(void)
 	set_digital_output(ANALOG_MUX_ADDR_2_PIN, LOW);
 	set_digital_output(ANALOG_MUX_ADDR_3_PIN, LOW);
 
-	
+	set_digital_output(FIRE_ALARM_PIN, HIGH);
+
 	//sonar pins	
 	set_digital_output(IO_US_ECHO_AND_PING_1, LOW);
 	set_digital_output(IO_US_ECHO_AND_PING_2, LOW);

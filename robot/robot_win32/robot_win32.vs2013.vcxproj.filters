@@ -327,6 +327,9 @@
     <ClCompile Include="..\return_home.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\.gitattributes" />

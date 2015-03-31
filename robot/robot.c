@@ -122,7 +122,7 @@ void scan(u08 cmd, u16 moving_avg)
 	static s16 last_angle;
 	s16 angle;
 	static u16 i=0;
-	static u16 flame_avg;
+	static float flame_avg;
 	static u16 ir_n_avg;
 	static u16 ir_fn_avg;
 	u16 ir_n;
@@ -156,7 +156,7 @@ void scan(u08 cmd, u16 moving_avg)
 	else //update
 	{
 		//use a moving average to filter out any noise spikes; prevent noise spikes from showing up as "peak" values later
-		flame_avg = ((flame_avg * (moving_avg-1)) + (flame_c) ) / moving_avg;
+		flame_avg = ((flame_avg * (moving_avg-1)) + (flame_c) ) / (float)moving_avg;
 		ir_n_avg  = ((ir_n_avg  * (moving_avg-1)) + (ir_n) ) / moving_avg;
 		ir_fn_avg = ((ir_fn_avg * (moving_avg-1)) + (ir_fn) ) / moving_avg;
 		if(angle != last_angle) 
