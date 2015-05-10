@@ -3,17 +3,29 @@
 #include <stdio.h>
 #include <windows.h>
 
-int grid[100][100];
+#define grid_size 200
+#define cell_size 25.4
+
+typedef struct
+{
+	int value;
+	int changed;
+} t_grid;
+
+unsigned int bitmap[grid_size][grid_size];
+
+t_grid grid[grid_size][grid_size];
 
 //index into s.ir and s.inputs.ir - does not need to match actual input channel numbers
 #define IR_N			0
-#define IR_NE			1
-#define IR_E			2
-#define IR_SE			3
-#define IR_S			4
-#define IR_SW			5
-#define IR_W			6
-#define IR_NW			7
+#define IR_NE			4
+#define IR_E			6
+#define IR_W			5
+#define IR_NW			3
+
+#define IR_SE			1
+#define IR_S			2
+#define IR_SW			7
 
 #if 0
 void plotLine(int x0, int y0, int x1, int y1)
@@ -50,8 +62,10 @@ void plotLine(int x0, int y0, int x1, int y1, int value)
 
 	for (;;)
 	{                                                          /* loop */
-		grid[x0][y0]+=value;                              
-		if(grid[x0][y0]<0) grid[x0][y0]=0;
+		grid[x0][y0].value+=value;     
+		grid[x0][y0].changed=1;     
+		if(grid[x0][y0].value<0) grid[x0][y0].value=0;
+		if(grid[x0][y0].value>10) grid[x0][y0].value=10;
 		e2 = 2*err;                                   
 		if (e2 >= dy) 
 		{                                         /* e_xy+e_x > 0 */
@@ -73,29 +87,45 @@ void plotLine(int x0, int y0, int x1, int y1, int value)
 
 namespace robot_ui 
 {
-	void f1::update_grid(int history_index, int ir_sensor_index,float x1, float y1, float t1)
+	void f1::update_grid(float d, float x0, float y0, float t0,float x1, float y1, float t1)
 	{
-		float d,t2,x2,y2,x3,y3,x4,y4;
+		float t2,x2,y2,x3,y3,x4,y4;
 		static float lx3=0,ly3=0;
 		int i = history_index;
+		int offset = radar_trackBar1->Value;
 
-		d=((float)inputs_history[i].ir[ir_sensor_index]/10.0)*25.4;
-		t2= inputs_history[i].theta; 
+		//d=((float)inputs_history[i].ir[ir_sensor_index]/10.0)*cell_size;
+		//d=inputs_history[i].lidar.samples[ir_sensor_index]*1000;
+
+		i=i+offset;
+
+		t2= t0; //inputs_history[i].theta; 
 		x2=x1+d*cos(t1);
 		y2=y1+d*sin(t1);
 		x3=x2*cos(t2)-y2*sin(t2);
 		y3=x2*sin(t2)+y2*cos(t2);
-		x3+=inputs_history[i].x;
-		y3+=inputs_history[i].y;
+		x3+=x0; //inputs_history[i].x;
+		y3+=y0; //inputs_history[i].y;
 		x4=x1*cos(t2)-y1*sin(t2);
 		y4=x1*sin(t2)+y1*cos(t2);
-		x4+=inputs_history[i].x;
-		y4+=inputs_history[i].y;
+		x4+=x0; //inputs_history[i].x;
+		y4+=y0; //inputs_history[i].y;
 
-		if(d<750) 
+		//if(d<750) 
+		if((d>0) && (d<5000))
 		{
-			plotLine((int)(x4/25.4),(int)(y4/25.4), (int)(x3/25.4),(int)(y3/25.4) , -1);
-			grid[(int)(x3/25.4)][(int)(y3/25.4)]+=2;
+			plotLine((int)(x4/cell_size),(int)(y4/cell_size), (int)(x3/cell_size),(int)(y3/cell_size) , -1);
+			grid[(int)(x3/cell_size)][(int)(y3/cell_size)].value+=5;
+			if(grid[(int)(x3/cell_size)][(int)(y3/cell_size)].value > 10) grid[(int)(x3/cell_size)][(int)(y3/cell_size)].value=10;
+			grid[(int)(x3/cell_size)][(int)(y3/cell_size)].changed=1;
+
+			if( (abs(x3-lx3)<150) && (abs(y3-ly3)<150) )
+			{
+				if(radar_checkBox_use_lines->Checked)
+				{
+					plotLine((int)(lx3/cell_size),(int)(ly3/cell_size), (int)(x3/cell_size),(int)(y3/cell_size) , 5);
+				}
+			}
 		}
 		lx3=x3;
 		ly3=y3;
@@ -112,7 +142,7 @@ namespace robot_ui
 		Pen^ p2 = gcnew Pen(Color::Gray, 0.5);
 
 		int increment;
-		increment = g->VisibleClipBounds.Height / 100;
+		increment = g->VisibleClipBounds.Height / grid_size;
 
 		y=g->VisibleClipBounds.X;
 		for(x=g->VisibleClipBounds.X; x<g->VisibleClipBounds.X + g->VisibleClipBounds.Height; x+=increment)
@@ -144,9 +174,10 @@ namespace robot_ui
 		//log_printf("grid x,y,total,w,h=%d,%d,%d,%f,%f\n",x_count,y_count,count,g->VisibleClipBounds.Width,g->VisibleClipBounds.Height);
 	}
 
-
-	void f1::UpdateRadar(float a, int b)
+	void f1::ShowRadar(int ex, int ey)
 	{
+		int x,y,i,j;
+		int increment;
 		const int pensize=10;
 		Brush^ b0 =  gcnew SolidBrush(Color::White);
 		Brush^ b1 =  gcnew SolidBrush(Color::Black);
@@ -158,20 +189,76 @@ namespace robot_ui
 		Pen^ p2 = gcnew Pen(Color::Red, pensize);
 		Pen^ p3 = gcnew Pen(Color::Yellow, pensize);
 		Pen^ p4 = gcnew Pen(Color::Blue, pensize);
+
+		increment = (g->VisibleClipBounds.Height / grid_size);
+#if 1
+		for(x=0;x<grid_size;x++)
+		{
+			for(y=0;y<grid_size;y++)
+			{
+				grid[x][y].changed=1;
+				if(grid[x][y].value)
+				{
+					//grid[x][y].value--;
+					if(grid[x][y].value==0) grid[x][y].changed=1;
+				}
+
+				if(grid[x][y].changed)
+				{
+					grid[x][y].changed = 0;
+					if(grid[x][y].value) 
+					{
+						g->FillRectangle(b1,x*increment,(int)g->VisibleClipBounds.Height - (y+1)*increment,increment,increment);
+					}
+					else g->FillRectangle(b0,x*increment,(int)g->VisibleClipBounds.Height - (y+1)*increment,increment,increment);
+					//else g->DrawRectangle(p0,x*increment,(int)g->VisibleClipBounds.Height - (y+1)*increment,increment,increment);
+				}
+				grid[x][y].value=0;
+			}
+		}
+#else
+
+		for(x=0;x<grid_size;x++)
+		{
+			for(y=0;y<grid_size;y++)
+			{
+				if(grid[x][y].value>0) bitmap[x][y]=0; else bitmap[x][y]=0xffffffffUL;
+			}
+		}
+
+		System::IntPtr ptr(bitmap);
+		System::Drawing::Bitmap^ bm  = gcnew System::Drawing::Bitmap(grid_size,grid_size,400,System::Drawing::Imaging::PixelFormat::Format32bppRgb,ptr);
+		System::Drawing::RectangleF rect(0,0,pictureBox1->Width,pictureBox1->Height);
+		g->DrawImage(bm,rect);	
+
+#endif
+
+		//g->FillEllipse(b2, (int)((inputs_history[i].x-100)/cell_size)*increment, (int)g->VisibleClipBounds.Height - (int)((inputs_history[i].y+100)/cell_size)*(increment) ,(int)(200/cell_size)*increment, (int)(200/cell_size)*increment);
+		if(ex>2)
+		{
+			g->DrawEllipse(p2, ex, ey,(int)(50/cell_size)*increment, (int)(50/cell_size)*increment);
+		}
+	}
+
+	void f1::UpdateRadar(float a, int b)
+	{
 		static int i=1;
 		int x,y;
 		float theta;
 		float x1,y1,x2,y2,rx,ry;
-		int increment;
+		int scan_completed=0;
+		DWORD t1,t2,t3,count=0;
 
-		increment = (g->VisibleClipBounds.Height / 100);
 		//DrawGrid(g);
 		if(history_index - i > 2000) i=history_index-2000;
 
-		//for(i=history_index-360; i<=history_index;i++)
-		while(i<history_index)
-		{
+		t1 = timeGetTime();
 
+		//for(i=history_index-360; i<=history_index;i++)
+		scan_completed=0;
+		while( (i<(history_index-1)) )
+		{
+			/*
 			if(radar_checkBox_show_ir_north->Checked)		update_grid(i,IR_N,Convert::ToSingle(radar_txt_calib_n_x->Text), Convert::ToSingle(radar_txt_calib_n_y->Text), Convert::ToSingle(radar_txt_calib_n_theta->Text) * (PI/180.0f));
 			//if(radar_checkBox_show_ir_far_north->Checked)
 			if(radar_checkBox_show_ir_nw->Checked)			update_grid(i,IR_NW,Convert::ToSingle(radar_txt_calib_nw_x->Text),Convert::ToSingle(radar_txt_calib_nw_y->Text),Convert::ToSingle(radar_txt_calib_nw_theta->Text) * (PI/180.0f));
@@ -182,23 +269,37 @@ namespace robot_ui
 			if(radar_checkBox_show_ir_6->Checked)			update_grid(i,IR_SW,Convert::ToSingle(radar_txt_calib_6_x->Text),Convert::ToSingle(radar_txt_calib_6_y->Text),Convert::ToSingle(radar_txt_calib_6_theta->Text) * (PI/180.0f));
 			if(radar_checkBox_show_ir_7->Checked)			update_grid(i,IR_W,Convert::ToSingle(radar_txt_calib_7_x->Text),Convert::ToSingle(radar_txt_calib_7_y->Text),Convert::ToSingle(radar_txt_calib_7_theta->Text) * (PI/180.0f));
 			//g->FillEllipse(b2, (int)rx, (int)ry ,pensize, pensize);
+			*/
+			{
+				int j;
+				t_inputs h,h2;
+				h = inputs_history[i+0];
+				h2= inputs_history[i+1]; //need +1 here for motion comp
+
+				for(j=0;j<h2.lidar.num_samples;j++)
+				{
+					//log_printf("inputs_history[i].lidar.angle=%f\n",inputs_history[i].lidar.angle+j);
+					//update_grid(h2.lidar.samples[j]*1000, h.x, h.y, h.theta, 0,0,(h2.lidar.angle+j+90) * (PI/180.0f));
+					update_grid(h2.lidar.samples[j]*1000, (grid_size*cell_size)/2, (grid_size*cell_size)/2, 0, 0,0,(h2.lidar.angle+j+90) * (PI/180.0f));
+					count++;
+					if(((int)(h2.lidar.angle+j))==180)
+					{
+						int increment = (g->VisibleClipBounds.Height / grid_size);
+						int ex = (int)((h.x-100)/cell_size)*increment;
+						int ey = (int)g->VisibleClipBounds.Height - (int)((h.y+100)/cell_size)*(increment);
+						ShowRadar(ex, ey);
+					}
+				}
+			}
 			i++;
 		}
 
-		for(x=0;x<100;x++)
-		{
-			for(y=0;y<100;y++)
-			{
-				if(grid[x][y]) 
-				{
-					g->FillRectangle(b1,x*increment,(int)g->VisibleClipBounds.Height - (y+1)*increment,increment,increment);
-					//grid[x][y]--;
-				}
-				else g->FillRectangle(b0,x*increment,(int)g->VisibleClipBounds.Height - (y+1)*increment,increment,increment);
-				//else g->DrawRectangle(p0,x*increment,(int)g->VisibleClipBounds.Height - (y+1)*increment,increment,increment);
-			}
-		}
-		g->FillEllipse(b2, (int)((inputs_history[i].x-100)/25.4)*increment, (int)g->VisibleClipBounds.Height - (int)((inputs_history[i].y+100)/25.4)*(increment) ,(int)(200/25.4)*increment, (int)(200/25.4)*increment);
+		t2 = timeGetTime();
+		
+		//ShowRadar();
+
+		t3 = timeGetTime(); //t3-t2 is 160ms
+		//printf("count,dT,dT=%d,%d,%d\n",count, t2-t1, t3-t2);
 	}
 
 	System::Void f1::radar_timer_Tick(System::Object^  sender, System::EventArgs^  e) 
@@ -245,15 +346,18 @@ namespace robot_ui
 	System::Void f1::radar_btn_Clear(System::Object^  sender, System::EventArgs^  e) 
 	{
 		int i,j;
-		for(i=0;i<100;i++)
+		for(i=0;i<grid_size;i++)
 		{
-			for(j=0;j<100;j++)
+			for(j=0;j<grid_size;j++)
 			{
-				grid[i][j]=0;
+				grid[i][j].value=0;
+				grid[i][j].changed=1;
 			}
 		}
 		radar_tabPage->Invalidate();
-		g = radar_tabPage->CreateGraphics();
+		//g = radar_tabPage->CreateGraphics();
+		pictureBox1->Invalidate();
+		g = pictureBox1->CreateGraphics();
 		log_printf("g-> X,Y,Width,Height = %f,%f,%f,%f\n",g->VisibleClipBounds.X,g->VisibleClipBounds.Y,g->VisibleClipBounds.Width,g->VisibleClipBounds.Height);
 
 	}

@@ -24,6 +24,9 @@ static int sonar0,sonar1,sonar2,sonar3,sonar4;
 static int robot,candle;
 static int mirror[10] = {0,0,0,0,0,0,0,0,0,0};
 
+unsigned char* lidar_signal;
+int lidar_signal_size;
+
 const float IGNORE_X = 9999999.0f;
 const float IGNORE_Y = 9999999.0f;
 const float IGNORE_Z = 9999999.0f;
@@ -638,6 +641,25 @@ void vrep_sim_inputs(void)
 
 
 
+	// Then, in your control loop:
+	if (simxGetStringSignal(clientID,"lidar",&lidar_signal,&lidar_signal_size,simx_opmode_buffer)==simx_error_noerror)
+	{
+		int cnt=lidar_signal_size/4;
+		float myData[2000];
+		int i;
+		for(i=0;i<cnt;i++)
+		{
+			myData[i]=((float*)lidar_signal)[i];
+			//printf("%6.2f ",myData[i]);
+		}
+		//printf("\n");
+		s.inputs.lidar.num_samples=myData[1];
+		s.inputs.lidar.angle=myData[2];
+		for(i=0;i<myData[1];i++)
+		{
+			s.inputs.lidar.samples[i]=myData[i*2+3];
+		}
+	}
 	
 }
 
@@ -704,6 +726,7 @@ void vrep_sim_init(void)
 	simxSetJointTargetPosition(clientID,pan,0,simx_opmode_oneshot_wait);
 	simxSetJointTargetPosition(clientID,tilt,0,simx_opmode_oneshot_wait);
 
+	simxGetStringSignal(clientID,"lidar",&lidar_signal,&lidar_signal_size,simx_opmode_streaming);
 
 
 	printf("sim time = %d\n", simxGetLastCmdTime(clientID));

@@ -175,6 +175,8 @@ private: System::Windows::Forms::Button^  capture_btn_start;
 private: System::Windows::Forms::ComboBox^  capture_comboBox_path;
 
 private: System::Windows::Forms::Timer^  capture_timer;
+private: System::Windows::Forms::TrackBar^  radar_trackBar1;
+private: System::Windows::Forms::PictureBox^  pictureBox1;
 
 
 
@@ -209,7 +211,9 @@ private: System::Windows::Forms::Timer^  capture_timer;
 
 	public: void InitializeParametersTab(void);
 	public: void UpdateRadar(float theta, int measurement);
-	public: void update_grid(int history_index, int ir_sensor_index,float x1, float y1, float t1);
+	public: void update_grid(float d, float x0, float y0, float t0,float x1, float y1, float t1);
+
+	public: void ShowRadar(int ex, int ey);
 	public: void DrawGrid(Graphics ^g);
 	public: void InitializeGraphsTab(void);
 
@@ -330,16 +334,16 @@ private: System::Windows::Forms::Timer^  capture_timer;
 		void InitializeComponent(void)
 		{
 			this->components = (gcnew System::ComponentModel::Container());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle9 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle12 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle10 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle11 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea5 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea6 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::Legend^  legend3 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series7 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series8 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series9 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle1 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle4 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle2 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle3 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea1 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea2 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Legend^  legend1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series3 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(f1::typeid));
 			this->main_serial_thread = (gcnew System::ComponentModel::BackgroundWorker());
 			this->graphs_timer = (gcnew System::Windows::Forms::Timer(this->components));
@@ -366,6 +370,7 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			this->graphs_checkBox_enable = (gcnew System::Windows::Forms::CheckBox());
 			this->graphs_chart = (gcnew System::Windows::Forms::DataVisualization::Charting::Chart());
 			this->radar_tabPage = (gcnew System::Windows::Forms::TabPage());
+			this->radar_trackBar1 = (gcnew System::Windows::Forms::TrackBar());
 			this->label9 = (gcnew System::Windows::Forms::Label());
 			this->label5 = (gcnew System::Windows::Forms::Label());
 			this->label8 = (gcnew System::Windows::Forms::Label());
@@ -445,17 +450,20 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			this->main_comboBox_ip = (gcnew System::Windows::Forms::ComboBox());
 			this->main_checkBox_connect_ip = (gcnew System::Windows::Forms::CheckBox());
 			this->capture_timer = (gcnew System::Windows::Forms::Timer(this->components));
+			this->pictureBox1 = (gcnew System::Windows::Forms::PictureBox());
 			this->tabControl1->SuspendLayout();
 			this->parameters_tab->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->parameters_dataGridView))->BeginInit();
 			this->graphs_tab->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->graphs_chart))->BeginInit();
 			this->radar_tabPage->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->radar_trackBar1))->BeginInit();
 			this->map_tab->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->map_picture))->BeginInit();
 			this->terminal_tab->SuspendLayout();
 			this->log_tab->SuspendLayout();
 			this->capture_tab->SuspendLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureBox1))->BeginInit();
 			this->SuspendLayout();
 			// 
 			// main_serial_thread
@@ -556,27 +564,27 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			this->parameters_dataGridView->AllowUserToDeleteRows = false;
 			this->parameters_dataGridView->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left));
-			dataGridViewCellStyle9->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			dataGridViewCellStyle9->BackColor = System::Drawing::SystemColors::Control;
-			dataGridViewCellStyle9->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+			dataGridViewCellStyle1->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			dataGridViewCellStyle1->BackColor = System::Drawing::SystemColors::Control;
+			dataGridViewCellStyle1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle9->ForeColor = System::Drawing::SystemColors::WindowText;
-			dataGridViewCellStyle9->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle9->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle9->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
-			this->parameters_dataGridView->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle9;
+			dataGridViewCellStyle1->ForeColor = System::Drawing::SystemColors::WindowText;
+			dataGridViewCellStyle1->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle1->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle1->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
+			this->parameters_dataGridView->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
 			this->parameters_dataGridView->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
 			this->parameters_dataGridView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(7) {this->Group, 
 				this->id, this->name, this->Type, this->val, this->inc, this->dec});
-			dataGridViewCellStyle12->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
-			dataGridViewCellStyle12->BackColor = System::Drawing::SystemColors::Window;
-			dataGridViewCellStyle12->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+			dataGridViewCellStyle4->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
+			dataGridViewCellStyle4->BackColor = System::Drawing::SystemColors::Window;
+			dataGridViewCellStyle4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle12->ForeColor = System::Drawing::SystemColors::ControlText;
-			dataGridViewCellStyle12->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle12->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle12->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
-			this->parameters_dataGridView->DefaultCellStyle = dataGridViewCellStyle12;
+			dataGridViewCellStyle4->ForeColor = System::Drawing::SystemColors::ControlText;
+			dataGridViewCellStyle4->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle4->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle4->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
+			this->parameters_dataGridView->DefaultCellStyle = dataGridViewCellStyle4;
 			this->parameters_dataGridView->Location = System::Drawing::Point(18, 16);
 			this->parameters_dataGridView->Name = L"parameters_dataGridView";
 			this->parameters_dataGridView->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
@@ -588,8 +596,8 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			// 
 			// Group
 			// 
-			dataGridViewCellStyle10->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->Group->DefaultCellStyle = dataGridViewCellStyle10;
+			dataGridViewCellStyle2->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->Group->DefaultCellStyle = dataGridViewCellStyle2;
 			this->Group->HeaderText = L"Group";
 			this->Group->Name = L"Group";
 			this->Group->ReadOnly = true;
@@ -604,8 +612,8 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			// 
 			// name
 			// 
-			dataGridViewCellStyle11->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->name->DefaultCellStyle = dataGridViewCellStyle11;
+			dataGridViewCellStyle3->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->name->DefaultCellStyle = dataGridViewCellStyle3;
 			this->name->HeaderText = L"Name";
 			this->name->Name = L"name";
 			this->name->ReadOnly = true;
@@ -727,35 +735,35 @@ private: System::Windows::Forms::Timer^  capture_timer;
 				| System::Windows::Forms::AnchorStyles::Right));
 			this->graphs_chart->AntiAliasing = System::Windows::Forms::DataVisualization::Charting::AntiAliasingStyles::None;
 			this->graphs_chart->BorderlineColor = System::Drawing::Color::RoyalBlue;
-			chartArea5->AxisX->MajorGrid->Enabled = false;
-			chartArea5->Name = L"ChartArea1";
-			chartArea6->AxisX->MajorGrid->Enabled = false;
-			chartArea6->Name = L"ChartArea2";
-			this->graphs_chart->ChartAreas->Add(chartArea5);
-			this->graphs_chart->ChartAreas->Add(chartArea6);
-			legend3->Name = L"Legend1";
-			this->graphs_chart->Legends->Add(legend3);
+			chartArea1->AxisX->MajorGrid->Enabled = false;
+			chartArea1->Name = L"ChartArea1";
+			chartArea2->AxisX->MajorGrid->Enabled = false;
+			chartArea2->Name = L"ChartArea2";
+			this->graphs_chart->ChartAreas->Add(chartArea1);
+			this->graphs_chart->ChartAreas->Add(chartArea2);
+			legend1->Name = L"Legend1";
+			this->graphs_chart->Legends->Add(legend1);
 			this->graphs_chart->Location = System::Drawing::Point(-5, -1);
 			this->graphs_chart->Margin = System::Windows::Forms::Padding(0);
 			this->graphs_chart->Name = L"graphs_chart";
-			series7->ChartArea = L"ChartArea1";
-			series7->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series7->IsXValueIndexed = true;
-			series7->Legend = L"Legend1";
-			series7->MarkerSize = 1;
-			series7->Name = L"Series 1a";
-			series7->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
-			series8->ChartArea = L"ChartArea2";
-			series8->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series8->Legend = L"Legend1";
-			series8->Name = L"Series 2a";
-			series9->ChartArea = L"ChartArea1";
-			series9->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series9->Legend = L"Legend1";
-			series9->Name = L"Series 1b";
-			this->graphs_chart->Series->Add(series7);
-			this->graphs_chart->Series->Add(series8);
-			this->graphs_chart->Series->Add(series9);
+			series1->ChartArea = L"ChartArea1";
+			series1->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series1->IsXValueIndexed = true;
+			series1->Legend = L"Legend1";
+			series1->MarkerSize = 1;
+			series1->Name = L"Series 1a";
+			series1->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
+			series2->ChartArea = L"ChartArea2";
+			series2->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series2->Legend = L"Legend1";
+			series2->Name = L"Series 2a";
+			series3->ChartArea = L"ChartArea1";
+			series3->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series3->Legend = L"Legend1";
+			series3->Name = L"Series 1b";
+			this->graphs_chart->Series->Add(series1);
+			this->graphs_chart->Series->Add(series2);
+			this->graphs_chart->Series->Add(series3);
 			this->graphs_chart->Size = System::Drawing::Size(894, 613);
 			this->graphs_chart->TabIndex = 0;
 			this->graphs_chart->Text = L"graphs_chart";
@@ -763,6 +771,8 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			// 
 			// radar_tabPage
 			// 
+			this->radar_tabPage->Controls->Add(this->pictureBox1);
+			this->radar_tabPage->Controls->Add(this->radar_trackBar1);
 			this->radar_tabPage->Controls->Add(this->label9);
 			this->radar_tabPage->Controls->Add(this->label5);
 			this->radar_tabPage->Controls->Add(this->label8);
@@ -816,6 +826,14 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			this->radar_tabPage->UseVisualStyleBackColor = true;
 			this->radar_tabPage->Click += gcnew System::EventHandler(this, &f1::radar_tabPage_Click);
 			this->radar_tabPage->Paint += gcnew System::Windows::Forms::PaintEventHandler(this, &f1::radar_tabPage_Paint);
+			// 
+			// radar_trackBar1
+			// 
+			this->radar_trackBar1->Location = System::Drawing::Point(916, 259);
+			this->radar_trackBar1->Minimum = -10;
+			this->radar_trackBar1->Name = L"radar_trackBar1";
+			this->radar_trackBar1->Size = System::Drawing::Size(155, 45);
+			this->radar_trackBar1->TabIndex = 8;
 			// 
 			// label9
 			// 
@@ -1612,6 +1630,17 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			// 
 			this->capture_timer->Tick += gcnew System::EventHandler(this, &f1::capture_timer_Tick);
 			// 
+			// pictureBox1
+			// 
+			this->pictureBox1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
+				| System::Windows::Forms::AnchorStyles::Left) 
+				| System::Windows::Forms::AnchorStyles::Right));
+			this->pictureBox1->Location = System::Drawing::Point(0, 0);
+			this->pictureBox1->Name = L"pictureBox1";
+			this->pictureBox1->Size = System::Drawing::Size(897, 623);
+			this->pictureBox1->TabIndex = 9;
+			this->pictureBox1->TabStop = false;
+			// 
 			// f1
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
@@ -1654,6 +1683,7 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->graphs_chart))->EndInit();
 			this->radar_tabPage->ResumeLayout(false);
 			this->radar_tabPage->PerformLayout();
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->radar_trackBar1))->EndInit();
 			this->map_tab->ResumeLayout(false);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->map_picture))->EndInit();
 			this->terminal_tab->ResumeLayout(false);
@@ -1661,6 +1691,7 @@ private: System::Windows::Forms::Timer^  capture_timer;
 			this->log_tab->ResumeLayout(false);
 			this->log_tab->PerformLayout();
 			this->capture_tab->ResumeLayout(false);
+			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureBox1))->EndInit();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 

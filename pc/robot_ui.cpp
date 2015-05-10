@@ -86,7 +86,8 @@ namespace robot_ui
 		t1 = timeGetTime(); 	Sleep(10);		t2 = timeGetTime(); 		log_printf("Timing test:  Sleep(10) = %lu\n",t2-t1);
 
 
-		g = radar_tabPage->CreateGraphics();
+		//g = radar_tabPage->CreateGraphics();
+		g = pictureBox1->CreateGraphics();
 		log_printf("g-> X,Y,Width,Height = %f,%f,%f,%f\n",g->VisibleClipBounds.X,g->VisibleClipBounds.Y,g->VisibleClipBounds.Width,g->VisibleClipBounds.Height);
 		//
 		//TODO: Add the constructor code here
@@ -109,6 +110,7 @@ namespace robot_ui
 	    this->SetStyle( static_cast<ControlStyles>(ControlStyles::DoubleBuffer | ControlStyles::UserPaint | ControlStyles::AllPaintingInWmPaint), true );
 		this->UpdateStyles();
 		this->ui_timer->Interval = 50;
+		this->radar_timer->Interval = 25;
 
 		log_printf("-- f1::f1(void)\n");
 	}
