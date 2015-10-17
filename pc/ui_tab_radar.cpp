@@ -4,7 +4,19 @@
 #include <windows.h>
 
 #define grid_size 200
-#define cell_size 25.4
+#define cell_size (25.4/2)
+#define DRAW_ROBOT 1
+#define IMMEDIATE_UPDATE 1
+
+#if IMMEDIATE_UPDATE
+#define GRID_VALUE_INC 20
+#define GRID_VALUE_MAX 20
+#define GRID_VALUE_DEC -1
+#else
+#define GRID_VALUE_INC 2
+#define GRID_VALUE_MAX 2
+#define GRID_VALUE_DEC -1
+#endif
 
 typedef struct
 {
@@ -62,10 +74,13 @@ void plotLine(int x0, int y0, int x1, int y1, int value)
 
 	for (;;)
 	{                                                          /* loop */
-		grid[x0][y0].value+=value;     
-		grid[x0][y0].changed=1;     
-		if(grid[x0][y0].value<0) grid[x0][y0].value=0;
-		if(grid[x0][y0].value>10) grid[x0][y0].value=10;
+		if ((x0>0) && (y0>0) && (x0 < grid_size) && (y0 < grid_size))
+		{
+			grid[x0][y0].value += value;
+			grid[x0][y0].changed = 1;
+			if (grid[x0][y0].value < 0) grid[x0][y0].value = 0;
+			if (grid[x0][y0].value > GRID_VALUE_MAX) grid[x0][y0].value = GRID_VALUE_MAX;
+		}
 		e2 = 2*err;                                   
 		if (e2 >= dy) 
 		{                                         /* e_xy+e_x > 0 */
@@ -114,16 +129,21 @@ namespace robot_ui
 		//if(d<750) 
 		if((d>0) && (d<5000))
 		{
-			plotLine((int)(x4/cell_size),(int)(y4/cell_size), (int)(x3/cell_size),(int)(y3/cell_size) , -1);
-			grid[(int)(x3/cell_size)][(int)(y3/cell_size)].value+=5;
-			if(grid[(int)(x3/cell_size)][(int)(y3/cell_size)].value > 10) grid[(int)(x3/cell_size)][(int)(y3/cell_size)].value=10;
-			grid[(int)(x3/cell_size)][(int)(y3/cell_size)].changed=1;
+			plotLine((int)(x4/cell_size),(int)(y4/cell_size), (int)(x3/cell_size),(int)(y3/cell_size) , GRID_VALUE_DEC);
 
-			if( (abs(x3-lx3)<150) && (abs(y3-ly3)<150) )
+			if ((x3 / cell_size>0) && (y3 / cell_size > 0) && (x3 / cell_size < grid_size) && (y3 / cell_size < grid_size))
 			{
-				if(radar_checkBox_use_lines->Checked)
+
+				grid[(int)(x3 / cell_size)][(int)(y3 / cell_size)].value += GRID_VALUE_INC;
+				if (grid[(int)(x3 / cell_size)][(int)(y3 / cell_size)].value > GRID_VALUE_MAX) grid[(int)(x3 / cell_size)][(int)(y3 / cell_size)].value = GRID_VALUE_MAX;
+				grid[(int)(x3 / cell_size)][(int)(y3 / cell_size)].changed = 1;
+
+				if ((abs(x3 - lx3) < 150) && (abs(y3 - ly3) < 150))
 				{
-					plotLine((int)(lx3/cell_size),(int)(ly3/cell_size), (int)(x3/cell_size),(int)(y3/cell_size) , 5);
+					if (radar_checkBox_use_lines->Checked)
+					{
+						plotLine((int)(lx3 / cell_size), (int)(ly3 / cell_size), (int)(x3 / cell_size), (int)(y3 / cell_size), GRID_VALUE_INC);
+					}
 				}
 			}
 		}
@@ -196,10 +216,10 @@ namespace robot_ui
 		{
 			for(y=0;y<grid_size;y++)
 			{
-				grid[x][y].changed=1;
+				//grid[x][y].changed=1;
 				if(grid[x][y].value)
 				{
-					//grid[x][y].value--;
+					grid[x][y].value--;
 					if(grid[x][y].value==0) grid[x][y].changed=1;
 				}
 
@@ -213,7 +233,7 @@ namespace robot_ui
 					else g->FillRectangle(b0,x*increment,(int)g->VisibleClipBounds.Height - (y+1)*increment,increment,increment);
 					//else g->DrawRectangle(p0,x*increment,(int)g->VisibleClipBounds.Height - (y+1)*increment,increment,increment);
 				}
-				grid[x][y].value=0;
+				//grid[x][y].value=0;  
 			}
 		}
 #else
@@ -232,22 +252,24 @@ namespace robot_ui
 		g->DrawImage(bm,rect);	
 
 #endif
-
+#if DRAW_ROBOT
 		//g->FillEllipse(b2, (int)((inputs_history[i].x-100)/cell_size)*increment, (int)g->VisibleClipBounds.Height - (int)((inputs_history[i].y+100)/cell_size)*(increment) ,(int)(200/cell_size)*increment, (int)(200/cell_size)*increment);
-		if(ex>2)
+		//if(ex>2)
 		{
 			g->DrawEllipse(p2, ex, ey,(int)(50/cell_size)*increment, (int)(50/cell_size)*increment);
 		}
+#endif
 	}
 
 	void f1::UpdateRadar(float a, int b)
 	{
 		static int i=1;
-		int x,y;
-		float theta;
+		static float x=0,y=0,theta=0;
 		float x1,y1,x2,y2,rx,ry;
 		int scan_completed=0;
 		DWORD t1,t2,t3,count=0;
+
+#ifdef USE_LIDAR
 
 		//DrawGrid(g);
 		if(history_index - i > 2000) i=history_index-2000;
@@ -279,27 +301,40 @@ namespace robot_ui
 				for(j=0;j<h2.lidar.num_samples;j++)
 				{
 					//log_printf("inputs_history[i].lidar.angle=%f\n",inputs_history[i].lidar.angle+j);
-					//update_grid(h2.lidar.samples[j]*1000, h.x, h.y, h.theta, 0,0,(h2.lidar.angle+j+90) * (PI/180.0f));
-					update_grid(h2.lidar.samples[j]*1000, (grid_size*cell_size)/2, (grid_size*cell_size)/2, 0, 0,0,(h2.lidar.angle+j+90) * (PI/180.0f));
-					count++;
+#if IMMEDIATE_UPDATE
+					update_grid(h2.lidar.samples[j]*1000, h.x, h.y, h.theta, 0,0,(h2.lidar.angle+j+90) * (PI/180.0f));
+#else
+					update_grid(h2.lidar.samples[j]*1000, (grid_size*cell_size)/2 + h.x-x, (grid_size*cell_size)/2 + h.y-y, h.theta - theta, 0,0,(h2.lidar.angle+j+90) * (PI/180.0f));
 					if(((int)(h2.lidar.angle+j))==180)
 					{
 						int increment = (g->VisibleClipBounds.Height / grid_size);
-						int ex = (int)((h.x-100)/cell_size)*increment;
-						int ey = (int)g->VisibleClipBounds.Height - (int)((h.y+100)/cell_size)*(increment);
+						int ex = (int)((((grid_size*cell_size) / 2) - 100) / cell_size)*increment;
+						int ey = (int)g->VisibleClipBounds.Height - (int)((((grid_size*cell_size) / 2) + 100) / cell_size)*(increment);
+						t2 = timeGetTime();
 						ShowRadar(ex, ey);
+						t3 = timeGetTime(); //t3-t2 is 160ms
+						log_printf("dT=%d\n", t3-t2);
+						x = h2.x;
+						y = h2.y;
+						theta = h2.theta;
 					}
+#endif
 				}
 			}
 			i++;
 		}
 
 		t2 = timeGetTime();
-		
-		//ShowRadar();
-
-		t3 = timeGetTime(); //t3-t2 is 160ms
-		//printf("count,dT,dT=%d,%d,%d\n",count, t2-t1, t3-t2);
+#if IMMEDIATE_UPDATE
+		{
+			t_inputs h = inputs_history[i + 0];
+			int increment = (g->VisibleClipBounds.Height / grid_size);
+			int ex = (int)((h.x - 100) / cell_size)*increment;
+			int ey = (int)g->VisibleClipBounds.Height - (int)((h.y + 100) / cell_size)*(increment);
+			ShowRadar(ex, ey);
+		}
+#endif
+#endif //#ifdef USE_LIDAR
 	}
 
 	System::Void f1::radar_timer_Tick(System::Object^  sender, System::EventArgs^  e) 

@@ -340,7 +340,7 @@ void vrep_sim_step(void)
 		s.inputs.theta= sim_state.robot_orientation[2];
 	}
 
-	if(inter_step_delay) Sleep(500);
+	if(inter_step_delay) Sleep(100);
 }
 
 

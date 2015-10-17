@@ -110,7 +110,7 @@ namespace robot_ui
 	    this->SetStyle( static_cast<ControlStyles>(ControlStyles::DoubleBuffer | ControlStyles::UserPaint | ControlStyles::AllPaintingInWmPaint), true );
 		this->UpdateStyles();
 		this->ui_timer->Interval = 50;
-		this->radar_timer->Interval = 25;
+		this->radar_timer->Interval = 100;
 
 		log_printf("-- f1::f1(void)\n");
 	}
