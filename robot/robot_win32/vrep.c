@@ -641,9 +641,10 @@ void vrep_sim_inputs(void)
 
 
 
-	// Then, in your control loop:
+	// lidar
 	if (simxGetStringSignal(clientID,"lidar",&lidar_signal,&lidar_signal_size,simx_opmode_buffer)==simx_error_noerror)
 	{
+#ifdef USE_LIDAR
 		int cnt=lidar_signal_size/4;
 		float myData[2000];
 		int i;
@@ -659,6 +660,7 @@ void vrep_sim_inputs(void)
 		{
 			s.inputs.lidar.samples[i]=myData[i*2+3];
 		}
+#endif
 	}
 	
 }
