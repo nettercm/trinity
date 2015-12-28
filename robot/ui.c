@@ -62,12 +62,20 @@ void lcd_update_fsm(u08 cmd, u08 *param) //(uint32 event)
 		***************************************************************************/
 		if(s.lcd_screen==0)
 		{
+			/*
 			clear();  
 			lcd_goto_xy(0,0);
 			lcd_printf("L: %3d %3d", s.inputs.analog[AI_LINE_RIGHT],s.inputs.analog[AI_LINE_LEFT]); 
 			OS_SCHEDULE;
 			lcd_goto_xy(0,1); 	
 			lcd_printf("F: %03d %3d %3d", s.inputs.analog[AI_FLAME_NE],s.inputs.analog[AI_FLAME_N],s.inputs.analog[AI_FLAME_NW]); 
+			*/
+			clear();  
+			lcd_goto_xy(0,0);
+			lcd_printf("b:%5ld P:%5ld", lidar_bytes_received,lidar_packets_received); 
+			OS_SCHEDULE;
+			lcd_goto_xy(0,1);
+			lcd_printf("b:%5ld P:%5ld", lidar_bytes_per_second,lidar_packets_per_second); 
 		}
 		else if(s.lcd_screen==1)
 		{

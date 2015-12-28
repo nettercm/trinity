@@ -72,6 +72,10 @@ extern uint32 main_iterations;
 
 extern t_scan scan_data[360];
 
+extern u32 lidar_packets_received;
+extern u32 lidar_bytes_received;
+extern u32 lidar_packets_per_second;
+extern u32 lidar_bytes_per_second;
 
 
 #endif /* GLOBALS_H_ */

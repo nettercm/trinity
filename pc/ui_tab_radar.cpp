@@ -301,13 +301,19 @@ namespace robot_ui
 				int j;
 				t_inputs h,h2;
 				h = inputs_history[i+0];
+<<<<<<< HEAD
 				h2 = inputs_history[i + 1]; //need +1 here for motion comp
+=======
+				h2= inputs_history[i+1]; //need +1 here for motion comp
+				h.lidar.angle*=4;
+				h2.lidar.angle*=4;
+				log_printf("numsamples=%d  angle=%d,  s1=%d\n",h2.lidar.num_samples,  h2.lidar.angle, h2.lidar.samples[0]);
+>>>>>>> origin/master
 
 				for(j=0;j<h2.lidar.num_samples;j++)
 				{
-					//log_printf("inputs_history[i].lidar.angle=%f\n",inputs_history[i].lidar.angle+j);
 #if IMMEDIATE_UPDATE
-					update_grid(h2.lidar.samples[j]*1000, h.x, h.y, h.theta, 0,0,(h2.lidar.angle+j+90) * (PI/180.0f));
+					update_grid(h2.lidar.samples[j]/* *1000 */, h.x, h.y, h.theta, 0,0,(h2.lidar.angle+j+90) * (PI/180.0f));
 #else
 					update_grid(h2.lidar.samples[j]*1000, (grid_size*cell_size)/2 + h.x-x, (grid_size*cell_size)/2 + h.y-y, h.theta - theta, 0,0,(h2.lidar.angle+j+90) * (PI/180.0f));
 					if(((int)(h2.lidar.angle+j))==180)
