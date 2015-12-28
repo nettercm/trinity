@@ -124,7 +124,7 @@ void vrep_sim_step(void)
 	static int t_sim,t_sim_last=0;
 	static u32 t_real_now, t_real_last=0; 
 	static u32 t_m,t_m_last=0;
-	static int use_actual_position=0;
+	static int use_actual_position=1;
 	static int inter_step_delay=0;
 	int pingTime;
 
@@ -340,7 +340,7 @@ void vrep_sim_step(void)
 		s.inputs.theta= sim_state.robot_orientation[2];
 	}
 
-	if(inter_step_delay) Sleep(100);
+	if(inter_step_delay) Sleep(200);
 }
 
 
