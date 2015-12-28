@@ -68,7 +68,7 @@ int	dbg_printf(const char *__fmt, ...)
 #endif
 
 	//doing this debug printf's over the wireless link gets in the way of data capture and playback
-#if 1
+#if 0
 	return 0;
 #else
 	for(i=0;i<size;i++)
