@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-//#define USE_LIDAR
+#define USE_LIDAR
 
 #ifdef WIN32
 typedef		unsigned char		uint8;
@@ -32,7 +32,7 @@ typedef struct
 	uint8 seq;
 	uint8 ack;					//seq number of the last packet received from the PC
 #ifdef USE_LIDAR
-	uint8  payload[92+108];
+	uint8  payload[92+84];
 #else
 	uint8  payload[92];
 #endif
@@ -67,9 +67,9 @@ typedef struct
 #endif
 typedef struct
 {
-	int num_samples;
-	float angle;
-	float samples[25];
+	uint16 num_samples;
+	uint16 angle;
+	uint16 samples[40];
 }  __attribute__((__packed__)) t_lidar;
 #ifdef WIN32
 #pragma pack(pop)

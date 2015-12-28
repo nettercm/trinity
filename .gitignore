@@ -226,3 +226,12 @@ pc/stop.gif
 SNDB4/
 pc/capture_file.txt
 *.atsuo
+*.atsuo
+*.srec
+*.elf
+*.hex
+*.map
+*.eep
+robot/binaries-2015-05-03/robot.lss
+*.atsuo
+robot/robot.atsuo
