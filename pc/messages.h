@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-//#define USE_LIDAR
+#define USE_LIDAR
 
 #ifdef WIN32
 typedef		unsigned char		uint8;
