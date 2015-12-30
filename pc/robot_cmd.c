@@ -68,7 +68,7 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 	size = serial_read(p,(char*)buffer,300);  
 	result = size >= sizeof(t_frame_to_pc) ? 1 : 0; 
 
-	if(size != sizeof(t_frame_to_pc)) log_printf("serial_receive(): size = %d instead of %d\n",size,sizeof(t_frame_to_pc));
+	if( abs(size - (int)sizeof(t_frame_to_pc))>1 ) log_printf("serial_receive(): size = %d instead of %d\n",size,sizeof(t_frame_to_pc));
 
 	if(result == 1)
 	{
