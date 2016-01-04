@@ -353,14 +353,15 @@ void main_loop(void)
 
 	//outputs
 	motor_command(0,0,0,0,0);
-	//servo_task(0,0);
+	servo_task(0,0);
 
 	//testing
 	//test_fsm(0,0);
 
 	//lidar
+#ifndef SVP_ON_WIN32 //doesn't work yet this way in simulation
 	lidar_receive_fsm(0,0);
-
+#endif
 	//ui
 	task_run(lcd_update_fsm,0,0);	//lcd is incompatible with servos; also, not yet converted from task back to pure fsm	
 
