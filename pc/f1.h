@@ -188,6 +188,7 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_DrawRobot;
 private: System::Windows::Forms::Label^  label13;
 private: System::Windows::Forms::TextBox^  radar_textBox_angle;
 private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
+private: System::Windows::Forms::Panel^  panel1;
 
 
 
@@ -345,16 +346,16 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 		void InitializeComponent(void)
 		{
 			this->components = (gcnew System::ComponentModel::Container());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle13 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle16 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle14 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle15 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea7 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea8 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
-			System::Windows::Forms::DataVisualization::Charting::Legend^  legend4 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series10 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series11 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
-			System::Windows::Forms::DataVisualization::Charting::Series^  series12 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle1 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle4 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle2 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataGridViewCellStyle^  dataGridViewCellStyle3 = (gcnew System::Windows::Forms::DataGridViewCellStyle());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea1 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::ChartArea^  chartArea2 = (gcnew System::Windows::Forms::DataVisualization::Charting::ChartArea());
+			System::Windows::Forms::DataVisualization::Charting::Legend^  legend1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Legend());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series1 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series2 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
+			System::Windows::Forms::DataVisualization::Charting::Series^  series3 = (gcnew System::Windows::Forms::DataVisualization::Charting::Series());
 			System::ComponentModel::ComponentResourceManager^  resources = (gcnew System::ComponentModel::ComponentResourceManager(f1::typeid));
 			this->main_serial_thread = (gcnew System::ComponentModel::BackgroundWorker());
 			this->graphs_timer = (gcnew System::Windows::Forms::Timer(this->components));
@@ -426,6 +427,7 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			this->radar_btn_clear = (gcnew System::Windows::Forms::Button());
 			this->radar_checkBox_enable_updates = (gcnew System::Windows::Forms::CheckBox());
 			this->radar_checkBox_show_ir_7 = (gcnew System::Windows::Forms::CheckBox());
+			this->radar_checkBox_grid = (gcnew System::Windows::Forms::CheckBox());
 			this->radar_CheckBox_immediate_update = (gcnew System::Windows::Forms::CheckBox());
 			this->radar_checkBox_DrawRobot = (gcnew System::Windows::Forms::CheckBox());
 			this->radar_checkBox_use_lines = (gcnew System::Windows::Forms::CheckBox());
@@ -471,7 +473,7 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			this->main_comboBox_ip = (gcnew System::Windows::Forms::ComboBox());
 			this->main_checkBox_connect_ip = (gcnew System::Windows::Forms::CheckBox());
 			this->capture_timer = (gcnew System::Windows::Forms::Timer(this->components));
-			this->radar_checkBox_grid = (gcnew System::Windows::Forms::CheckBox());
+			this->panel1 = (gcnew System::Windows::Forms::Panel());
 			this->tabControl1->SuspendLayout();
 			this->parameters_tab->SuspendLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->parameters_dataGridView))->BeginInit();
@@ -484,6 +486,7 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			this->terminal_tab->SuspendLayout();
 			this->log_tab->SuspendLayout();
 			this->capture_tab->SuspendLayout();
+			this->panel1->SuspendLayout();
 			this->SuspendLayout();
 			// 
 			// main_serial_thread
@@ -584,27 +587,27 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			this->parameters_dataGridView->AllowUserToDeleteRows = false;
 			this->parameters_dataGridView->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
 				| System::Windows::Forms::AnchorStyles::Left));
-			dataGridViewCellStyle13->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			dataGridViewCellStyle13->BackColor = System::Drawing::SystemColors::Control;
-			dataGridViewCellStyle13->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+			dataGridViewCellStyle1->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			dataGridViewCellStyle1->BackColor = System::Drawing::SystemColors::Control;
+			dataGridViewCellStyle1->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle13->ForeColor = System::Drawing::SystemColors::WindowText;
-			dataGridViewCellStyle13->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle13->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle13->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
-			this->parameters_dataGridView->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle13;
+			dataGridViewCellStyle1->ForeColor = System::Drawing::SystemColors::WindowText;
+			dataGridViewCellStyle1->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle1->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle1->WrapMode = System::Windows::Forms::DataGridViewTriState::True;
+			this->parameters_dataGridView->ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
 			this->parameters_dataGridView->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
 			this->parameters_dataGridView->Columns->AddRange(gcnew cli::array< System::Windows::Forms::DataGridViewColumn^  >(7) {this->Group, 
 				this->id, this->name, this->Type, this->val, this->inc, this->dec});
-			dataGridViewCellStyle16->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
-			dataGridViewCellStyle16->BackColor = System::Drawing::SystemColors::Window;
-			dataGridViewCellStyle16->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
+			dataGridViewCellStyle4->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleCenter;
+			dataGridViewCellStyle4->BackColor = System::Drawing::SystemColors::Window;
+			dataGridViewCellStyle4->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, 
 				System::Drawing::GraphicsUnit::Point, static_cast<System::Byte>(0)));
-			dataGridViewCellStyle16->ForeColor = System::Drawing::SystemColors::ControlText;
-			dataGridViewCellStyle16->SelectionBackColor = System::Drawing::SystemColors::Highlight;
-			dataGridViewCellStyle16->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
-			dataGridViewCellStyle16->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
-			this->parameters_dataGridView->DefaultCellStyle = dataGridViewCellStyle16;
+			dataGridViewCellStyle4->ForeColor = System::Drawing::SystemColors::ControlText;
+			dataGridViewCellStyle4->SelectionBackColor = System::Drawing::SystemColors::Highlight;
+			dataGridViewCellStyle4->SelectionForeColor = System::Drawing::SystemColors::HighlightText;
+			dataGridViewCellStyle4->WrapMode = System::Windows::Forms::DataGridViewTriState::False;
+			this->parameters_dataGridView->DefaultCellStyle = dataGridViewCellStyle4;
 			this->parameters_dataGridView->Location = System::Drawing::Point(18, 16);
 			this->parameters_dataGridView->Name = L"parameters_dataGridView";
 			this->parameters_dataGridView->ScrollBars = System::Windows::Forms::ScrollBars::Vertical;
@@ -616,8 +619,8 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// Group
 			// 
-			dataGridViewCellStyle14->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->Group->DefaultCellStyle = dataGridViewCellStyle14;
+			dataGridViewCellStyle2->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->Group->DefaultCellStyle = dataGridViewCellStyle2;
 			this->Group->HeaderText = L"Group";
 			this->Group->Name = L"Group";
 			this->Group->ReadOnly = true;
@@ -632,8 +635,8 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// name
 			// 
-			dataGridViewCellStyle15->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
-			this->name->DefaultCellStyle = dataGridViewCellStyle15;
+			dataGridViewCellStyle3->Alignment = System::Windows::Forms::DataGridViewContentAlignment::MiddleLeft;
+			this->name->DefaultCellStyle = dataGridViewCellStyle3;
 			this->name->HeaderText = L"Name";
 			this->name->Name = L"name";
 			this->name->ReadOnly = true;
@@ -755,35 +758,35 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 				| System::Windows::Forms::AnchorStyles::Right));
 			this->graphs_chart->AntiAliasing = System::Windows::Forms::DataVisualization::Charting::AntiAliasingStyles::None;
 			this->graphs_chart->BorderlineColor = System::Drawing::Color::RoyalBlue;
-			chartArea7->AxisX->MajorGrid->Enabled = false;
-			chartArea7->Name = L"ChartArea1";
-			chartArea8->AxisX->MajorGrid->Enabled = false;
-			chartArea8->Name = L"ChartArea2";
-			this->graphs_chart->ChartAreas->Add(chartArea7);
-			this->graphs_chart->ChartAreas->Add(chartArea8);
-			legend4->Name = L"Legend1";
-			this->graphs_chart->Legends->Add(legend4);
+			chartArea1->AxisX->MajorGrid->Enabled = false;
+			chartArea1->Name = L"ChartArea1";
+			chartArea2->AxisX->MajorGrid->Enabled = false;
+			chartArea2->Name = L"ChartArea2";
+			this->graphs_chart->ChartAreas->Add(chartArea1);
+			this->graphs_chart->ChartAreas->Add(chartArea2);
+			legend1->Name = L"Legend1";
+			this->graphs_chart->Legends->Add(legend1);
 			this->graphs_chart->Location = System::Drawing::Point(-5, -1);
 			this->graphs_chart->Margin = System::Windows::Forms::Padding(0);
 			this->graphs_chart->Name = L"graphs_chart";
-			series10->ChartArea = L"ChartArea1";
-			series10->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series10->IsXValueIndexed = true;
-			series10->Legend = L"Legend1";
-			series10->MarkerSize = 1;
-			series10->Name = L"Series 1a";
-			series10->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
-			series11->ChartArea = L"ChartArea2";
-			series11->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series11->Legend = L"Legend1";
-			series11->Name = L"Series 2a";
-			series12->ChartArea = L"ChartArea1";
-			series12->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
-			series12->Legend = L"Legend1";
-			series12->Name = L"Series 1b";
-			this->graphs_chart->Series->Add(series10);
-			this->graphs_chart->Series->Add(series11);
-			this->graphs_chart->Series->Add(series12);
+			series1->ChartArea = L"ChartArea1";
+			series1->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series1->IsXValueIndexed = true;
+			series1->Legend = L"Legend1";
+			series1->MarkerSize = 1;
+			series1->Name = L"Series 1a";
+			series1->YValueType = System::Windows::Forms::DataVisualization::Charting::ChartValueType::Int32;
+			series2->ChartArea = L"ChartArea2";
+			series2->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series2->Legend = L"Legend1";
+			series2->Name = L"Series 2a";
+			series3->ChartArea = L"ChartArea1";
+			series3->ChartType = System::Windows::Forms::DataVisualization::Charting::SeriesChartType::FastLine;
+			series3->Legend = L"Legend1";
+			series3->Name = L"Series 1b";
+			this->graphs_chart->Series->Add(series1);
+			this->graphs_chart->Series->Add(series2);
+			this->graphs_chart->Series->Add(series3);
 			this->graphs_chart->Size = System::Drawing::Size(894, 613);
 			this->graphs_chart->TabIndex = 0;
 			this->graphs_chart->Text = L"graphs_chart";
@@ -791,62 +794,9 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// radar_tabPage
 			// 
+			this->radar_tabPage->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->radar_tabPage->Controls->Add(this->panel1);
 			this->radar_tabPage->Controls->Add(this->pictureBox1);
-			this->radar_tabPage->Controls->Add(this->label12);
-			this->radar_tabPage->Controls->Add(this->label11);
-			this->radar_tabPage->Controls->Add(this->label13);
-			this->radar_tabPage->Controls->Add(this->label10);
-			this->radar_tabPage->Controls->Add(this->label9);
-			this->radar_tabPage->Controls->Add(this->label5);
-			this->radar_tabPage->Controls->Add(this->label8);
-			this->radar_tabPage->Controls->Add(this->label4);
-			this->radar_tabPage->Controls->Add(this->label7);
-			this->radar_tabPage->Controls->Add(this->label3);
-			this->radar_tabPage->Controls->Add(this->label6);
-			this->radar_tabPage->Controls->Add(this->label2);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_7_theta);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_ne_theta);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_7_y);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_6_theta);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_ne_y);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_6_y);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_nw_theta);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_5_theta);
-			this->radar_tabPage->Controls->Add(this->radar_textBox_angle);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_nw_y);
-			this->radar_tabPage->Controls->Add(this->radar_textBox_max);
-			this->radar_tabPage->Controls->Add(this->radar_textBox_dec);
-			this->radar_tabPage->Controls->Add(this->radar_textBox_inc);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_7_x);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_fn_theta);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_5_y);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_ne_x);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_6_x);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_fn_y);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_4_theta);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_nw_x);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_5_x);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_n_theta);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_4_y);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_fn_x);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_4_x);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_n_y);
-			this->radar_tabPage->Controls->Add(this->radar_txt_calib_n_x);
-			this->radar_tabPage->Controls->Add(this->label1);
-			this->radar_tabPage->Controls->Add(this->radar_btn_clear);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_enable_updates);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_show_ir_7);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_grid);
-			this->radar_tabPage->Controls->Add(this->radar_CheckBox_immediate_update);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_DrawRobot);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_use_lines);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_show_ir_6);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_show_ir_ne);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_show_ir_5);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_show_ir_nw);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_show_ir_4);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_show_ir_far_north);
-			this->radar_tabPage->Controls->Add(this->radar_checkBox_show_ir_north);
 			this->radar_tabPage->Location = System::Drawing::Point(4, 22);
 			this->radar_tabPage->Name = L"radar_tabPage";
 			this->radar_tabPage->Padding = System::Windows::Forms::Padding(3);
@@ -860,7 +810,8 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// pictureBox1
 			// 
 			this->pictureBox1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
-			this->pictureBox1->Location = System::Drawing::Point(0, 23);
+			this->pictureBox1->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->pictureBox1->Location = System::Drawing::Point(8, 13);
 			this->pictureBox1->Name = L"pictureBox1";
 			this->pictureBox1->Size = System::Drawing::Size(600, 600);
 			this->pictureBox1->TabIndex = 9;
@@ -868,9 +819,9 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// label12
 			// 
-			this->label12->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->label12->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->label12->AutoSize = true;
-			this->label12->Location = System::Drawing::Point(951, 314);
+			this->label12->Location = System::Drawing::Point(63, 347);
 			this->label12->Name = L"label12";
 			this->label12->Size = System::Drawing::Size(54, 13);
 			this->label12->TabIndex = 7;
@@ -879,9 +830,9 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// label11
 			// 
-			this->label11->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->label11->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->label11->AutoSize = true;
-			this->label11->Location = System::Drawing::Point(951, 339);
+			this->label11->Location = System::Drawing::Point(63, 372);
 			this->label11->Name = L"label11";
 			this->label11->Size = System::Drawing::Size(59, 13);
 			this->label11->TabIndex = 7;
@@ -890,9 +841,9 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// label13
 			// 
-			this->label13->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->label13->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->label13->AutoSize = true;
-			this->label13->Location = System::Drawing::Point(951, 387);
+			this->label13->Location = System::Drawing::Point(63, 420);
 			this->label13->Name = L"label13";
 			this->label13->Size = System::Drawing::Size(34, 13);
 			this->label13->TabIndex = 7;
@@ -901,9 +852,9 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// label10
 			// 
-			this->label10->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->label10->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->label10->AutoSize = true;
-			this->label10->Location = System::Drawing::Point(951, 363);
+			this->label10->Location = System::Drawing::Point(63, 396);
 			this->label10->Name = L"label10";
 			this->label10->Size = System::Drawing::Size(51, 13);
 			this->label10->TabIndex = 7;
@@ -914,166 +865,182 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			this->label9->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label9->AutoSize = true;
-			this->label9->Location = System::Drawing::Point(913, 222);
+			this->label9->Location = System::Drawing::Point(25, 255);
 			this->label9->Name = L"label9";
 			this->label9->Size = System::Drawing::Size(27, 13);
 			this->label9->TabIndex = 7;
 			this->label9->Text = L"IR 7";
+			this->label9->Visible = false;
 			this->label9->Click += gcnew System::EventHandler(this, &f1::label2_Click);
 			// 
 			// label5
 			// 
 			this->label5->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label5->AutoSize = true;
-			this->label5->Location = System::Drawing::Point(913, 118);
+			this->label5->Location = System::Drawing::Point(25, 151);
 			this->label5->Name = L"label5";
 			this->label5->Size = System::Drawing::Size(22, 13);
 			this->label5->TabIndex = 7;
 			this->label5->Text = L"NE";
+			this->label5->Visible = false;
 			this->label5->Click += gcnew System::EventHandler(this, &f1::label2_Click);
 			// 
 			// label8
 			// 
 			this->label8->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label8->AutoSize = true;
-			this->label8->Location = System::Drawing::Point(913, 196);
+			this->label8->Location = System::Drawing::Point(25, 229);
 			this->label8->Name = L"label8";
 			this->label8->Size = System::Drawing::Size(27, 13);
 			this->label8->TabIndex = 7;
 			this->label8->Text = L"IR 6";
+			this->label8->Visible = false;
 			this->label8->Click += gcnew System::EventHandler(this, &f1::label2_Click);
 			// 
 			// label4
 			// 
 			this->label4->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label4->AutoSize = true;
-			this->label4->Location = System::Drawing::Point(913, 92);
+			this->label4->Location = System::Drawing::Point(25, 125);
 			this->label4->Name = L"label4";
 			this->label4->Size = System::Drawing::Size(26, 13);
 			this->label4->TabIndex = 7;
 			this->label4->Text = L"NW";
+			this->label4->Visible = false;
 			this->label4->Click += gcnew System::EventHandler(this, &f1::label2_Click);
 			// 
 			// label7
 			// 
 			this->label7->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label7->AutoSize = true;
-			this->label7->Location = System::Drawing::Point(913, 170);
+			this->label7->Location = System::Drawing::Point(25, 203);
 			this->label7->Name = L"label7";
 			this->label7->Size = System::Drawing::Size(27, 13);
 			this->label7->TabIndex = 7;
 			this->label7->Text = L"IR 5";
+			this->label7->Visible = false;
 			this->label7->Click += gcnew System::EventHandler(this, &f1::label2_Click);
 			// 
 			// label3
 			// 
 			this->label3->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label3->AutoSize = true;
-			this->label3->Location = System::Drawing::Point(913, 66);
+			this->label3->Location = System::Drawing::Point(25, 99);
 			this->label3->Name = L"label3";
 			this->label3->Size = System::Drawing::Size(33, 13);
 			this->label3->TabIndex = 7;
 			this->label3->Text = L"Far N";
+			this->label3->Visible = false;
 			this->label3->Click += gcnew System::EventHandler(this, &f1::label2_Click);
 			// 
 			// label6
 			// 
 			this->label6->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label6->AutoSize = true;
-			this->label6->Location = System::Drawing::Point(913, 144);
+			this->label6->Location = System::Drawing::Point(25, 177);
 			this->label6->Name = L"label6";
 			this->label6->Size = System::Drawing::Size(27, 13);
 			this->label6->TabIndex = 7;
 			this->label6->Text = L"IR 4";
+			this->label6->Visible = false;
 			this->label6->Click += gcnew System::EventHandler(this, &f1::label2_Click);
 			// 
 			// label2
 			// 
 			this->label2->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label2->AutoSize = true;
-			this->label2->Location = System::Drawing::Point(913, 40);
+			this->label2->Location = System::Drawing::Point(25, 73);
 			this->label2->Name = L"label2";
 			this->label2->Size = System::Drawing::Size(15, 13);
 			this->label2->TabIndex = 7;
 			this->label2->Text = L"N";
+			this->label2->Visible = false;
 			this->label2->Click += gcnew System::EventHandler(this, &f1::label2_Click);
 			// 
 			// radar_txt_calib_7_theta
 			// 
 			this->radar_txt_calib_7_theta->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_7_theta->Location = System::Drawing::Point(1022, 219);
+			this->radar_txt_calib_7_theta->Location = System::Drawing::Point(134, 252);
 			this->radar_txt_calib_7_theta->Name = L"radar_txt_calib_7_theta";
 			this->radar_txt_calib_7_theta->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_7_theta->TabIndex = 6;
 			this->radar_txt_calib_7_theta->Text = L"90";
+			this->radar_txt_calib_7_theta->Visible = false;
 			// 
 			// radar_txt_calib_ne_theta
 			// 
 			this->radar_txt_calib_ne_theta->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_ne_theta->Location = System::Drawing::Point(1022, 115);
+			this->radar_txt_calib_ne_theta->Location = System::Drawing::Point(134, 148);
 			this->radar_txt_calib_ne_theta->Name = L"radar_txt_calib_ne_theta";
 			this->radar_txt_calib_ne_theta->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_ne_theta->TabIndex = 6;
 			this->radar_txt_calib_ne_theta->Text = L"-45";
+			this->radar_txt_calib_ne_theta->Visible = false;
 			// 
 			// radar_txt_calib_7_y
 			// 
 			this->radar_txt_calib_7_y->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_7_y->Location = System::Drawing::Point(988, 219);
+			this->radar_txt_calib_7_y->Location = System::Drawing::Point(100, 252);
 			this->radar_txt_calib_7_y->Name = L"radar_txt_calib_7_y";
 			this->radar_txt_calib_7_y->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_7_y->TabIndex = 6;
 			this->radar_txt_calib_7_y->Text = L"60";
+			this->radar_txt_calib_7_y->Visible = false;
 			// 
 			// radar_txt_calib_6_theta
 			// 
 			this->radar_txt_calib_6_theta->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_6_theta->Location = System::Drawing::Point(1022, 193);
+			this->radar_txt_calib_6_theta->Location = System::Drawing::Point(134, 226);
 			this->radar_txt_calib_6_theta->Name = L"radar_txt_calib_6_theta";
 			this->radar_txt_calib_6_theta->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_6_theta->TabIndex = 6;
 			this->radar_txt_calib_6_theta->Text = L"135";
+			this->radar_txt_calib_6_theta->Visible = false;
 			// 
 			// radar_txt_calib_ne_y
 			// 
 			this->radar_txt_calib_ne_y->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_ne_y->Location = System::Drawing::Point(988, 115);
+			this->radar_txt_calib_ne_y->Location = System::Drawing::Point(100, 148);
 			this->radar_txt_calib_ne_y->Name = L"radar_txt_calib_ne_y";
 			this->radar_txt_calib_ne_y->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_ne_y->TabIndex = 6;
 			this->radar_txt_calib_ne_y->Text = L"-50";
+			this->radar_txt_calib_ne_y->Visible = false;
 			// 
 			// radar_txt_calib_6_y
 			// 
 			this->radar_txt_calib_6_y->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_6_y->Location = System::Drawing::Point(988, 193);
+			this->radar_txt_calib_6_y->Location = System::Drawing::Point(100, 226);
 			this->radar_txt_calib_6_y->Name = L"radar_txt_calib_6_y";
 			this->radar_txt_calib_6_y->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_6_y->TabIndex = 6;
 			this->radar_txt_calib_6_y->Text = L"50";
+			this->radar_txt_calib_6_y->Visible = false;
 			// 
 			// radar_txt_calib_nw_theta
 			// 
 			this->radar_txt_calib_nw_theta->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_nw_theta->Location = System::Drawing::Point(1022, 89);
+			this->radar_txt_calib_nw_theta->Location = System::Drawing::Point(134, 122);
 			this->radar_txt_calib_nw_theta->Name = L"radar_txt_calib_nw_theta";
 			this->radar_txt_calib_nw_theta->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_nw_theta->TabIndex = 6;
 			this->radar_txt_calib_nw_theta->Text = L"45";
+			this->radar_txt_calib_nw_theta->Visible = false;
 			// 
 			// radar_txt_calib_5_theta
 			// 
 			this->radar_txt_calib_5_theta->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_5_theta->Location = System::Drawing::Point(1022, 167);
+			this->radar_txt_calib_5_theta->Location = System::Drawing::Point(134, 200);
 			this->radar_txt_calib_5_theta->Name = L"radar_txt_calib_5_theta";
 			this->radar_txt_calib_5_theta->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_5_theta->TabIndex = 6;
 			this->radar_txt_calib_5_theta->Text = L"-135";
+			this->radar_txt_calib_5_theta->Visible = false;
 			// 
 			// radar_textBox_angle
 			// 
-			this->radar_textBox_angle->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_textBox_angle->Location = System::Drawing::Point(915, 385);
+			this->radar_textBox_angle->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_textBox_angle->Location = System::Drawing::Point(27, 418);
 			this->radar_textBox_angle->Name = L"radar_textBox_angle";
 			this->radar_textBox_angle->Size = System::Drawing::Size(28, 20);
 			this->radar_textBox_angle->TabIndex = 6;
@@ -1083,16 +1050,17 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// radar_txt_calib_nw_y
 			// 
 			this->radar_txt_calib_nw_y->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_nw_y->Location = System::Drawing::Point(988, 89);
+			this->radar_txt_calib_nw_y->Location = System::Drawing::Point(100, 122);
 			this->radar_txt_calib_nw_y->Name = L"radar_txt_calib_nw_y";
 			this->radar_txt_calib_nw_y->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_nw_y->TabIndex = 6;
 			this->radar_txt_calib_nw_y->Text = L"50";
+			this->radar_txt_calib_nw_y->Visible = false;
 			// 
 			// radar_textBox_max
 			// 
-			this->radar_textBox_max->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_textBox_max->Location = System::Drawing::Point(915, 361);
+			this->radar_textBox_max->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_textBox_max->Location = System::Drawing::Point(27, 394);
 			this->radar_textBox_max->Name = L"radar_textBox_max";
 			this->radar_textBox_max->Size = System::Drawing::Size(28, 20);
 			this->radar_textBox_max->TabIndex = 6;
@@ -1101,8 +1069,8 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// radar_textBox_dec
 			// 
-			this->radar_textBox_dec->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_textBox_dec->Location = System::Drawing::Point(915, 336);
+			this->radar_textBox_dec->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_textBox_dec->Location = System::Drawing::Point(27, 369);
 			this->radar_textBox_dec->Name = L"radar_textBox_dec";
 			this->radar_textBox_dec->Size = System::Drawing::Size(28, 20);
 			this->radar_textBox_dec->TabIndex = 6;
@@ -1111,8 +1079,8 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// radar_textBox_inc
 			// 
-			this->radar_textBox_inc->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_textBox_inc->Location = System::Drawing::Point(915, 312);
+			this->radar_textBox_inc->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_textBox_inc->Location = System::Drawing::Point(27, 345);
 			this->radar_textBox_inc->Name = L"radar_textBox_inc";
 			this->radar_textBox_inc->Size = System::Drawing::Size(28, 20);
 			this->radar_textBox_inc->TabIndex = 6;
@@ -1122,155 +1090,171 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// radar_txt_calib_7_x
 			// 
 			this->radar_txt_calib_7_x->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_7_x->Location = System::Drawing::Point(954, 219);
+			this->radar_txt_calib_7_x->Location = System::Drawing::Point(66, 252);
 			this->radar_txt_calib_7_x->Name = L"radar_txt_calib_7_x";
 			this->radar_txt_calib_7_x->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_7_x->TabIndex = 6;
 			this->radar_txt_calib_7_x->Text = L"0";
+			this->radar_txt_calib_7_x->Visible = false;
 			this->radar_txt_calib_7_x->TextChanged += gcnew System::EventHandler(this, &f1::radar_txt_calib_ne_x_TextChanged);
 			// 
 			// radar_txt_calib_fn_theta
 			// 
 			this->radar_txt_calib_fn_theta->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_fn_theta->Location = System::Drawing::Point(1022, 63);
+			this->radar_txt_calib_fn_theta->Location = System::Drawing::Point(134, 96);
 			this->radar_txt_calib_fn_theta->Name = L"radar_txt_calib_fn_theta";
 			this->radar_txt_calib_fn_theta->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_fn_theta->TabIndex = 6;
 			this->radar_txt_calib_fn_theta->Text = L"0";
+			this->radar_txt_calib_fn_theta->Visible = false;
 			// 
 			// radar_txt_calib_5_y
 			// 
 			this->radar_txt_calib_5_y->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_5_y->Location = System::Drawing::Point(988, 167);
+			this->radar_txt_calib_5_y->Location = System::Drawing::Point(100, 200);
 			this->radar_txt_calib_5_y->Name = L"radar_txt_calib_5_y";
 			this->radar_txt_calib_5_y->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_5_y->TabIndex = 6;
 			this->radar_txt_calib_5_y->Text = L"-50";
+			this->radar_txt_calib_5_y->Visible = false;
 			// 
 			// radar_txt_calib_ne_x
 			// 
 			this->radar_txt_calib_ne_x->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_ne_x->Location = System::Drawing::Point(954, 115);
+			this->radar_txt_calib_ne_x->Location = System::Drawing::Point(66, 148);
 			this->radar_txt_calib_ne_x->Name = L"radar_txt_calib_ne_x";
 			this->radar_txt_calib_ne_x->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_ne_x->TabIndex = 6;
 			this->radar_txt_calib_ne_x->Text = L"50";
+			this->radar_txt_calib_ne_x->Visible = false;
 			this->radar_txt_calib_ne_x->TextChanged += gcnew System::EventHandler(this, &f1::radar_txt_calib_ne_x_TextChanged);
 			// 
 			// radar_txt_calib_6_x
 			// 
 			this->radar_txt_calib_6_x->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_6_x->Location = System::Drawing::Point(954, 193);
+			this->radar_txt_calib_6_x->Location = System::Drawing::Point(66, 226);
 			this->radar_txt_calib_6_x->Name = L"radar_txt_calib_6_x";
 			this->radar_txt_calib_6_x->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_6_x->TabIndex = 6;
 			this->radar_txt_calib_6_x->Text = L"-50";
+			this->radar_txt_calib_6_x->Visible = false;
 			// 
 			// radar_txt_calib_fn_y
 			// 
 			this->radar_txt_calib_fn_y->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_fn_y->Location = System::Drawing::Point(988, 63);
+			this->radar_txt_calib_fn_y->Location = System::Drawing::Point(100, 96);
 			this->radar_txt_calib_fn_y->Name = L"radar_txt_calib_fn_y";
 			this->radar_txt_calib_fn_y->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_fn_y->TabIndex = 6;
 			this->radar_txt_calib_fn_y->Text = L"0";
+			this->radar_txt_calib_fn_y->Visible = false;
 			// 
 			// radar_txt_calib_4_theta
 			// 
 			this->radar_txt_calib_4_theta->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_4_theta->Location = System::Drawing::Point(1022, 141);
+			this->radar_txt_calib_4_theta->Location = System::Drawing::Point(134, 174);
 			this->radar_txt_calib_4_theta->Name = L"radar_txt_calib_4_theta";
 			this->radar_txt_calib_4_theta->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_4_theta->TabIndex = 6;
 			this->radar_txt_calib_4_theta->Text = L"-90";
+			this->radar_txt_calib_4_theta->Visible = false;
 			// 
 			// radar_txt_calib_nw_x
 			// 
 			this->radar_txt_calib_nw_x->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_nw_x->Location = System::Drawing::Point(954, 89);
+			this->radar_txt_calib_nw_x->Location = System::Drawing::Point(66, 122);
 			this->radar_txt_calib_nw_x->Name = L"radar_txt_calib_nw_x";
 			this->radar_txt_calib_nw_x->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_nw_x->TabIndex = 6;
 			this->radar_txt_calib_nw_x->Text = L"50";
+			this->radar_txt_calib_nw_x->Visible = false;
 			// 
 			// radar_txt_calib_5_x
 			// 
 			this->radar_txt_calib_5_x->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_5_x->Location = System::Drawing::Point(954, 167);
+			this->radar_txt_calib_5_x->Location = System::Drawing::Point(66, 200);
 			this->radar_txt_calib_5_x->Name = L"radar_txt_calib_5_x";
 			this->radar_txt_calib_5_x->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_5_x->TabIndex = 6;
 			this->radar_txt_calib_5_x->Text = L"-50";
+			this->radar_txt_calib_5_x->Visible = false;
 			// 
 			// radar_txt_calib_n_theta
 			// 
 			this->radar_txt_calib_n_theta->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_n_theta->Location = System::Drawing::Point(1022, 37);
+			this->radar_txt_calib_n_theta->Location = System::Drawing::Point(134, 70);
 			this->radar_txt_calib_n_theta->Name = L"radar_txt_calib_n_theta";
 			this->radar_txt_calib_n_theta->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_n_theta->TabIndex = 6;
 			this->radar_txt_calib_n_theta->Text = L"0";
+			this->radar_txt_calib_n_theta->Visible = false;
 			// 
 			// radar_txt_calib_4_y
 			// 
 			this->radar_txt_calib_4_y->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_4_y->Location = System::Drawing::Point(988, 141);
+			this->radar_txt_calib_4_y->Location = System::Drawing::Point(100, 174);
 			this->radar_txt_calib_4_y->Name = L"radar_txt_calib_4_y";
 			this->radar_txt_calib_4_y->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_4_y->TabIndex = 6;
 			this->radar_txt_calib_4_y->Text = L"-60";
+			this->radar_txt_calib_4_y->Visible = false;
 			// 
 			// radar_txt_calib_fn_x
 			// 
 			this->radar_txt_calib_fn_x->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_fn_x->Location = System::Drawing::Point(954, 63);
+			this->radar_txt_calib_fn_x->Location = System::Drawing::Point(66, 96);
 			this->radar_txt_calib_fn_x->Name = L"radar_txt_calib_fn_x";
 			this->radar_txt_calib_fn_x->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_fn_x->TabIndex = 6;
 			this->radar_txt_calib_fn_x->Text = L"70";
+			this->radar_txt_calib_fn_x->Visible = false;
 			// 
 			// radar_txt_calib_4_x
 			// 
 			this->radar_txt_calib_4_x->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_4_x->Location = System::Drawing::Point(954, 141);
+			this->radar_txt_calib_4_x->Location = System::Drawing::Point(66, 174);
 			this->radar_txt_calib_4_x->Name = L"radar_txt_calib_4_x";
 			this->radar_txt_calib_4_x->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_4_x->TabIndex = 6;
 			this->radar_txt_calib_4_x->Text = L"0";
+			this->radar_txt_calib_4_x->Visible = false;
 			// 
 			// radar_txt_calib_n_y
 			// 
 			this->radar_txt_calib_n_y->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_n_y->Location = System::Drawing::Point(988, 37);
+			this->radar_txt_calib_n_y->Location = System::Drawing::Point(100, 70);
 			this->radar_txt_calib_n_y->Name = L"radar_txt_calib_n_y";
 			this->radar_txt_calib_n_y->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_n_y->TabIndex = 6;
 			this->radar_txt_calib_n_y->Text = L"0";
+			this->radar_txt_calib_n_y->Visible = false;
 			// 
 			// radar_txt_calib_n_x
 			// 
 			this->radar_txt_calib_n_x->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_txt_calib_n_x->Location = System::Drawing::Point(954, 37);
+			this->radar_txt_calib_n_x->Location = System::Drawing::Point(66, 70);
 			this->radar_txt_calib_n_x->Name = L"radar_txt_calib_n_x";
 			this->radar_txt_calib_n_x->Size = System::Drawing::Size(28, 20);
 			this->radar_txt_calib_n_x->TabIndex = 6;
 			this->radar_txt_calib_n_x->Text = L"70";
+			this->radar_txt_calib_n_x->Visible = false;
 			// 
 			// label1
 			// 
 			this->label1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->label1->AutoSize = true;
-			this->label1->Location = System::Drawing::Point(913, 18);
+			this->label1->Location = System::Drawing::Point(25, 51);
 			this->label1->Name = L"label1";
 			this->label1->Size = System::Drawing::Size(92, 13);
 			this->label1->TabIndex = 5;
 			this->label1->Text = L"Offsets (x,y,theta):";
+			this->label1->Visible = false;
 			this->label1->Click += gcnew System::EventHandler(this, &f1::label1_Click);
 			// 
 			// radar_btn_clear
 			// 
-			this->radar_btn_clear->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_btn_clear->Location = System::Drawing::Point(916, 557);
+			this->radar_btn_clear->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_btn_clear->Location = System::Drawing::Point(28, 590);
 			this->radar_btn_clear->Name = L"radar_btn_clear";
 			this->radar_btn_clear->Size = System::Drawing::Size(100, 23);
 			this->radar_btn_clear->TabIndex = 4;
@@ -1280,9 +1264,9 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// radar_checkBox_enable_updates
 			// 
-			this->radar_checkBox_enable_updates->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_checkBox_enable_updates->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_enable_updates->AutoSize = true;
-			this->radar_checkBox_enable_updates->Location = System::Drawing::Point(916, 522);
+			this->radar_checkBox_enable_updates->Location = System::Drawing::Point(28, 555);
 			this->radar_checkBox_enable_updates->Name = L"radar_checkBox_enable_updates";
 			this->radar_checkBox_enable_updates->Size = System::Drawing::Size(100, 17);
 			this->radar_checkBox_enable_updates->TabIndex = 1;
@@ -1293,17 +1277,29 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			this->radar_checkBox_show_ir_7->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_show_ir_7->AutoSize = true;
-			this->radar_checkBox_show_ir_7->Location = System::Drawing::Point(1056, 221);
+			this->radar_checkBox_show_ir_7->Location = System::Drawing::Point(168, 254);
 			this->radar_checkBox_show_ir_7->Name = L"radar_checkBox_show_ir_7";
 			this->radar_checkBox_show_ir_7->Size = System::Drawing::Size(15, 14);
 			this->radar_checkBox_show_ir_7->TabIndex = 1;
 			this->radar_checkBox_show_ir_7->UseVisualStyleBackColor = true;
+			this->radar_checkBox_show_ir_7->Visible = false;
+			// 
+			// radar_checkBox_grid
+			// 
+			this->radar_checkBox_grid->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_checkBox_grid->AutoSize = true;
+			this->radar_checkBox_grid->Location = System::Drawing::Point(28, 461);
+			this->radar_checkBox_grid->Name = L"radar_checkBox_grid";
+			this->radar_checkBox_grid->Size = System::Drawing::Size(45, 17);
+			this->radar_checkBox_grid->TabIndex = 1;
+			this->radar_checkBox_grid->Text = L"Grid";
+			this->radar_checkBox_grid->UseVisualStyleBackColor = true;
 			// 
 			// radar_CheckBox_immediate_update
 			// 
-			this->radar_CheckBox_immediate_update->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_CheckBox_immediate_update->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_CheckBox_immediate_update->AutoSize = true;
-			this->radar_CheckBox_immediate_update->Location = System::Drawing::Point(916, 451);
+			this->radar_CheckBox_immediate_update->Location = System::Drawing::Point(28, 484);
 			this->radar_CheckBox_immediate_update->Name = L"radar_CheckBox_immediate_update";
 			this->radar_CheckBox_immediate_update->Size = System::Drawing::Size(102, 17);
 			this->radar_CheckBox_immediate_update->TabIndex = 1;
@@ -1312,9 +1308,9 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// radar_checkBox_DrawRobot
 			// 
-			this->radar_checkBox_DrawRobot->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_checkBox_DrawRobot->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_DrawRobot->AutoSize = true;
-			this->radar_checkBox_DrawRobot->Location = System::Drawing::Point(916, 474);
+			this->radar_checkBox_DrawRobot->Location = System::Drawing::Point(28, 507);
 			this->radar_checkBox_DrawRobot->Name = L"radar_checkBox_DrawRobot";
 			this->radar_checkBox_DrawRobot->Size = System::Drawing::Size(83, 17);
 			this->radar_checkBox_DrawRobot->TabIndex = 1;
@@ -1323,9 +1319,9 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			// radar_checkBox_use_lines
 			// 
-			this->radar_checkBox_use_lines->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
+			this->radar_checkBox_use_lines->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_use_lines->AutoSize = true;
-			this->radar_checkBox_use_lines->Location = System::Drawing::Point(916, 499);
+			this->radar_checkBox_use_lines->Location = System::Drawing::Point(28, 532);
 			this->radar_checkBox_use_lines->Name = L"radar_checkBox_use_lines";
 			this->radar_checkBox_use_lines->Size = System::Drawing::Size(69, 17);
 			this->radar_checkBox_use_lines->TabIndex = 1;
@@ -1336,71 +1332,78 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			this->radar_checkBox_show_ir_6->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_show_ir_6->AutoSize = true;
-			this->radar_checkBox_show_ir_6->Location = System::Drawing::Point(1056, 195);
+			this->radar_checkBox_show_ir_6->Location = System::Drawing::Point(168, 228);
 			this->radar_checkBox_show_ir_6->Name = L"radar_checkBox_show_ir_6";
 			this->radar_checkBox_show_ir_6->Size = System::Drawing::Size(15, 14);
 			this->radar_checkBox_show_ir_6->TabIndex = 1;
 			this->radar_checkBox_show_ir_6->UseVisualStyleBackColor = true;
+			this->radar_checkBox_show_ir_6->Visible = false;
 			// 
 			// radar_checkBox_show_ir_ne
 			// 
 			this->radar_checkBox_show_ir_ne->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_show_ir_ne->AutoSize = true;
-			this->radar_checkBox_show_ir_ne->Location = System::Drawing::Point(1056, 117);
+			this->radar_checkBox_show_ir_ne->Location = System::Drawing::Point(168, 150);
 			this->radar_checkBox_show_ir_ne->Name = L"radar_checkBox_show_ir_ne";
 			this->radar_checkBox_show_ir_ne->Size = System::Drawing::Size(15, 14);
 			this->radar_checkBox_show_ir_ne->TabIndex = 1;
 			this->radar_checkBox_show_ir_ne->UseVisualStyleBackColor = true;
+			this->radar_checkBox_show_ir_ne->Visible = false;
 			// 
 			// radar_checkBox_show_ir_5
 			// 
 			this->radar_checkBox_show_ir_5->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_show_ir_5->AutoSize = true;
-			this->radar_checkBox_show_ir_5->Location = System::Drawing::Point(1056, 170);
+			this->radar_checkBox_show_ir_5->Location = System::Drawing::Point(168, 203);
 			this->radar_checkBox_show_ir_5->Name = L"radar_checkBox_show_ir_5";
 			this->radar_checkBox_show_ir_5->Size = System::Drawing::Size(15, 14);
 			this->radar_checkBox_show_ir_5->TabIndex = 1;
 			this->radar_checkBox_show_ir_5->UseVisualStyleBackColor = true;
+			this->radar_checkBox_show_ir_5->Visible = false;
 			// 
 			// radar_checkBox_show_ir_nw
 			// 
 			this->radar_checkBox_show_ir_nw->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_show_ir_nw->AutoSize = true;
-			this->radar_checkBox_show_ir_nw->Location = System::Drawing::Point(1056, 91);
+			this->radar_checkBox_show_ir_nw->Location = System::Drawing::Point(168, 124);
 			this->radar_checkBox_show_ir_nw->Name = L"radar_checkBox_show_ir_nw";
 			this->radar_checkBox_show_ir_nw->Size = System::Drawing::Size(15, 14);
 			this->radar_checkBox_show_ir_nw->TabIndex = 1;
 			this->radar_checkBox_show_ir_nw->UseVisualStyleBackColor = true;
+			this->radar_checkBox_show_ir_nw->Visible = false;
 			// 
 			// radar_checkBox_show_ir_4
 			// 
 			this->radar_checkBox_show_ir_4->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_show_ir_4->AutoSize = true;
-			this->radar_checkBox_show_ir_4->Location = System::Drawing::Point(1056, 144);
+			this->radar_checkBox_show_ir_4->Location = System::Drawing::Point(168, 177);
 			this->radar_checkBox_show_ir_4->Name = L"radar_checkBox_show_ir_4";
 			this->radar_checkBox_show_ir_4->Size = System::Drawing::Size(15, 14);
 			this->radar_checkBox_show_ir_4->TabIndex = 1;
 			this->radar_checkBox_show_ir_4->UseVisualStyleBackColor = true;
+			this->radar_checkBox_show_ir_4->Visible = false;
 			// 
 			// radar_checkBox_show_ir_far_north
 			// 
 			this->radar_checkBox_show_ir_far_north->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_show_ir_far_north->AutoSize = true;
-			this->radar_checkBox_show_ir_far_north->Location = System::Drawing::Point(1056, 66);
+			this->radar_checkBox_show_ir_far_north->Location = System::Drawing::Point(168, 99);
 			this->radar_checkBox_show_ir_far_north->Name = L"radar_checkBox_show_ir_far_north";
 			this->radar_checkBox_show_ir_far_north->Size = System::Drawing::Size(15, 14);
 			this->radar_checkBox_show_ir_far_north->TabIndex = 1;
 			this->radar_checkBox_show_ir_far_north->UseVisualStyleBackColor = true;
+			this->radar_checkBox_show_ir_far_north->Visible = false;
 			// 
 			// radar_checkBox_show_ir_north
 			// 
 			this->radar_checkBox_show_ir_north->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
 			this->radar_checkBox_show_ir_north->AutoSize = true;
-			this->radar_checkBox_show_ir_north->Location = System::Drawing::Point(1056, 40);
+			this->radar_checkBox_show_ir_north->Location = System::Drawing::Point(168, 73);
 			this->radar_checkBox_show_ir_north->Name = L"radar_checkBox_show_ir_north";
 			this->radar_checkBox_show_ir_north->Size = System::Drawing::Size(15, 14);
 			this->radar_checkBox_show_ir_north->TabIndex = 1;
 			this->radar_checkBox_show_ir_north->UseVisualStyleBackColor = true;
+			this->radar_checkBox_show_ir_north->Visible = false;
 			// 
 			// map_tab
 			// 
@@ -1768,16 +1771,72 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			// 
 			this->capture_timer->Tick += gcnew System::EventHandler(this, &f1::capture_timer_Tick);
 			// 
-			// radar_checkBox_grid
+			// panel1
 			// 
-			this->radar_checkBox_grid->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Right));
-			this->radar_checkBox_grid->AutoSize = true;
-			this->radar_checkBox_grid->Location = System::Drawing::Point(916, 428);
-			this->radar_checkBox_grid->Name = L"radar_checkBox_grid";
-			this->radar_checkBox_grid->Size = System::Drawing::Size(45, 17);
-			this->radar_checkBox_grid->TabIndex = 1;
-			this->radar_checkBox_grid->Text = L"Grid";
-			this->radar_checkBox_grid->UseVisualStyleBackColor = true;
+			this->panel1->Anchor = static_cast<System::Windows::Forms::AnchorStyles>(((System::Windows::Forms::AnchorStyles::Top | System::Windows::Forms::AnchorStyles::Bottom) 
+				| System::Windows::Forms::AnchorStyles::Right));
+			this->panel1->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(224)), static_cast<System::Int32>(static_cast<System::Byte>(224)), 
+				static_cast<System::Int32>(static_cast<System::Byte>(224)));
+			this->panel1->BorderStyle = System::Windows::Forms::BorderStyle::FixedSingle;
+			this->panel1->Controls->Add(this->radar_btn_clear);
+			this->panel1->Controls->Add(this->radar_checkBox_show_ir_north);
+			this->panel1->Controls->Add(this->label12);
+			this->panel1->Controls->Add(this->radar_checkBox_show_ir_far_north);
+			this->panel1->Controls->Add(this->label11);
+			this->panel1->Controls->Add(this->radar_checkBox_show_ir_4);
+			this->panel1->Controls->Add(this->label13);
+			this->panel1->Controls->Add(this->radar_checkBox_show_ir_nw);
+			this->panel1->Controls->Add(this->label10);
+			this->panel1->Controls->Add(this->radar_checkBox_show_ir_5);
+			this->panel1->Controls->Add(this->label9);
+			this->panel1->Controls->Add(this->radar_checkBox_show_ir_ne);
+			this->panel1->Controls->Add(this->label5);
+			this->panel1->Controls->Add(this->radar_checkBox_show_ir_6);
+			this->panel1->Controls->Add(this->label8);
+			this->panel1->Controls->Add(this->radar_checkBox_use_lines);
+			this->panel1->Controls->Add(this->label4);
+			this->panel1->Controls->Add(this->radar_checkBox_DrawRobot);
+			this->panel1->Controls->Add(this->label7);
+			this->panel1->Controls->Add(this->radar_CheckBox_immediate_update);
+			this->panel1->Controls->Add(this->label3);
+			this->panel1->Controls->Add(this->radar_checkBox_grid);
+			this->panel1->Controls->Add(this->label6);
+			this->panel1->Controls->Add(this->radar_checkBox_show_ir_7);
+			this->panel1->Controls->Add(this->label2);
+			this->panel1->Controls->Add(this->radar_checkBox_enable_updates);
+			this->panel1->Controls->Add(this->radar_txt_calib_7_theta);
+			this->panel1->Controls->Add(this->label1);
+			this->panel1->Controls->Add(this->radar_txt_calib_ne_theta);
+			this->panel1->Controls->Add(this->radar_txt_calib_n_x);
+			this->panel1->Controls->Add(this->radar_txt_calib_7_y);
+			this->panel1->Controls->Add(this->radar_txt_calib_n_y);
+			this->panel1->Controls->Add(this->radar_txt_calib_6_theta);
+			this->panel1->Controls->Add(this->radar_txt_calib_4_x);
+			this->panel1->Controls->Add(this->radar_txt_calib_ne_y);
+			this->panel1->Controls->Add(this->radar_txt_calib_fn_x);
+			this->panel1->Controls->Add(this->radar_txt_calib_6_y);
+			this->panel1->Controls->Add(this->radar_txt_calib_4_y);
+			this->panel1->Controls->Add(this->radar_txt_calib_nw_theta);
+			this->panel1->Controls->Add(this->radar_txt_calib_n_theta);
+			this->panel1->Controls->Add(this->radar_txt_calib_5_theta);
+			this->panel1->Controls->Add(this->radar_txt_calib_5_x);
+			this->panel1->Controls->Add(this->radar_textBox_angle);
+			this->panel1->Controls->Add(this->radar_txt_calib_nw_x);
+			this->panel1->Controls->Add(this->radar_txt_calib_nw_y);
+			this->panel1->Controls->Add(this->radar_txt_calib_4_theta);
+			this->panel1->Controls->Add(this->radar_textBox_max);
+			this->panel1->Controls->Add(this->radar_txt_calib_fn_y);
+			this->panel1->Controls->Add(this->radar_textBox_dec);
+			this->panel1->Controls->Add(this->radar_txt_calib_6_x);
+			this->panel1->Controls->Add(this->radar_textBox_inc);
+			this->panel1->Controls->Add(this->radar_txt_calib_ne_x);
+			this->panel1->Controls->Add(this->radar_txt_calib_7_x);
+			this->panel1->Controls->Add(this->radar_txt_calib_5_y);
+			this->panel1->Controls->Add(this->radar_txt_calib_fn_theta);
+			this->panel1->Location = System::Drawing::Point(882, -1);
+			this->panel1->Name = L"panel1";
+			this->panel1->Size = System::Drawing::Size(207, 623);
+			this->panel1->TabIndex = 10;
 			// 
 			// f1
 			// 
@@ -1820,7 +1879,6 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			this->graphs_tab->PerformLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->graphs_chart))->EndInit();
 			this->radar_tabPage->ResumeLayout(false);
-			this->radar_tabPage->PerformLayout();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->pictureBox1))->EndInit();
 			this->map_tab->ResumeLayout(false);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->map_picture))->EndInit();
@@ -1829,6 +1887,8 @@ private: System::Windows::Forms::CheckBox^  radar_checkBox_grid;
 			this->log_tab->ResumeLayout(false);
 			this->log_tab->PerformLayout();
 			this->capture_tab->ResumeLayout(false);
+			this->panel1->ResumeLayout(false);
+			this->panel1->PerformLayout();
 			this->ResumeLayout(false);
 			this->PerformLayout();
 
