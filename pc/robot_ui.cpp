@@ -112,6 +112,10 @@ namespace robot_ui
 		this->ui_timer->Interval = 50;
 		this->radar_timer->Interval = 100;
 
+		//extern void TestICP();
+		//TestICP();
+
+
 		log_printf("-- f1::f1(void)\n");
 	}
 

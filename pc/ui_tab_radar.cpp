@@ -103,6 +103,20 @@ void plotLine(int x0, int y0, int x1, int y1, int value)
 
 namespace robot_ui 
 {
+	void f1::clear_grid(void)
+	{
+		int x,y;
+
+		for(x==0;x<grid_size;x++)
+		{
+			for(y=0;y<grid_size;y++)
+			{
+				grid[x][y].value=0;
+				grid[x][y].changed=1;
+			}
+		}
+	}
+
 	void f1::update_grid(float d, float x0, float y0, float t0,float x1, float y1, float t1)
 	{
 		/*
@@ -117,7 +131,8 @@ namespace robot_ui
 		volatile static int lx3=0,ly3=0;
 		int i = history_index;
 		int inc, dec, max;
-		
+
+
 		inc = Convert::ToInt32(radar_textBox_inc->Text);
 		dec = Convert::ToInt32(radar_textBox_dec->Text);
 		max = Convert::ToInt32(radar_textBox_max->Text);
@@ -155,7 +170,7 @@ namespace robot_ui
 				if(grid[ix3][iy3].value > max) grid[ix3][iy3].value = max;
 				grid[ix3][iy3].changed = 1;
 
-				if ((abs(ix3 - lx3) < 20) && (abs(iy3 - ly3) < 20))
+				if ((abs(ix3 - lx3) < 10) && (abs(iy3 - ly3) < 10))
 				{
 					if (radar_checkBox_use_lines->Checked)
 					{
@@ -292,12 +307,16 @@ namespace robot_ui
 		{
 			{
 				h = inputs_history[i+0];
-				h2= inputs_history[i+1]; //need +1 here for motion comp
+				h2= inputs_history[i+0]; //need +1 here for motion comp when running under V-REP;  there seem sto be some lead or lag in the system under V-REP
 				h.lidar.angle*=4;
 				h2.lidar.angle*=4;
 				//log_printf("numsamples=%d  angle=%d,  s1=%d\n",h2.lidar.num_samples,  h2.lidar.angle, h2.lidar.samples[0]);
 
-				if(radar_CheckBox_immediate_update->Checked)
+				//make the center of the grid 0,0
+				h.x += (grid_size*cell_size)/2; 
+				h.y += (grid_size*cell_size)/2; 
+
+					if(radar_CheckBox_ignore_odometry->Checked)
 				{
 					h.x = (grid_size*cell_size)/2; //  1000;
 					h.y = (grid_size*cell_size)/2; //  1000;
@@ -306,33 +325,46 @@ namespace robot_ui
 
 				for(j=0;j<h2.lidar.num_samples;j++)
 				{
-#if IMMEDIATE_UPDATE
-					update_grid(h2.lidar.samples[j]/* *1000 */, h.x, h.y, h.theta, 0,0,(h2.lidar.angle+j+angle) * (PI/180.0f));
-#else
-					update_grid(h2.lidar.samples[j]/* *1000 */, (grid_size*cell_size)/2 + h.x-x, (grid_size*cell_size)/2 + h.y-y, h.theta - theta, 0,0,(h2.lidar.angle+j+angle) * (PI/180.0f));
-					if(((int)(h2.lidar.angle+j))==180)
+					if(radar_CheckBox_immediate_update->Checked)
 					{
-						int increment = (g->VisibleClipBounds.Height / grid_size);
-						int ex = (int)((((grid_size*cell_size) / 2) /*- 100*/ ) / cell_size)*increment;
-						int ey = (int)g->VisibleClipBounds.Height - (int)((((grid_size*cell_size) / 2) /*+ 100*/) / cell_size)*(increment);
-						t2 = timeGetTime();
-						ShowRadar(ex, ey);
-						t3 = timeGetTime(); //t3-t2 is 160ms
-						log_printf("dT=%d\n", t3-t2);
-						x = h2.x;
-						y = h2.y;
-						theta = h2.theta;
+						update_grid(h2.lidar.samples[j]/* *1000 */, h.x, h.y, h.theta, 0,0,(h2.lidar.angle+j+angle) * (PI/180.0f));
 					}
-#endif
+					else
+					{
+						update_grid(h2.lidar.samples[j]/* *1000 */, h.x, h.y, h.theta, 0,0,(h2.lidar.angle+j+angle) * (PI/180.0f));
+						//update_grid(h2.lidar.samples[j]/* *1000 */, (grid_size*cell_size)/2 + h.x-x, (grid_size*cell_size)/2 + h.y-y, h.theta - theta, 0,0,(h2.lidar.angle+j+angle) * (PI/180.0f));
+						if(((int)(h2.lidar.angle+j))==180)
+						{
+							h = inputs_history[i + 0];
+							//make the center of the grid 0,0
+							h.x += (grid_size*cell_size)/2; 
+							h.y += (grid_size*cell_size)/2; 
+							if(radar_CheckBox_ignore_odometry->Checked)
+							{
+								h.x = (grid_size*cell_size)/2; //  1000;
+								h.y = (grid_size*cell_size)/2; //  1000;
+								h.theta = 0;
+							}
+							float increment = (g->VisibleClipBounds.Height / grid_size);
+							int ex = (int)(((h.x - 0) / cell_size)*increment);
+							int ey = (int)(g->VisibleClipBounds.Height - ((int)((h.y + 0) / cell_size))*(increment));
+							ShowRadar(ex, ey);
+							clear_grid();
+							log_printf("%lu\n",timeGetTime());
+						}
+					}
 				}
 			}
 			i++;
 		}
 
-#if IMMEDIATE_UPDATE
+		if(radar_CheckBox_immediate_update->Checked)
 		{
 			h = inputs_history[i + 0];
-			if(radar_CheckBox_immediate_update->Checked)
+			//make the center of the grid 0,0
+			h.x += (grid_size*cell_size)/2; 
+			h.y += (grid_size*cell_size)/2; 
+			if(radar_CheckBox_ignore_odometry->Checked)
 			{
 				h.x = (grid_size*cell_size)/2; //  1000;
 				h.y = (grid_size*cell_size)/2; //  1000;
@@ -343,7 +375,6 @@ namespace robot_ui
 			int ey = (int)(g->VisibleClipBounds.Height - ((int)((h.y + 0) / cell_size))*(increment));
 			ShowRadar(ex, ey);
 		}
-#endif
 
 	if(radar_checkBox_grid->Checked) DrawGrid(g);
 
