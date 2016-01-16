@@ -658,7 +658,7 @@ void vrep_sim_inputs(void)
 		s.inputs.lidar.angle=myData[2];
 		for(i=0;i<myData[1];i++)
 		{
-			s.inputs.lidar.samples[i]=myData[i*2+3];
+			s.inputs.lidar.samples[i]=myData[i*2+3]*1000;
 		}
 #endif
 	}

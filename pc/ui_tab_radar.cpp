@@ -3,8 +3,35 @@
 #include <stdio.h>
 #include <windows.h>
 
-#define grid_size 200
-#define cell_size (25.4/1)
+#include <mrpt/math/ransac_applications.h>
+#include <mrpt/gui/CDisplayWindow3D.h>
+#include <mrpt/gui/CDisplayWindowPlots.h>
+#include <mrpt/random.h>
+#include <mrpt/utils/CTicTac.h>
+#include <mrpt/utils/metaprogramming.h>
+#include <mrpt/poses/CPose3D.h>
+#include <mrpt/opengl/CGridPlaneXY.h>
+#include <mrpt/opengl/CPointCloud.h>
+#include <mrpt/opengl/stock_objects.h>
+#include <mrpt/opengl/CTexturedPlane.h>
+
+using namespace mrpt;
+using namespace mrpt::utils;
+using namespace mrpt::gui;
+using namespace mrpt::math;
+using namespace mrpt::random;
+using namespace mrpt::poses;
+using namespace std;
+
+/*
+notes:
+
+if the picturebox is not square, then the robot's position won't get drawn correctly
+for simulation, the angle offset needs to be 91 degrees
+
+*/
+#define grid_size 400
+#define cell_size (25.4/4)
 #define DRAW_ROBOT 1
 #define IMMEDIATE_UPDATE 1
 #define DRAW_GRID 0
@@ -18,6 +45,9 @@
 #define GRID_VALUE_MAX 2
 #define GRID_VALUE_DEC -1
 #endif
+
+extern void mrpt_init();
+extern void mrpt_show_grid(vector<float> xs, vector<float> ys);
 
 typedef struct
 {
@@ -216,6 +246,7 @@ namespace robot_ui
 
 	void f1::ShowRadar(int ex, int ey)
 	{
+		vector<float> xs, ys;
 		int x,y,i,j;
 		float increment;
 		const int pensize=10;
@@ -262,11 +293,20 @@ namespace robot_ui
 		{
 			for(y=0;y<grid_size;y++)
 			{
-				if(grid[x][y].value>0) bitmap[x][y]=0; else bitmap[x][y]=0xffffffffUL;
+				if (grid[x][y].value > 0)
+				{
+					bitmap[x][y] = 0;
+					xs.push_back(x);
+					ys.push_back(y);
+				}
+				else
+				{
+					bitmap[x][y] = 0xffffffffUL;
+				}
 				if(grid[x][y].value>0) grid[x][y].value--;
 			}
 		}
-
+		mrpt_show_grid(xs, ys);
 		System::IntPtr ptr(bitmap);
 		System::Drawing::Bitmap^ bm  = gcnew System::Drawing::Bitmap(grid_size,grid_size,grid_size*4,System::Drawing::Imaging::PixelFormat::Format32bppRgb,ptr);
 		bm->RotateFlip(System::Drawing::RotateFlipType::Rotate270FlipNone);
@@ -307,19 +347,19 @@ namespace robot_ui
 		{
 			{
 				h = inputs_history[i+0];
-				h2= inputs_history[i+0]; //need +1 here for motion comp when running under V-REP;  there seem sto be some lead or lag in the system under V-REP
-				h.lidar.angle*=4;
-				h2.lidar.angle*=4;
+				h2= inputs_history[i+1]; //need +1 here for motion comp when running under V-REP;  there seem sto be some lead or lag in the system under V-REP
+				h.lidar.angle;// *= 4;
+				h2.lidar.angle;// *= 4;
 				//log_printf("numsamples=%d  angle=%d,  s1=%d\n",h2.lidar.num_samples,  h2.lidar.angle, h2.lidar.samples[0]);
 
 				//make the center of the grid 0,0
-				h.x += (grid_size*cell_size)/2; 
-				h.y += (grid_size*cell_size)/2; 
+				//h.x += (grid_size*cell_size)/2; 
+				//h.y += (grid_size*cell_size)/2; 
 
-					if(radar_CheckBox_ignore_odometry->Checked)
+				if(radar_CheckBox_ignore_odometry->Checked)
 				{
-					h.x = (grid_size*cell_size)/2; //  1000;
-					h.y = (grid_size*cell_size)/2; //  1000;
+					h.x = 0;// (grid_size*cell_size) / 2; //  1000;
+					h.y = 0;// (grid_size*cell_size) / 2; //  1000;
 					h.theta = 0;
 				}
 
@@ -337,12 +377,12 @@ namespace robot_ui
 						{
 							h = inputs_history[i + 0];
 							//make the center of the grid 0,0
-							h.x += (grid_size*cell_size)/2; 
-							h.y += (grid_size*cell_size)/2; 
+							//h.x += (grid_size*cell_size)/2; 
+							//h.y += (grid_size*cell_size)/2; 
 							if(radar_CheckBox_ignore_odometry->Checked)
 							{
-								h.x = (grid_size*cell_size)/2; //  1000;
-								h.y = (grid_size*cell_size)/2; //  1000;
+								h.x = 0;// (grid_size*cell_size) / 2; //  1000;
+								h.y = 0;// (grid_size*cell_size) / 2; //  1000;
 								h.theta = 0;
 							}
 							float increment = (g->VisibleClipBounds.Height / grid_size);
@@ -350,7 +390,7 @@ namespace robot_ui
 							int ey = (int)(g->VisibleClipBounds.Height - ((int)((h.y + 0) / cell_size))*(increment));
 							ShowRadar(ex, ey);
 							clear_grid();
-							log_printf("%lu\n",timeGetTime());
+							//log_printf("%lu\n",timeGetTime());
 						}
 					}
 				}
@@ -362,12 +402,12 @@ namespace robot_ui
 		{
 			h = inputs_history[i + 0];
 			//make the center of the grid 0,0
-			h.x += (grid_size*cell_size)/2; 
-			h.y += (grid_size*cell_size)/2; 
+			//h.x += (grid_size*cell_size)/2; 
+			//h.y += (grid_size*cell_size)/2; 
 			if(radar_CheckBox_ignore_odometry->Checked)
 			{
-				h.x = (grid_size*cell_size)/2; //  1000;
-				h.y = (grid_size*cell_size)/2; //  1000;
+				h.x = 0;// (grid_size*cell_size) / 2; //  1000;
+				h.y = 0;// (grid_size*cell_size) / 2; //  1000;
 				h.theta = 0;
 			}
 			float increment = (g->VisibleClipBounds.Height / grid_size);
@@ -432,5 +472,13 @@ namespace robot_ui
 		pictureBox1->Invalidate();
 		g = pictureBox1->CreateGraphics();
 		log_printf("g-> X,Y,Width,Height = %f,%f,%f,%f\n",g->VisibleClipBounds.X,g->VisibleClipBounds.Y,g->VisibleClipBounds.Width,g->VisibleClipBounds.Height);
+
+		//extern void TestICP();
+		//TestICP();
+		//gui::CDisplayWindowPlots	win("ICP results");
+		//mrpt_test();
+		//mrpt_add_point(0, 0);
+		
+
 	}
 }
