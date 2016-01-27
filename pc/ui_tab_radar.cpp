@@ -30,8 +30,9 @@ if the picturebox is not square, then the robot's position won't get drawn corre
 for simulation, the angle offset needs to be 91 degrees
 
 */
-#define grid_size 400
-#define cell_size (25.4/4)
+#define grid_size 1600
+#define GRID_SHIFT 800
+#define cell_size (25.4/8)
 #define DRAW_ROBOT 1
 #define IMMEDIATE_UPDATE 1
 #define DRAW_GRID 0
@@ -47,7 +48,7 @@ for simulation, the angle offset needs to be 91 degrees
 #endif
 
 extern void mrpt_init();
-extern void mrpt_show_grid(vector<float> xs, vector<float> ys);
+extern void mrpt_show_grid(vector<float>   xs, vector<float> ys, float thresholdDist, float alfa, float smallestThresholdDist);
 
 typedef struct
 {
@@ -160,12 +161,13 @@ namespace robot_ui
 		int ix3,iy3, ix4, iy4;
 		volatile static int lx3=0,ly3=0;
 		int i = history_index;
-		int inc, dec, max;
+		int inc, dec, max, line;
 
 
 		inc = Convert::ToInt32(radar_textBox_inc->Text);
 		dec = Convert::ToInt32(radar_textBox_dec->Text);
 		max = Convert::ToInt32(radar_textBox_max->Text);
+		line= Convert::ToInt32(radar_textBox_line->Text);
 
 		//x2,y2 are the coordinates of the obstacle, relaive to the sensor's origin
 		x2=x1+d*cos(t1);
@@ -188,6 +190,10 @@ namespace robot_ui
 		ix4 = (int)(x4/cell_size);
 		iy4 = (int)(y4/cell_size);
 
+		ix4+=GRID_SHIFT;
+		iy4+=GRID_SHIFT;
+		ix3+=GRID_SHIFT;
+		iy3+=GRID_SHIFT;
 
 		//only updated the grid if the sensor reading is valid
 		if((d>150) && (d<6000))
@@ -200,7 +206,7 @@ namespace robot_ui
 				if(grid[ix3][iy3].value > max) grid[ix3][iy3].value = max;
 				grid[ix3][iy3].changed = 1;
 
-				if ((abs(ix3 - lx3) < 10) && (abs(iy3 - ly3) < 10))
+				if ((abs(ix3 - lx3) < line) && (abs(iy3 - ly3) < line))
 				{
 					if (radar_checkBox_use_lines->Checked)
 					{
@@ -296,8 +302,8 @@ namespace robot_ui
 				if (grid[x][y].value > 0)
 				{
 					bitmap[x][y] = 0;
-					xs.push_back(x);
-					ys.push_back(y);
+					xs.push_back(x-GRID_SHIFT);
+					ys.push_back(y-GRID_SHIFT);
 				}
 				else
 				{
@@ -306,7 +312,13 @@ namespace robot_ui
 				if(grid[x][y].value>0) grid[x][y].value--;
 			}
 		}
-		mrpt_show_grid(xs, ys);
+		{
+			float thresholdDist			= Convert::ToSingle(radar_textBox_td->Text);
+			float alfa					= Convert::ToSingle(radar_textBox_alfa->Text);
+			float smallestThresholdDist = Convert::ToSingle(radar_textBox_tsd->Text);
+
+			mrpt_show_grid(xs, ys, thresholdDist, alfa, smallestThresholdDist);
+		}
 		System::IntPtr ptr(bitmap);
 		System::Drawing::Bitmap^ bm  = gcnew System::Drawing::Bitmap(grid_size,grid_size,grid_size*4,System::Drawing::Imaging::PixelFormat::Format32bppRgb,ptr);
 		bm->RotateFlip(System::Drawing::RotateFlipType::Rotate270FlipNone);
@@ -347,9 +359,9 @@ namespace robot_ui
 		{
 			{
 				h = inputs_history[i+0];
-				h2= inputs_history[i+1]; //need +1 here for motion comp when running under V-REP;  there seem sto be some lead or lag in the system under V-REP
-				h.lidar.angle;// *= 4;
-				h2.lidar.angle;// *= 4;
+				h2= inputs_history[i+0]; //need +1 here for motion comp when running under V-REP;  there seem sto be some lead or lag in the system under V-REP
+				h.lidar.angle *= 4;
+				h2.lidar.angle *= 4; //remove for V-REP
 				//log_printf("numsamples=%d  angle=%d,  s1=%d\n",h2.lidar.num_samples,  h2.lidar.angle, h2.lidar.samples[0]);
 
 				//make the center of the grid 0,0
@@ -358,8 +370,8 @@ namespace robot_ui
 
 				if(radar_CheckBox_ignore_odometry->Checked)
 				{
-					h.x = 0;// (grid_size*cell_size) / 2; //  1000;
-					h.y = 0;// (grid_size*cell_size) / 2; //  1000;
+					h.x = 0;//(grid_size*cell_size) / 2; //  1000;
+					h.y = 0;//(grid_size*cell_size) / 2; //  1000;
 					h.theta = 0;
 				}
 
@@ -381,8 +393,8 @@ namespace robot_ui
 							//h.y += (grid_size*cell_size)/2; 
 							if(radar_CheckBox_ignore_odometry->Checked)
 							{
-								h.x = 0;// (grid_size*cell_size) / 2; //  1000;
-								h.y = 0;// (grid_size*cell_size) / 2; //  1000;
+								h.x = 0;//(grid_size*cell_size) / 2; //  1000;
+								h.y = 0;//(grid_size*cell_size) / 2; //  1000;
 								h.theta = 0;
 							}
 							float increment = (g->VisibleClipBounds.Height / grid_size);
@@ -406,8 +418,8 @@ namespace robot_ui
 			//h.y += (grid_size*cell_size)/2; 
 			if(radar_CheckBox_ignore_odometry->Checked)
 			{
-				h.x = 0;// (grid_size*cell_size) / 2; //  1000;
-				h.y = 0;// (grid_size*cell_size) / 2; //  1000;
+				h.x = 0;//(grid_size*cell_size) / 2; //  1000;
+				h.y = 0;//(grid_size*cell_size) / 2; //  1000;
 				h.theta = 0;
 			}
 			float increment = (g->VisibleClipBounds.Height / grid_size);

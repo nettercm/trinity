@@ -72,7 +72,7 @@ CSimplePointsMap		m1,m2;
 // ------------------------------------------------------
 //				TestICP
 // ------------------------------------------------------
-void TestICP(vector<float> xs, vector<float> ys)
+void TestICP(vector<float> xs, vector<float> ys, float thresholdDist, float alfa, float smallestThresholdDist)
 {
 	static int first_time = 1;
 	float					runningTime;
@@ -96,17 +96,17 @@ void TestICP(vector<float> xs, vector<float> ys)
 	//	ICP.options.ICP_algorithm = icpClassic;
 	ICP.options.ICP_algorithm = (TICPAlgorithm)ICP_method;
 
-	ICP.options.maxIterations = 100;
-	ICP.options.thresholdAng = DEG2RAD(60.0f);
-	ICP.options.thresholdDist = 1.75f;
-	ICP.options.ALFA = 0.5f;
-	ICP.options.smallestThresholdDist = 0.05f;
+	ICP.options.maxIterations = 300;
+	ICP.options.thresholdAng = DEG2RAD(179.0f);
+	ICP.options.thresholdDist = thresholdDist; //5.0f;
+	ICP.options.ALFA = alfa;//0.05f;
+	ICP.options.smallestThresholdDist = smallestThresholdDist;//1.0f;
 	ICP.options.doRANSAC = false;
 
 	//ICP.options.dumpToConsole();
 	// -----------------------------------------------------
 
-	CPose2D		initialPose(0.8f, 0.0f, (float)DEG2RAD(0.0f));
+	CPose2D		initialPose(0.0f, 0.0f, (float)DEG2RAD(0.0f));
 
 	CPosePDFPtr pdf = ICP.Align(
 		&m1,
@@ -114,14 +114,14 @@ void TestICP(vector<float> xs, vector<float> ys)
 		initialPose,
 		&runningTime,
 		(void*)&info);
-#if 0
-	printf("ICP run in %.02fms, %d iterations (%.02fms/iter), %.01f%% goodness\n -> ",
+#if 1
+	printf("ICP run in %.02fms, %d iterations (%.02fms/iter), %.01f%% goodness -> ",
 		runningTime * 1000,
 		info.nIterations,
 		runningTime*1000.0f / info.nIterations,
 		info.goodness * 100);
 #endif
-	cout << "Mean of estimation: " << pdf->getMeanVal() << endl << endl;
+	cout << "   Mean of estimation: " << pdf->getMeanVal() << endl;
 
 	CPosePDFGaussian  gPdf;
 	gPdf.copyFrom(*pdf);
@@ -182,7 +182,7 @@ void TestICP(vector<float> xs, vector<float> ys)
 
 	win->plot(map1_xs, map1_ys, "b.7", "map1");
 	win->plot(map2_xs, map2_ys, "r.5", "map2");
-	//win->plot(map3_xs, map3_ys, "g.5", "map3");
+	win->plot(map3_xs, map3_ys, "g.5", "map3");
 
 	if (win->keyHit())
 	{
@@ -229,11 +229,11 @@ void TestRANSACLines(vector<float> xs1, vector<float> ys1)
 	// Run RANSAC
 	// ------------------------------------
 	vector<pair<size_t, TLine2D > >   detectedLines;
-	const double DIST_THRESHOLD = .8;
+	const double DIST_THRESHOLD = 2;
 
 	CTicTac	tictac;
 
-	ransac_detect_2D_lines(xs, ys, detectedLines, DIST_THRESHOLD, 15);
+	ransac_detect_2D_lines(xs, ys, detectedLines, DIST_THRESHOLD, 20);
 
 	// Display output:
 	cout << "RANSAC method: ransac_detect_2D_lines" << endl;
@@ -245,14 +245,16 @@ void TestRANSACLines(vector<float> xs1, vector<float> ys1)
 	// --------------------------
 	//mrpt::gui::CDisplayWindowPlots  win2("Set of points", 500, 500);
 
+	win->clear();
+
 	win->plot(xs, ys, ".b4", "points");
 
 	unsigned int n = 0;
 	for (vector<pair<size_t, TLine2D> >::iterator p = detectedLines.begin(); p != detectedLines.end(); ++p)
 	{
 		CVectorDouble lx(2), ly(2);
-		lx[0] = 0;
-		lx[1] = 200;
+		lx[0] = -400;
+		lx[1] = 400;
 		for (CVectorDouble::Index q = 0; q<lx.size(); q++)
 			ly[q] = -(p->second.coefs[2] + p->second.coefs[0] * lx[q]) / p->second.coefs[1];
 		win->plot(lx, ly, "r-1", format("line_%u", n++));
@@ -266,17 +268,20 @@ void TestRANSACLines(vector<float> xs1, vector<float> ys1)
 
 void mrpt_init()
 {
-	if (!win) win = new gui::CDisplayWindowPlots("global");
+	if (!win) 
+	{
+		win = new gui::CDisplayWindowPlots("global");
+		win->axis(-400,400,-400,400,true);
+	}
 	//global_win->hold_on();
 }
 
-void mrpt_show_grid(vector<float>   xs, vector<float> ys)
+void mrpt_show_grid(vector<float>   xs, vector<float> ys, float thresholdDist, float alfa, float smallestThresholdDist)
 {
 	CSimplePointsMap		m1, m2;
 
-	TestICP(xs, ys);
-	//global_win->plot(xs, ys, "b.9", "map1");
-	//TestRANSACLines(xs, ys);
+	//TestICP(xs, ys, thresholdDist, alfa, smallestThresholdDist);
+	TestRANSACLines(xs, ys);
 }
 
 

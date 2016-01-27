@@ -319,8 +319,8 @@ void display_inputs_and_state(t_inputs *inputs)
 
 	if( (t_delta >= update_interval) || (memcmp(watch,inputs->watch,4)!=0) )
 	{
-		printf(s.msg);
-		//log_printf(s.msg);
+		//printf(s.msg);
+		log_printf(s.msg);
 		memcpy(watch,inputs->watch,4);
 		t_last=t_now;
 	}
@@ -346,7 +346,7 @@ int loop(void) //return 0 if we did not actually go throught the loop
 		odo_last_l = inputs.encoders[0];
 		odo_last_r = inputs.encoders[1];
 
-		//display_inputs_and_state(&inputs);
+		display_inputs_and_state(&inputs);
 
 		if(result) detect_packet_loss();
 

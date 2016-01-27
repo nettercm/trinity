@@ -60,6 +60,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>C:\SDKs\mrpt-1.3.2\include\mrpt\mrpt-config;C:\SDKs\mrpt-1.3.2\libs\bayes\include;C:\SDKs\mrpt-1.3.2\libs\graphs\include;C:\SDKs\mrpt-1.3.2\libs\vision\include;C:\SDKs\mrpt-1.3.2\libs\tfest\include;C:\SDKs\mrpt-1.3.2\libs\maps\include;C:\SDKs\mrpt-1.3.2\libs\obs\include;C:\SDKs\mrpt-1.3.2\libs\opengl\include;C:\SDKs\mrpt-1.3.2\libs\base\include;C:\SDKs\mrpt-1.3.2\libs\slam\include;C:\SDKs\mrpt-1.3.2\libs\gui\include;C:\SDKs\mrpt-1.3.2\libs\topography\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;hid.lib;user32.lib</AdditionalDependencies>
@@ -68,6 +69,7 @@
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>main</EntryPointSymbol>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>C:/SDKs/mrpt-1.3.2/lib;C:/SDKs/mrpt-1.3.2/lib/$(Configuration);</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -77,6 +79,7 @@
       <PrecompiledHeader />
       <WarningLevel>Level2</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>C:\SDKs\mrpt-1.3.2\include\mrpt\mrpt-config;C:\SDKs\mrpt-1.3.2\libs\bayes\include;C:\SDKs\mrpt-1.3.2\libs\graphs\include;C:\SDKs\mrpt-1.3.2\libs\vision\include;C:\SDKs\mrpt-1.3.2\libs\tfest\include;C:\SDKs\mrpt-1.3.2\libs\maps\include;C:\SDKs\mrpt-1.3.2\libs\obs\include;C:\SDKs\mrpt-1.3.2\libs\opengl\include;C:\SDKs\mrpt-1.3.2\libs\base\include;C:\SDKs\mrpt-1.3.2\libs\slam\include;C:\SDKs\mrpt-1.3.2\libs\gui\include;C:\SDKs\mrpt-1.3.2\libs\topography\include;</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib; user32.lib;hid.lib</AdditionalDependencies>
@@ -84,6 +87,7 @@
       <SubSystem>Windows</SubSystem>
       <EntryPointSymbol>main</EntryPointSymbol>
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>C:/SDKs/mrpt-1.3.2/lib;C:/SDKs/mrpt-1.3.2/lib/$(Configuration);</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -132,6 +136,10 @@
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
     </ClCompile>
     <ClCompile Include="joystick.c">
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
+      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
+    </ClCompile>
+    <ClCompile Include="mrpt.cpp">
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</CompileAsManaged>
       <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</CompileAsManaged>
     </ClCompile>

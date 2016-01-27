@@ -233,3 +233,7 @@ pc/capture_file.txt
 *.eep
 robot/binaries-2015-05-03/robot.lss
 
+pc/scan1.txt
+pc/scan2.txt
+pc/scan2_trans.txt
+pc/view_ellip.m
