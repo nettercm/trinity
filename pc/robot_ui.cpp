@@ -109,8 +109,8 @@ namespace robot_ui
 		//log_txt->SetStyle( ControlStyles.AllPaintingInWmPaint |  ControlStyles.UserPaint |  ControlStyles.DoubleBuffer,true);
 	    this->SetStyle( static_cast<ControlStyles>(ControlStyles::DoubleBuffer | ControlStyles::UserPaint | ControlStyles::AllPaintingInWmPaint), true );
 		this->UpdateStyles();
-		this->ui_timer->Interval = 50;
-		this->radar_timer->Interval = 100;
+		this->ui_timer->Interval = 20;
+		this->radar_timer->Interval = 20;
 
 		extern void mrpt_init();
 		mrpt_init();

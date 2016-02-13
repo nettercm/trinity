@@ -648,7 +648,10 @@ void vrep_sim_inputs(void)
 		int cnt=lidar_signal_size/4;
 		float myData[2000];
 		int i;
-		for(i=0;i<cnt;i++)
+		float distance;
+		float noise;
+		float noise_factor = 0.0002f; //  +/- 2%
+		for (i = 0; i<cnt; i++)
 		{
 			myData[i]=((float*)lidar_signal)[i];
 			//printf("%6.2f ",myData[i]);
@@ -658,7 +661,11 @@ void vrep_sim_inputs(void)
 		s.inputs.lidar.angle=myData[2];
 		for(i=0;i<myData[1];i++)
 		{
-			s.inputs.lidar.samples[i]=myData[i*2+3]*1000;
+			distance = myData[i * 2 + 3] * 1000;
+			noise = 100 - (rand() % 200);
+			noise = noise*noise_factor;
+			distance += distance * noise;
+			s.inputs.lidar.samples[i] = distance; // myData[i * 2 + 3] * 1000;
 		}
 #endif
 	}

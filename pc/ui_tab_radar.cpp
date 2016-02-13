@@ -29,10 +29,11 @@ notes:
 if the picturebox is not square, then the robot's position won't get drawn correctly
 for simulation, the angle offset needs to be 91 degrees
 
+300, 0.91, 1
 */
-#define grid_size 1600
-#define GRID_SHIFT 800
-#define cell_size (25.4/8)
+#define grid_size 200
+#define GRID_SHIFT 100
+#define cell_size (25.4/1)
 #define DRAW_ROBOT 1
 #define IMMEDIATE_UPDATE 1
 #define DRAW_GRID 0
@@ -48,7 +49,7 @@ for simulation, the angle offset needs to be 91 degrees
 #endif
 
 extern void mrpt_init();
-extern void mrpt_show_grid(vector<float>   xs, vector<float> ys, float thresholdDist, float alfa, float smallestThresholdDist);
+extern void mrpt_show_grid(vector<float>   xs, vector<float> ys, float thresholdDist, float alfa, float smallestThresholdDist, float initialPoseTheta);
 
 typedef struct
 {
@@ -316,8 +317,9 @@ namespace robot_ui
 			float thresholdDist			= Convert::ToSingle(radar_textBox_td->Text);
 			float alfa					= Convert::ToSingle(radar_textBox_alfa->Text);
 			float smallestThresholdDist = Convert::ToSingle(radar_textBox_tsd->Text);
+			float initialPoseTheta		= Convert::ToSingle(radar_textBox_ipt->Text);
 
-			mrpt_show_grid(xs, ys, thresholdDist, alfa, smallestThresholdDist);
+			mrpt_show_grid(xs, ys, thresholdDist, alfa, smallestThresholdDist, initialPoseTheta);
 		}
 		System::IntPtr ptr(bitmap);
 		System::Drawing::Bitmap^ bm  = gcnew System::Drawing::Bitmap(grid_size,grid_size,grid_size*4,System::Drawing::Imaging::PixelFormat::Format32bppRgb,ptr);
@@ -359,9 +361,9 @@ namespace robot_ui
 		{
 			{
 				h = inputs_history[i+0];
-				h2= inputs_history[i+0]; //need +1 here for motion comp when running under V-REP;  there seem sto be some lead or lag in the system under V-REP
-				h.lidar.angle *= 4;
-				h2.lidar.angle *= 4; //remove for V-REP
+				h2= inputs_history[i+1]; //need +1 here for motion comp when running under V-REP;  there seem sto be some lead or lag in the system under V-REP
+				h.lidar.angle *= 1;
+				h2.lidar.angle *= 1; //1 for V-REP
 				//log_printf("numsamples=%d  angle=%d,  s1=%d\n",h2.lidar.num_samples,  h2.lidar.angle, h2.lidar.samples[0]);
 
 				//make the center of the grid 0,0
@@ -401,7 +403,7 @@ namespace robot_ui
 							int ex = (int)(((h.x - 0) / cell_size)*increment);
 							int ey = (int)(g->VisibleClipBounds.Height - ((int)((h.y + 0) / cell_size))*(increment));
 							ShowRadar(ex, ey);
-							clear_grid();
+							//clear_grid();
 							//log_printf("%lu\n",timeGetTime());
 						}
 					}

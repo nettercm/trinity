@@ -67,36 +67,40 @@ char  SCAN_VALID_2[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 
 #endif
 
-CSimplePointsMap		m1,m2;
+CSimplePointsMap		m1[8],m2;
 
 // ------------------------------------------------------
 //				TestICP
 // ------------------------------------------------------
-void TestICP(vector<float> xs, vector<float> ys, float thresholdDist, float alfa, float smallestThresholdDist)
+void TestICP(vector<float> xs, vector<float> ys, float thresholdDist, float alfa, float smallestThresholdDist, float initialPoseTheta)
 {
-	static int first_time = 1;
+	static int first_time = 2;
+	static int next_map_slot = 0;
+	unsigned long t1, t2;
 	float					runningTime;
-	CICP::TReturnInfo		info;
+	CICP::TReturnInfo		info,info1,info2,info3;
 	CICP					ICP;
+	int i;
 
 	m2.clear();
 
-	int i;
 	for (i = 0; i < xs.size(); i++)
 	{
 		if (first_time)
 		{
-			m1.insertPoint(xs[i], ys[i]);
-			first_time = 0;
+			m1[0].insertPoint(xs[i], ys[i]);
+			next_map_slot = 1;
 		}	
 		m2.insertPoint(xs[i], ys[i]);
 	}
+	if(first_time>0) first_time--;
+
 	// -----------------------------------------------------
 	//	ICP.options.ICP_algorithm = icpLevenbergMarquardt;
 	//	ICP.options.ICP_algorithm = icpClassic;
 	ICP.options.ICP_algorithm = (TICPAlgorithm)ICP_method;
 
-	ICP.options.maxIterations = 300;
+	ICP.options.maxIterations = 1200;
 	ICP.options.thresholdAng = DEG2RAD(179.0f);
 	ICP.options.thresholdDist = thresholdDist; //5.0f;
 	ICP.options.ALFA = alfa;//0.05f;
@@ -105,17 +109,36 @@ void TestICP(vector<float> xs, vector<float> ys, float thresholdDist, float alfa
 
 	//ICP.options.dumpToConsole();
 	// -----------------------------------------------------
+	t1 = timeGetTime();
+	CPosePDFPtr pdf,pdf1;
+	int best_initialPose;
+	int j;
+	int best_map;
+	for (j = 0; j < next_map_slot; j++)
+	{
+		for (i = 0; i < 6; i++)
+		{
+			CPose2D		initialPose(0.0f, 0.0f, (float)DEG2RAD(i * 60));
+			pdf1 = ICP.Align(&(m1[j]), &m2, initialPose, &runningTime, (void*)&info1);
+			if ((i == 0) && (j==0)) {
+				best_initialPose = i * 60;
+				info = info1; pdf = pdf1;
+				best_map = j;
+			}
+			if ((info1.goodness > info.goodness)) {
+				info = info1; pdf = pdf1;
+				best_initialPose = i * 60;
+				best_map = j;
+			}
+		}
+	}
+	t2 = timeGetTime();
 
-	CPose2D		initialPose(0.0f, 0.0f, (float)DEG2RAD(0.0f));
-
-	CPosePDFPtr pdf = ICP.Align(
-		&m1,
-		&m2,
-		initialPose,
-		&runningTime,
-		(void*)&info);
 #if 1
-	printf("ICP run in %.02fms, %d iterations (%.02fms/iter), %.01f%% goodness -> ",
+	printf("t=%5d    bm=%d  bip=%3d  ICP run in %.02fms, %d iterations (%.02fms/iter), %.01f%% goodness -> ",
+		t2 - t1,
+		best_map,
+		best_initialPose,
 		runningTime * 1000,
 		info.nIterations,
 		runningTime*1000.0f / info.nIterations,
@@ -172,7 +195,7 @@ void TestICP(vector<float> xs, vector<float> ys, float thresholdDist, float alfa
 #endif
 
 	vector<float>   map1_xs, map1_ys, map1_zs;
-	m1.getAllPoints(map1_xs, map1_ys, map1_zs);
+	m1[best_map].getAllPoints(map1_xs, map1_ys, map1_zs);
 
 	vector<float>   map2_xs, map2_ys, map2_zs;
 	m2_trans.getAllPoints(map2_xs, map2_ys, map2_zs);
@@ -187,8 +210,10 @@ void TestICP(vector<float> xs, vector<float> ys, float thresholdDist, float alfa
 	if (win->keyHit())
 	{
 		win->getPushedKey();
-		m1.clear();
-		m1.copyFrom(m2);
+		//printf("next_map_slot=%d\n", next_map_slot);
+		m1[next_map_slot].clear();
+		m1[next_map_slot].copyFrom(m2);
+		next_map_slot++;
 	}
 
 }
@@ -233,7 +258,7 @@ void TestRANSACLines(vector<float> xs1, vector<float> ys1)
 
 	CTicTac	tictac;
 
-	ransac_detect_2D_lines(xs, ys, detectedLines, DIST_THRESHOLD, 20);
+	ransac_detect_2D_lines(xs, ys, detectedLines, DIST_THRESHOLD, 10);
 
 	// Display output:
 	cout << "RANSAC method: ransac_detect_2D_lines" << endl;
@@ -276,12 +301,16 @@ void mrpt_init()
 	//global_win->hold_on();
 }
 
-void mrpt_show_grid(vector<float>   xs, vector<float> ys, float thresholdDist, float alfa, float smallestThresholdDist)
+void mrpt_show_grid(vector<float>   xs, vector<float> ys, float thresholdDist, float alfa, float smallestThresholdDist, float initialPoseTheta)
 {
+	static unsigned long t1=0, t2;
 	CSimplePointsMap		m1, m2;
 
-	//TestICP(xs, ys, thresholdDist, alfa, smallestThresholdDist);
-	TestRANSACLines(xs, ys);
+	t2 = timeGetTime();
+	printf("%6d ", t2 - t1);
+	t1 = t2;
+	TestICP(xs, ys, thresholdDist, alfa, smallestThresholdDist, initialPoseTheta);
+	//TestRANSACLines(xs, ys);
 }
 
 
