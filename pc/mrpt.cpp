@@ -68,6 +68,7 @@ char  SCAN_VALID_2[] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
 #endif
 
 CSimplePointsMap		m1[8],m2;
+CSimplePointsMap		m0;
 
 // ------------------------------------------------------
 //				TestICP
@@ -93,7 +94,11 @@ void TestICP(vector<float> xs, vector<float> ys, float thresholdDist, float alfa
 		}	
 		m2.insertPoint(xs[i], ys[i]);
 	}
-	if(first_time>0) first_time--;
+	if (first_time > 0)
+	{
+		first_time--;
+		m0.clear();
+	}
 
 	// -----------------------------------------------------
 	//	ICP.options.ICP_algorithm = icpLevenbergMarquardt;
@@ -134,65 +139,30 @@ void TestICP(vector<float> xs, vector<float> ys, float thresholdDist, float alfa
 	}
 	t2 = timeGetTime();
 
+	CPose2D mean = pdf->getMeanVal();
+
+	static float x_avg=0, y_avg=0, t_avg=0;
+	x_avg = (3 * x_avg + (float)mean.x()) / 4;
+	y_avg = (3 * y_avg + (float)mean.y()) / 4;
+	t_avg = (3 * t_avg + (float)mean.phi()) / 4;
+
 #if 1
-	printf("t=%5d    bm=%d  bip=%3d  ICP run in %.02fms, %d iterations (%.02fms/iter), %.01f%% goodness -> ",
+	printf("t=%5d    bm=%2d    bip=%3d   #iter=%4d   q=%3.0f    pose=(%+4.1f,%+4.1f,%+4.1f)   avg_pose=(%+4.1f,%+4.1f,%+4.1f)\n",
 		t2 - t1,
 		best_map,
 		best_initialPose,
-		runningTime * 1000,
 		info.nIterations,
-		runningTime*1000.0f / info.nIterations,
-		info.goodness * 100);
+		info.goodness * 100,
+		(float)mean.x(), (float)mean.y(), (float)(RAD2DEG(mean.phi())),
+		x_avg,y_avg,RAD2DEG(t_avg)
+		);
 #endif
-	cout << "   Mean of estimation: " << pdf->getMeanVal() << endl;
 
 	CPosePDFGaussian  gPdf;
 	gPdf.copyFrom(*pdf);
 
-#if 0
-	cout << "Covariance of estimation: " << endl << gPdf.cov << endl;
-	cout << " std(x): " << sqrt(gPdf.cov(0, 0)) << endl;
-	cout << " std(y): " << sqrt(gPdf.cov(1, 1)) << endl;
-	cout << " std(phi): " << RAD2DEG(sqrt(gPdf.cov(2, 2))) << " (deg)" << endl;
-#endif
-
 	CSimplePointsMap m2_trans = m2;
 	m2_trans.changeCoordinatesReference(gPdf.mean);
-
-	// If we have 2D windows, use'em:
-#if 0
-	if (!skip_window)
-	{
-		gui::CDisplayWindowPlots	win("ICP results");
-
-		// Reference map:
-		vector<float>   map1_xs, map1_ys, map1_zs;
-		m1.getAllPoints(map1_xs, map1_ys, map1_zs);
-		win.plot(map1_xs, map1_ys, "b.3", "map1");
-
-		// Translated map:
-		vector<float>   map2_xs, map2_ys, map2_zs;
-		m1.getAllPoints(map2_xs, map2_ys, map2_zs);
-
-		//while (1)
-		{
-			std::transform(map2_xs.begin(), map2_xs.end(), map2_xs.begin(), std::bind1st(std::multiplies<float>(), 1.001));
-			std::transform(map2_ys.begin(), map2_ys.end(), map2_ys.begin(), std::bind1st(std::multiplies<float>(), 1.001));
-			win.plot(map2_xs, map2_ys, "r.3", "map2");
-			//win.getPushedKey();
-			//win.waitForKey();
-			Sleep(20);
-		}
-		// Uncertainty
-		win.plotEllipse(MEAN2D[0], MEAN2D[1], COV22, 3.0, "b2", "cov");
-
-		win.axis(-1, 10, -6, 6);
-		win.axis_equal();
-
-		cout << "Close the window to exit" << endl;
-		//win.waitForKey();
-	}
-#endif
 
 	vector<float>   map1_xs, map1_ys, map1_zs;
 	m1[best_map].getAllPoints(map1_xs, map1_ys, map1_zs);
@@ -203,18 +173,31 @@ void TestICP(vector<float> xs, vector<float> ys, float thresholdDist, float alfa
 	vector<float>   map3_xs, map3_ys, map3_zs;
 	m2.getAllPoints(map3_xs, map3_ys, map3_zs);
 
-	win->plot(map1_xs, map1_ys, "b.7", "map1");
-	win->plot(map2_xs, map2_ys, "r.5", "map2");
-	win->plot(map3_xs, map3_ys, "g.5", "map3");
+	vector<float>   map0_xs, map0_ys, map0_zs;
+	m0.getAllPoints(map0_xs, map0_ys, map0_zs);
+
+	static int p1 = 1, p2 = 1, p3 = 1;
 
 	if (win->keyHit())
 	{
-		win->getPushedKey();
+		int key = win->getPushedKey();
 		//printf("next_map_slot=%d\n", next_map_slot);
-		m1[next_map_slot].clear();
-		m1[next_map_slot].copyFrom(m2);
-		next_map_slot++;
+		//printf("key=%d\n", key);
+		if (key == ' ')
+		{
+			m1[next_map_slot].clear();
+			m1[next_map_slot].copyFrom(m2);
+			next_map_slot++;
+		}
+		if (key == 'a') p1 = !p1;
+		if (key == 'b') p2 = !p2;
+		if (key == 'c') p3 = !p3;
+		win->clear();
 	}
+	if(p1) win->plot(map1_xs, map1_ys, "b.7", "map1");
+	if(p2) win->plot(map2_xs, map2_ys, "r.5", "map2");
+	if(p3) win->plot(map3_xs, map3_ys, "g.5", "map3");
+
 
 }
 
