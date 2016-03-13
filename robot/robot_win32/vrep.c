@@ -475,10 +475,13 @@ void vrep_sim_inputs(void)
 		s.inputs.analog[AI_START_BUTTON]=255;
 	}
 
-
+	v.u32 = 0;
 	v.u08 = 61;		cfg_set_value_by_grp_id(6,1, v); //black
 	v.u08 = 60;		cfg_set_value_by_grp_id(6,2, v); //white
 	v.f   = 154.0;  cfg_set_value_by_grp_id(5,3, v); //odo_b
+
+	v.u32 = 0;
+	v.u16 = 145;    cfg_set_value_by_grp_id(15,9, v);//tilt_center_pos
 
 
 	//------------------------------------------------------------------------------------------------------------------------------------

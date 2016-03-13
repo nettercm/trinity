@@ -77,6 +77,8 @@ void servo_task(u08 cmd, u08 *param)
 		PREPARE_CFG2(s2_pos);					
 		PREPARE_CFG2(tilt_center_pos);					
 		PREPARE_CFG2(pan_center_pos);					
+
+		pan_tilt_center();
 	}
 
 	//task_open_2();
