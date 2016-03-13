@@ -151,6 +151,32 @@ void vrep_sim_step(void)
 		int c;
 		c = _getch();
 
+		if(c=='?')
+		{
+			printf(
+				"\n" \
+				"r - move the robot to the next pre-determined start location\n" \
+				"M - make the robot movable / draggable in V-REP\n" \
+				"m - make the robot 'normal' again\n" 
+				"\n" \
+				"a - start the 'master logic' via s.behavior_state[MASTER_LOGIC_FSM]=m.start_location \n" \
+				"s - start the 'master logic' via force_start_signal(1) \n" \
+				"b - s.behavior_state[FIND_WALL_FSM]=1 \n" \
+				"c - s.behavior_state[FIND_WALL_FSM]=2 \n" \
+				"\n" \
+				"d - move the dog to the next pre-determined location \n" \
+				"w - reconfigure Room #1 door \n" \
+				"W - reconfigure Room #4 door \n" \
+				"\n" \
+				"0 - remove the candle \n" \
+				"1 - put candle into Room #1 \n" \
+				"2 - put candle into Room #2 \n" \
+				"3 - put candle into Room #3 \n" \
+				"4 - put candle into Room #4 \n" \
+			);
+		}
+
+
 		if(c==0x1b)
 		{
 			simxStopSimulation(clientID,simx_opmode_oneshot_wait);
@@ -217,7 +243,7 @@ void vrep_sim_step(void)
 			cc++;
 			if (cc > 2) cc = 0;
 			move_object("Dog", location[cc].x, location[cc].y, IGNORE_THETA);
-			printf("Candle will be in room #1.\n");
+			printf("Dog will be in room #1.\n");
 		}
 
 		if (c == 'w')
@@ -251,7 +277,7 @@ void vrep_sim_step(void)
 				//s.door_position = 2;
 			}
 		}
-		if (c == '0') //assume candle is in room 1
+		if (c == '0') //assume no candle
 		{
 			m.candle_location = 0;
 			printf("No candle\n");
