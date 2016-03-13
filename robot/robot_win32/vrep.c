@@ -394,6 +394,7 @@ int read_ir(int handle,int min, int max, float noise_factor)
 		int detected_handle=0;
 		static int count=0;
 
+		if(handle==0) return max;
 		result = simxReadProximitySensor(clientID,handle,&state,&(point[0]),&detected_handle,&(surface[0]),STREAMING_MODE);
 		distance = max;
 		if(state) 
