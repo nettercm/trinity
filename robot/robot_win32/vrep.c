@@ -24,6 +24,10 @@ static int sonar0,sonar1,sonar2,sonar3,sonar4;
 static int robot,candle;
 static int mirror[10] = {0,0,0,0,0,0,0,0,0,0};
 
+static int use_actual_position=0;
+static int inter_step_delay=0;
+static int use_mirrors=0;
+
 const float IGNORE_X = 9999999.0f;
 const float IGNORE_Y = 9999999.0f;
 const float IGNORE_Z = 9999999.0f;
@@ -121,8 +125,6 @@ void vrep_sim_step(void)
 	static int t_sim,t_sim_last=0;
 	static u32 t_real_now, t_real_last=0; 
 	static u32 t_m,t_m_last=0;
-	static int use_actual_position=0;
-	static int inter_step_delay=0;
 	int pingTime;
 
 	t_sim = simxGetLastCmdTime(clientID);
@@ -173,6 +175,13 @@ void vrep_sim_step(void)
 				"2 - put candle into Room #2 \n" \
 				"3 - put candle into Room #3 \n" \
 				"4 - put candle into Room #4 \n" \
+				"i - use/ignore mirrors \n" \
+				"\n" \
+				"\n" \
+				"use_actual_position = %d\n" \
+				"use_mirrors         = %d\n" 
+				,use_actual_position
+				,use_mirrors
 			);
 		}
 
@@ -182,6 +191,12 @@ void vrep_sim_step(void)
 			simxStopSimulation(clientID,simx_opmode_oneshot_wait);
 			simxFinish(clientID);
 			exit(0);
+		}
+
+		if(c=='i')
+		{
+			use_mirrors = !use_mirrors;
+			printf("use_mirrors = %d\n",use_mirrors);
 		}
 
 		if(c=='r')
@@ -410,8 +425,11 @@ int read_ir(int handle,int min, int max, float noise_factor)
 		{
 			if(detected_handle==mirror[i])
 			{
-				//distance = max;
-				//printf("Mirror!\n");
+				if(use_mirrors)
+				{
+					distance = max;
+					printf("Mirror!\n");
+				}
 			}
 		}
 
