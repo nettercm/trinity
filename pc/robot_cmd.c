@@ -68,7 +68,11 @@ int serial_receive(HANDLE p, unsigned char *buffer)
 	size = serial_read(p,(char*)buffer,300);  
 	result = size >= sizeof(t_frame_to_pc) ? 1 : 0; 
 
-	if(size != sizeof(t_frame_to_pc)) log_printf("serial_receive(): size = %d instead of %d\n",size,sizeof(t_frame_to_pc));
+	if(size != sizeof(t_frame_to_pc)) 
+	{
+		//TODO  fix me.  for some reason, a difference of +1 is quite common. Not sure why
+		if(size != sizeof(t_frame_to_pc)+1) log_printf("serial_receive(): size = %d instead of %d\n",size,sizeof(t_frame_to_pc));
+	}
 
 	if(result == 1)
 	{
@@ -290,7 +294,7 @@ void display_inputs_and_state(t_inputs *inputs)
 	t_delta_avg = (t_delta_avg*19.0f + t_delta)/20.0f;
 
 	//sprintf(s.msg, "%03u, %03u, %03u, %2.1f,   V,%3.1f,  0x%04x,  A,%03d,%03d,%03d,%03d,%03d,%03d,%03d,%03d,    FSM,%1d,%1d,%1d,%1d,%1d,%1d,%1d,%1d  E,%4d,%4d,  O,%4.1f,%4.1f,%4.1f,  %4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,%4d  M,%03d,%03d, %03d,%03d,  W,%03d,%03d,%03d,%03d\n",				
-	sprintf(s.msg, "D_ ( %3u, %3u, %6ld,  T,%3d,%3.1f,   V,%3.1f,  0x%04x,  A,%3d,%3d,%3d,%3d,%3d,%3d,%3d,%3d,     E,%5d,%5d,   O,%4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,  I,%4d,%4d,%4d,  M,%3d,%3d, %3d,%3d, %3d,%3d,   W,%3d,%3d,%3d,%3d )\n",				
+	sprintf(s.msg, "%3u, %3u, %6ld,  T,%3d,%3.1f,   V,%3.1f,  0x%04x,   L,%3d,%3d    FL,%3d,%3d,%3d,  %3d,    E,%5d,%5d,   O,%4.1f,%4.1f,%4.1f,    S,%4d,%4d,%4d,%4d,%4d  I,%4d,%4d,%4d,  M,%3d,%3d, %3d,%3d, %3d,%3d,   W,%3d,%3d,%3d,%3d\n",				
 				rx_buffer->seq,
 				rx_buffer->ack,
 				inputs->timestamp,
@@ -298,7 +302,8 @@ void display_inputs_and_state(t_inputs *inputs)
 				inputs->vbatt/1000.0f,
 				inputs->flags,
 
-				inputs->analog[0], inputs->analog[1], inputs->analog[2], inputs->analog[3], inputs->analog[4], inputs->analog[5], inputs->analog[6], inputs->analog[7], 
+				inputs->analog[11], inputs->analog[10], //Line
+				inputs->analog[13], inputs->analog[12], inputs->analog[14],  ((int)inputs->analog[13]+(int)inputs->analog[14])/2,//Flame
 
 				//inputs->fsm_states[0],inputs->fsm_states[1],inputs->fsm_states[2],inputs->fsm_states[3],
 				//inputs->fsm_states[4],inputs->fsm_states[5],inputs->fsm_states[6],inputs->fsm_states[7],
@@ -307,8 +312,8 @@ void display_inputs_and_state(t_inputs *inputs)
 				//odo_x, odo_y, (odo_theta/(2*PI))*360.0f,
 				inputs->x, inputs->y, (inputs->theta/(2*PI))*360.0f,
 
-				inputs->sonar[0],inputs->sonar[1],inputs->sonar[2],inputs->sonar[3],
-				inputs->ir[7],inputs->ir[0], inputs->ir[1], //inputs->sonar[6],inputs->sonar[7],
+				inputs->sonar[4],inputs->sonar[1],inputs->sonar[0],inputs->sonar[2],inputs->sonar[3],
+				inputs->ir[3],inputs->ir[0], inputs->ir[4], //inputs->sonar[6],inputs->sonar[7],
 				
 				inputs->target_speed[0], inputs->target_speed[1],
 				inputs->actual_speed[0], inputs->actual_speed[1],

@@ -141,6 +141,7 @@ void main_loop(void)
 
 	//ui
 	task_run(lcd_update_fsm,0,0);	//lcd is incompatible with servos; also, not yet converted from task back to pure fsm	
+	task_run(sound_start_fsm,0,0);  //signal sound detection
 
 	//outgoing communication
 	serial_send_fsm(0,0);
@@ -235,6 +236,7 @@ int main(void)
 	task_create( master_logic_fsm,			3,  NULL, 0, 0);
 	task_create( lcd_update_fsm,			4,  NULL, 0, 0);
 	task_create( return_home_fsm,			5,  NULL, 0, 0);
+	task_create( sound_start_fsm,			6,  NULL, 0, 0);
 
 	//os_start();
 	running = 1;

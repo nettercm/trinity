@@ -13,5 +13,7 @@ extern int check_for_start_signal();
 extern void force_start_signal(u08 f);
 extern void reset_start_signal(void);
 
+extern void sound_start_fsm(uint8 cmd, uint8 *param);
+
 
 #endif
