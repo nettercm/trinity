@@ -17,6 +17,71 @@ static u08 force = 0;
 static u08 start_button_state = 0;
 static u08 start_button_count = 0;
 
+u08 start_signal_received = 0;
+
+void sound_start_fsm(uint8 cmd, uint8 *param)
+{
+	enum states 
+	{ 
+		s_waiting_for_start=0,	//0 
+		s_indicating,			//1
+		s_done,
+		s_none=255
+	};
+	static enum states state=s_waiting_for_start;
+	static enum states last_state=s_none;
+	static u32 t_entry=0;
+	static u08 initialized=0;
+	static u08 count=0;
+
+	task_open();
+
+	usb_printf("sound_start_fsm()\n");
+
+	while(1)
+	{
+		first_(s_waiting_for_start)
+		{
+			enter_(s_waiting_for_start) {  	NOP(); 	}
+			
+			if(start_signal_received)
+			{
+				state = s_indicating;
+			}
+
+			exit_(s_waiting_for_start)  { 	NOP();	}
+		}
+
+		next_(s_indicating)
+		{
+			enter_(s_indicating) 
+			{  
+				count=0;
+			}
+
+			while(count<30)
+			{
+				SOUND_DETECT(1);
+				task_wait(50);
+				SOUND_DETECT(0);
+				task_wait(50);
+				count++;
+			}
+
+			state = s_waiting_for_start;
+
+			exit_(s_indicating)  
+			{ 	
+				start_signal_received = 0;
+			}
+		}
+
+		OS_SCHEDULE;
+	}
+
+	task_close();
+}
+
 
 void force_start_signal(u08 f)
 {
@@ -149,6 +214,7 @@ int check_for_start_signal()
 		consecutive_sound_start_count = 0;
 		sound_start_count = 0;
 		force = 0;
+		start_signal_received = 1;
 		return 1; 
 	}
 	else return 0;
