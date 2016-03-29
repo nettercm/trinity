@@ -24,11 +24,19 @@ Room 4 permutations:
 
 Todo:
 
-* test finding room 4
-* wire up the "detected" LED
-* add code to turn on the "detected" LED
-* finish return home logic (room 4)
+* add rubber band (or something) to pan/tilt mechanism to dampen vibrations
+* add large electrolytic capacitors to the 5V power rail to prevent brown-out / reset when the pump turns on
+* confirm that max height of 27cm is not exceeded
+* add "front" label and other labels to the handle bar
+* attach the water tank and provide a means to refill
+* move pan/tilt mechanism back by .5" so that the nozzle doesn't stick out beyond the base; avoid nozzle getting stuck on wall or door frame
+* replace front caster with much smaller version that can traverse carpet edge
+* consider attaching a low-friction material to the rim of the base to avoid getting stuck on wall during certain turn maneuvers
+* wire-up the kill switch/plug
 
+* consider changing the type of motor command used during wall following - regulate speed to avoid getting stuck at low speeds
+* add a config paramter that turns debug printf via serial comms on or off
+* revisit the pan/tilt pattern during extinguishing
 * convert the various flame detection threasholds into config parameters
 
 
@@ -36,35 +44,27 @@ Todo:
 Issues:
 
 * mirror placement can result in sharp_corner turn
-
 * entering room 4 south: might get too far down the hallway, i.e. too far to the left of the door
-
 * exiting room 1 top door while going home not reliable
 
-* while returning home, there eare cases where the US_N might pick up the corner of the intersection and we consider it as having reached the end...
 
 
 
 Low Priority:
 
 •	too slow when make 90deg inside turns
-
 •	when turning left after exiting from room 1, robot is way too far to the right
-
-•	When doing a 360 spin to look for the candle, need to make sure we don’t get confused by any IR potentially coming from outside the room
-	o	Need to look at the angle associated with the reading, i.e. ignore if it is coming from behind the robot
-	o	Don’t do a 360 degree spin – turn right >90deg and then left >180deg
 
 
 
 
 Solved Issues:
 
-•	When the flame is close to a wall, the flame’s reflection from the wall can max out the flame sensors => may end up to looking straight at the candle when stopped
+•	When the flame is close to a wall, the flame’s reflection from the wall can max out the flame sensors => may end up NOT looking straight at the candle when stopped
 	o	Do a sweep and use IR and/or flame sensor data to find the correct peak position
 	o	If the wall is known to be on the left, sweep from the right until the right sensor is maxed out
 
-* when the candle is very close right after entering the room, candle finding fails
+*   when the candle is very close right after entering the room, candle finding fails
 
 *	turn sound back on for improved debuggin? (don't initialize servo feature until when its needed)
 	=> done, but only for playing sequences and it is only done on powerup / reset. servos get initialized later
@@ -89,6 +89,12 @@ Solved Issues:
 •	acceleration from 0 to min speed / turn speed needs to be more smooth if target speed is > 30
 	=> added suspension to the back to prevent back-and-forth wobble
 
+•	When doing a 360 spin to look for the candle, need to make sure we don’t get confused by any IR potentially coming from outside the room
+	=> added a shield
+
+
+*   while returning home, there eare cases where the US_N might pick up the corner of the intersection and we consider it as having reached the end...
+	=> all 3 front-facing sonars must now read <100 before we stop
 
 Notes:
 

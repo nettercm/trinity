@@ -7,21 +7,6 @@
 
 
 /*
-Issues:
-
-*   what about carpet bump at the entrance to a room?  how will it affect the line sensor readings?
-
-•	When the flame is close to a wall, the flame’s reflection from the wall can max out the flame sensors => may end up to looking straight at the candle when stopped
-	o	Do a sweep and use IR and/or flame sensor data to find the correct peak position
-	o	If the wall is known to be on the left, sweep from the right until the right sensor is maxed out
-
-•	When the candle is in the bottom right corner of room 3, the "door frame" might be seen by the sonar and so the robot won't go closer to the candle
-	(similar situations possible in other rooms) solution: move further into the room before locating candle?
-
-
-•	line detection: signal-to-noise ration on analog[10]/right line is bad;   also,  missing the entrance to room 1 (maybe exit from room 2 confuses the line detector)
-
-
 
 
 Low Priority:
@@ -34,29 +19,7 @@ Low Priority:
 
 •	when turning left after exiting from room 1, robot is way too far to the right
 
-•	When doing a 360 spin to look for the candle, need to make sure we don’t get confused by any IR potentially coming from outside the room
-	o	Need to look at the angle associated with the reading, i.e. ignore if it is coming from behind the robot
-	o	Don’t do a 360 degree spin – turn right >90deg and then left >180deg
 
-Solved Issues:
-
-•	If the candle is in the middle of a large room, the robot will crash into it if we are approaching it off-center (sonar won’t see it)
-	o	Solution: add a NE and NW facing sonar
-
-•	robot does not go into room 3 if door opening is < 16".
-	o	may have to do w/ recently added front sensor logic,
-	o	it improved after tweaking wall_following.c line 120)
-
-
-
-Notes:
-
-s.U:
-Home:	0
-Rm#3:	1500
-Rm#2:	3380
-Rm#1:	3980  (configuration 1 - door on the bottom)
-Rm#1:	4160  (configuration 2 - door on the top)
 
 
 */
