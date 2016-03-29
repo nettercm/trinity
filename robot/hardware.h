@@ -76,9 +76,9 @@ static const u08 IR_E  = 6;
 //analogs.  The following refer to channel numbers
 static const u08 AI_IR_N		= 0;
 static const u08 AI_IR_NL		= 1;
-static const u08 AI_IR_NE		= 2;
+static const u08 AI_IR_NE		= 15;
 static const u08 AI_IR_W		= 3;
-static const u08 AI_IR_E		= 15;
+static const u08 AI_IR_E		= 2;
 static const u08 AI_IR_NW		= 4;
 static const u08 AI_IR_NR		= 5;
 
@@ -133,7 +133,8 @@ extern const unsigned char pulseInPins[6];
 extern const unsigned char demuxPins[1];
 #define SERVO_DEMUX_PINS	{ SERVO_DEMUX_PIN }
 
-#define FIRE_ALARM(on_off) 	set_digital_output(FIRE_ALARM_PIN, !on_off)
+#define FIRE_ALARM(on_off) 		set_digital_output(FIRE_ALARM_PIN, !on_off)
+#define SOUND_DETECT(on_off) 	set_digital_output(FIRE_ALARM_PIN, !on_off)
 
 
 /*
