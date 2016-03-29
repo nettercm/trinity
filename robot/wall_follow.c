@@ -250,9 +250,9 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 	}
 
 	front = s.ir[IR_N];
-	if(s.inputs.sonar[0] < front)
+	if(s.inputs.sonar[US_N] < front)
 	{
-		front = s.inputs.sonar[0];
+		front = s.inputs.sonar[US_N];
 	}
 
 
