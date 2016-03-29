@@ -34,8 +34,8 @@ S16(3, 4, "Ki",								0, 0, 0.10*16)
 GRP(4, "ULTRASONIC RANGE")
 
 U08(4, 1, "sensor enable/disable bitmap",	0, 0, 0xff)
-U32(4, 2, "echo timeout",					0, 0, 20)
-U32(4, 3, "minimum delay between sensors",	0, 0, 20)
+U32(4, 2, "echo timeout",					0, 0, 15)  //current logic fires 1 sensor per update cycle, so make sure these timeouts don't get in the way
+U32(4, 3, "minimum delay between sensors",	0, 0, 15)
 //----------------------------------------------------------
 
 
