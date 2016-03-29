@@ -249,6 +249,14 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		side2 = s.inputs.sonar[US_E];
 	}
 
+	/*
+	//overriding the IR w/ sonar does not work!
+	if(side2 < (side+20)) 
+	{
+		side = side2-20;
+	}
+	*/
+
 	front = s.ir[IR_N];
 	if(s.inputs.sonar[US_N] < front)
 	{
@@ -342,14 +350,20 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 		if(target_speed > corner_speed) target_speed -= down_ramp;
 		if(target_speed < corner_speed) target_speed += up_ramp;
 		motor_command(8,0,0,target_speed,target_speed);
-		if( odometry_get_distance_since_checkpoint() >= corner_distance ) 
+
+		//only turn the corner if neither the IR nor the US sensor can "see" the wall
+		if( side <= found_wall_distance ) 
 		{
-			//if( side2 > 150)  //TODO: consider using a side sensor (e.g. US_E and/or IR_E) to confirm that it's OK to turn the corner
-			{
-				state = s_turning_corner;
-			}
+			state = s_tracking_wall;
 		}
-		if( side <= found_wall_distance ) state = s_tracking_wall;
+		else if( side2 <=target_distance ) 
+		{
+			state = s_lost_wall;
+		}
+		else if( odometry_get_distance_since_checkpoint() >= corner_distance ) 
+		{
+			state = s_turning_corner;
+		}
 
 		exit_(s_lost_wall) { }	
 	}
