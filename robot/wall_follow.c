@@ -5,6 +5,9 @@
 #define is_nth_iteration(counter, n) (counter++ >= (n) ?  counter=0, 1 : 0)
 #define invalid_error_value 9999
 
+#define WF_MTR_CMD 8
+
+
 u08 is_wall_in_front(void)
 {
 	u08 result = 0;
@@ -273,7 +276,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 			which_wall = s.behavior_state[FOLLOW_WALL_FSM];
 			state = s_tracking_wall;
 		}
-		exit_(s_disabled)  { motor_command(8,1000,0,min_speed/2,min_speed/2); target_speed = min_speed; }
+		exit_(s_disabled)  { motor_command(WF_MTR_CMD,1000,0,min_speed/2,min_speed/2); target_speed = min_speed; }
 	}
 
 
@@ -329,11 +332,11 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 		if(correction > 0)
 		{
-			motor_command(8,1000,0,target_speed-correction,target_speed+(correction*1));
+			motor_command(WF_MTR_CMD,1000,0,target_speed-correction,target_speed+(correction*1));
 		}
 		else
 		{
-			motor_command(8,1000,0,target_speed-(correction*1),target_speed+correction);
+			motor_command(WF_MTR_CMD,1000,0,target_speed-(correction*1),target_speed+correction);
 		}
 
 		exit_(s_tracking_wall) { }
@@ -349,7 +352,7 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 		if(target_speed > corner_speed) target_speed -= down_ramp;
 		if(target_speed < corner_speed) target_speed += up_ramp;
-		motor_command(8,0,0,target_speed,target_speed);
+		motor_command(WF_MTR_CMD,0,0,target_speed,target_speed);
 
 		//only turn the corner if neither the IR nor the US sensor can "see" the wall
 		if( side <= found_wall_distance ) 
@@ -387,11 +390,11 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 		if(which_wall==LEFT_WALL) 
 		{
-			motor_command(8,0,0,(target_speed*10)/corner_radius,target_speed);
+			motor_command(WF_MTR_CMD,0,0,(target_speed*10)/corner_radius,target_speed);
 		}
 		else 
 		{
-			motor_command(8,0,0,target_speed,(target_speed*10)/corner_radius);
+			motor_command(WF_MTR_CMD,0,0,target_speed,(target_speed*10)/corner_radius);
 		}
 
 		if( side <= target_distance ) state = s_tracking_wall;
@@ -420,8 +423,8 @@ void wall_follow_fsm(u08 cmd, u08 *param)
 
 		if( target_speed > corner_speed )	target_speed -= down_ramp;
 		if( target_speed < corner_speed )	target_speed += up_ramp;
-		if( which_wall==LEFT_WALL )			motor_command(8,0,0,(target_speed*10)/sharp_corner_radius,target_speed);
-		else motor_command(8,0,0,target_speed,(target_speed*10)/sharp_corner_radius);
+		if( which_wall==LEFT_WALL )			motor_command(WF_MTR_CMD,0,0,(target_speed*10)/sharp_corner_radius,target_speed);
+		else motor_command(WF_MTR_CMD,0,0,target_speed,(target_speed*10)/sharp_corner_radius);
 
 		if (side <= target_distance)
 		{
