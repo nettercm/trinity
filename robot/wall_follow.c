@@ -5,7 +5,7 @@
 #define is_nth_iteration(counter, n) (counter++ >= (n) ?  counter=0, 1 : 0)
 #define invalid_error_value 9999
 
-#define WF_MTR_CMD 8
+#define WF_MTR_CMD 7
 
 
 u08 is_wall_in_front(void)
