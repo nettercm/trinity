@@ -223,7 +223,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			}
 
 			TURN_IN_PLACE( 40, -130 );
-			TURN_IN_PLACE_AND_SCAN(10, 300, flame_scan_moving_avg);
+			TURN_IN_PLACE_AND_SCAN(30, 300, flame_scan_moving_avg);
 			scan_result = find_flame_in_scan(scan_data,360,flame_threshold_1);
 			TURN_IN_PLACE( 30, -(300-scan_result.center_angle) );
 			switch_(s_scanning_v2, s_moving_towards_candle);
@@ -252,10 +252,10 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			{
 				motor_command(2,0,0,0,0);
 				pan_tilt_center();
-				TURN_IN_PLACE(20, -45);
-				TURN_IN_PLACE_AND_SCAN(10, 90, flame_scan_moving_avg);
+				TURN_IN_PLACE(40, -45);
+				TURN_IN_PLACE_AND_SCAN(30, 60, flame_scan_moving_avg);
 				scan_result = find_flame_in_scan(scan_data, 360, flame_threshold_1);
-				TURN_IN_PLACE(10, -(90 - scan_result.center_angle));
+				TURN_IN_PLACE(30, -(60 - scan_result.center_angle));
 				//if ((s.inputs.sonar[0] < stopping_distance) || (s.inputs.sonar[1] < stopping_distance) || (s.inputs.sonar[2] < stopping_distance))
 				{
 					switch_(s_moving_towards_candle, s_extinguish);
@@ -264,19 +264,19 @@ void find_flame_fsm(u08 cmd, u08 *param)
 
 			if (s.inputs.sonar[US_E] < us_wall_threashold)
 			{
-				TURN_IN_PLACE(30, 90);
+				TURN_IN_PLACE(40, 90);
 				MOVE(30, 150);
-				TURN_IN_PLACE_AND_SCAN(10, -180, flame_scan_moving_avg);
+				TURN_IN_PLACE_AND_SCAN(30, -180, flame_scan_moving_avg);
 				scan_result = find_flame_in_scan(scan_data, 360, flame_threshold_1);
-				TURN_IN_PLACE(10, (180 - abs(scan_result.center_angle)));
+				TURN_IN_PLACE(30, (180 - abs(scan_result.center_angle)));
 			}
 			else if (s.inputs.sonar[US_W] < us_wall_threashold)
 			{
-				TURN_IN_PLACE(30, -90);
+				TURN_IN_PLACE(40, -90);
 				MOVE(30, 150);
-				TURN_IN_PLACE_AND_SCAN(10, 180, flame_scan_moving_avg);
+				TURN_IN_PLACE_AND_SCAN(30, 180, flame_scan_moving_avg);
 				scan_result = find_flame_in_scan(scan_data, 360, flame_threshold_1);
-				TURN_IN_PLACE(10, -(180 - abs(scan_result.center_angle)));
+				TURN_IN_PLACE(30, -(180 - abs(scan_result.center_angle)));
 			}
 			/*
 			else if( (s.inputs.ir[IR_NE] < ir_wall_threashold) || ( s.inputs.sonar[US_E] < us_wall_threashold) )

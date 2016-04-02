@@ -140,17 +140,17 @@ u08 turn_in_place_manneuver(u08 cmd, s16 speed, float angle)
 	else //update
 	{
 		rotation = fabs(odometry_get_rotation_since_checkpoint());
-		if     ((  rotation >= fabs(angle)-3    )) 
+		if     ((  rotation >= fabs(angle)-1    )) 
 		{ 
 			motor_command(2,0,0, 0,  0); state = 0; 
 		} //done
 		//else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)- 5))   motor_command(7,1,1, -sign*5, sign*5 );
-		else if(( rotation >  fabs(angle)-15))   
+		else if(( rotation >  fabs(angle)-10))   
 		{
 			motor_command(7,3,3, -sign*5, sign*5 );
 		}
 		//else if(( fabs(odometry_get_rotation_since_checkpoint()) >  fabs(angle)/4 ))   motor_command(6,1,1, -sign*15, sign*15 );
-		else if(( rotation >  fabs(angle)-30 ))   
+		else if(( rotation >  fabs(angle)-20 ))   
 		{
 			motor_command(7,3,3, -sign*(speed/2),sign*(speed/2));
 		}
