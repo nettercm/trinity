@@ -8,7 +8,18 @@ void _os_tick(void)
 	unsigned long t_now;
 	unsigned long t_delta;
 
-#ifndef WIN32
+#if defined(WIN32) || defined(LINUX)
+	if(m.vrep_connected==0)
+	{
+		delay_ms(1); //this will update elapsed_milliseconds and issue a Sleep(1) to make sure PC does not get bogged down
+	}
+	if(t_last != m.elapsed_milliseconds) 
+	{
+		t_delta = m.elapsed_milliseconds - t_last;
+		t_last = m.elapsed_milliseconds;
+		os_task_tick(0,(unsigned short)t_delta);
+	}
+#else
 	t_now = get_ms();
 	if(t_now != t_last)
 	{
@@ -16,14 +27,6 @@ void _os_tick(void)
 		t_last=t_now;
 		//os_tick();
 		m.elapsed_milliseconds+=t_delta;
-		os_task_tick(0,(unsigned short)t_delta);
-	}
-#else
-	if(t_last != m.elapsed_milliseconds) 
-	{
-		t_delta = m.elapsed_milliseconds - t_last;
-		t_last = m.elapsed_milliseconds;
-		//delay_ms(1); //this will update elapsed_milliseconds and issue a Sleep(1) to make sure PC does not get bogged down
 		os_task_tick(0,(unsigned short)t_delta);
 	}
 #endif

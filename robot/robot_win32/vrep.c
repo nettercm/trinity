@@ -7,6 +7,7 @@
 #include "cocoos/cocoos.h"
 
 #include "standard_includes.h"
+#include "sim.h"
 
 #include "extApi.h"
 
@@ -129,7 +130,14 @@ void vrep_sim_step(void)
 
 	t_sim = simxGetLastCmdTime(clientID);
 	t_real_now = timeGetTime();
-	m.elapsed_milliseconds=t_sim;
+	if(m.vrep_connected)
+	{
+		m.elapsed_milliseconds=t_sim;
+	}
+	else
+	{
+
+	}
 	t_m=m.elapsed_milliseconds;
 	if(0)
 	//if(t_real_now-t_real_last >= 1000)
@@ -697,6 +705,8 @@ void vrep_sim_init(void)
 
 	clientID=simxStart((simxChar*)"127.0.0.1",19997,1,1,2000,1);
 	printf("clientID=%d\n",clientID);
+	if(clientID<0) m.vrep_connected=0;
+	else m.vrep_connected=1;
 
 	result = simxStopSimulation(clientID,simx_opmode_oneshot_wait);
 	if(result != simx_return_ok) printf("simxStopSimulation() failed!\n");
@@ -742,7 +752,11 @@ void vrep_sim_init(void)
 	simxGetObjectHandle(clientID, "Mirror8", &(mirror[6]), simx_opmode_oneshot_wait);
 
 	result = simxStartSimulation(clientID,simx_opmode_oneshot_wait);
-	if(result != simx_return_ok) printf("simxStartSimulation() failed!\n");
+	if(result != simx_return_ok) 
+	{
+		printf("simxStartSimulation() failed!\n");
+		m.vrep_connected=0;
+	}
 
 	result = simxSynchronous(clientID,1);
 	if(result != simx_return_ok) printf("simxSynchronous() failed!\n");

@@ -182,7 +182,14 @@ void main_loop_task(u08 cmd, u08 *param)
 		//on the PC, under sim control, the simulation time will drive the progress of time to make sure everything is in lock-step
 		//the assumption is that the simulation time step is 20ms.
 		//hence no need for a sleep statement
-		OS_SCHEDULE;
+		if(m.vrep_connected)
+		{
+			OS_SCHEDULE;
+		}
+		else
+		{
+			task_wait(20); //if v-rep is not connected, we need to add a 20ms delay here to simulate the 50Hz step time
+		}
 		#endif
 	}
 

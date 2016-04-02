@@ -25,6 +25,8 @@ typedef struct
 	//some information about the arena state
 	u08 candle_location; //don't have a simulated omni-directional flame sensor....
 	u08 start_location; //allows us to "skip" ahead to a state where the robot just entered a specific room;  0=home
+
+	u08 vrep_connected;
 } t_robot_model;
 
 extern void sim_task(u08 cmd, u08 *param);
