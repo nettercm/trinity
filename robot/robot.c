@@ -24,21 +24,23 @@ Room 4 permutations:
 
 Todo:
 
-* add rubber band (or something) to pan/tilt mechanism to dampen vibrations
 * add large electrolytic capacitors to the 5V power rail to prevent brown-out / reset when the pump turns on
-* confirm that max height of 27cm is not exceeded
-* add "front" label and other labels to the handle bar
-* attach the water tank and provide a means to refill
-* move pan/tilt mechanism back by .5" so that the nozzle doesn't stick out beyond the base; avoid nozzle getting stuck on wall or door frame
 * replace front caster with much smaller version that can traverse carpet edge
 * consider attaching a low-friction material to the rim of the base to avoid getting stuck on wall during certain turn maneuvers
-* wire-up the kill switch/plug
 
 * consider changing the type of motor command used during wall following - regulate speed to avoid getting stuck at low speeds
 * add a config paramter that turns debug printf via serial comms on or off
 * revisit the pan/tilt pattern during extinguishing
 * convert the various flame detection threasholds into config parameters
 
+
+Done:
+* move pan/tilt mechanism back by .5" so that the nozzle doesn't stick out beyond the base; avoid nozzle getting stuck on wall or door frame
+* add rubber band (or something) to pan/tilt mechanism to dampen vibrations
+* confirm that max height of 27cm is not exceeded
+* add "front" label and other labels to the handle bar
+* attach the water tank and provide a means to refill
+* wire-up the kill switch/plug
 
 
 Issues:
