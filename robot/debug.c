@@ -5,13 +5,14 @@
  *  Author: Chris
  */ 
 
-
+#include "standard_includes.h"
+/*
 #include "typedefs.h"
 #include "debug.h"
 #include <stdio.h>
 #include <stdarg.h>
 #include <pololu/orangutan.h>
-
+*/
 unsigned char trace_buffer[256];
 unsigned char *tbptr = trace_buffer;
 unsigned char *msptr = ((unsigned char*)(&msCounter))+0;
@@ -62,15 +63,23 @@ int	dbg_printf(const char *__fmt, ...)
 	va_start(ap, __fmt);
 	size = vsprintf(_b, __fmt, ap);
 	va_end(ap);
+	static u08 initialized = 0;
+	DEFINE_CFG2(u08, dbg_printf_enabled, 1, 5);
+
+	if (!initialized)
+	{
+		PREPARE_CFG2(dbg_printf_enabled);
+		initialized = 1;
+	}
+	UPDATE_CFG2(dbg_printf_enabled);
 
 #ifdef WIN32
 	printf("%s",_b);
 #endif
 
 	//doing this debug printf's over the wireless link gets in the way of data capture and playback
-#if 0
-	return 0;
-#else
+	if (!dbg_printf_enabled) return 0;
+
 	for(i=0;i<size;i++)
 	{
 		dbg_buffer[dbg_buffer_write] = _b[i];
@@ -84,7 +93,6 @@ int	dbg_printf(const char *__fmt, ...)
 		}
 	}
 	return i;
-#endif
 }
 
 
