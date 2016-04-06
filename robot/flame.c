@@ -32,12 +32,12 @@ typedef struct
 //Ly: -10 ... 40  (-10 = top) = 140...155    Lx: -10....30 (-10 = right) = 115...140   top-left  x,y = 30,-10 bottom-right = -10,40
 t_pan_tilt_pos pan_tilt_pos[]=
 {
-	{150, 155}, //{140, 140},  //bl
-	{110, 155}, //{125, 140},  //br
+	{150, 160}, //{140, 140},  //bl
+	{110, 160}, //{125, 140},  //br
 	//{130, 145}, //{110, 140},  //center
 
-	{110, 135}, //{125, 148},  //tr
-	{150, 135} //{110, 148},  //tl
+	{110, 140}, //{125, 148},  //tr
+	{150, 140} //{110, 148},  //tl
 	//{130, 145}, //{110, 140},  //center
 };
 
@@ -51,7 +51,7 @@ u08 is_flame_present(void)
 	}
 	else return 0;
 #endif
-	if (s.inputs.analog[AI_FLAME_N] > omni_flame_threashold) //TODO: use parameter to define the threshold for the omni flame sensor
+	if (s.inputs.analog[AI_FLAME_N] > omni_flame_threashold) 
 	{
 		return 1;
 	}
@@ -171,6 +171,7 @@ void find_flame_fsm(u08 cmd, u08 *param)
 			{
 				pan_tilt_center();
 				FIRE_ALARM(1);
+				s.candle_location = 0; //don't know yet...
 				NOP();
 			}
 		}
@@ -222,10 +223,22 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				task_wait(100);
 			}
 
+			encoders_reset();
+
 			TURN_IN_PLACE( 40, -130 );
 			TURN_IN_PLACE_AND_SCAN(30, 300, flame_scan_moving_avg);
 			scan_result = find_flame_in_scan(scan_data,360,flame_threshold_1);
 			TURN_IN_PLACE( 30, -(300-scan_result.center_angle) );
+
+			usb_printf("turned %f degrees\n", s.inputs.theta * K_rad_to_deg);
+			if (s.current_room == 1)
+			{
+				if ((s.inputs.theta * K_rad_to_deg) > 90.0f)
+				{
+					s.candle_location = 1;
+				}
+			}
+
 			switch_(s_scanning_v2, s_moving_towards_candle);
 
 			exit_(s_scanning_v2) 
@@ -327,7 +340,26 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				pan_offset = cfg_get_u16_by_grp_id(15, 6) - cfg_get_u16_by_grp_id(15, 10);
 				tilt_offset= cfg_get_u16_by_grp_id(15,5) - cfg_get_u16_by_grp_id(15,9);
 
+				usb_printf("Start pump.  x,y,theta=%f,%f,%f\n", s.inputs.x, s.inputs.y, s.inputs.theta * K_rad_to_deg);
+
 				PUMP_ON();
+				{
+					static int i;
+					for (i = 0; i < 3; i++)
+					{
+						if (s.inputs.analog[AI_FLAME_NE] > s.inputs.analog[AI_FLAME_NW])
+						{
+							TURN_IN_PLACE(10, -3);
+							//pan_relative(-1);
+						}
+						else if (s.inputs.analog[AI_FLAME_NW] > s.inputs.analog[AI_FLAME_NE])
+						{
+							TURN_IN_PLACE(10, 3);
+							//pan_relative(+1);
+						}
+						task_wait(200);
+					}
+				}
 				task_wait(2000);  //let's start by sprying straight ahead for 2sec
 				t_start = get_ms();
 				count = 0;
@@ -341,12 +373,24 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				t_start = get_ms(); 
 				count++;
 			}
-			pan_absolute(pan_tilt_pos[i].x + pan_offset);
-			tilt_absolute(pan_tilt_pos[i].y+ tilt_offset);
-			//v.u16 = pan_tilt_pos[i].x;  cfg_set_value_by_grp_id(15,6, v);
-			//v.u16 = pan_tilt_pos[i].y;  cfg_set_value_by_grp_id(15,5, v);
+			//pan_absolute(pan_tilt_pos[i].x + pan_offset);
+			tilt_absolute(pan_tilt_pos[i].y + tilt_offset);
+			
+			if (is_flame_present())
+			{
+				if (s.inputs.analog[AI_FLAME_NE] > s.inputs.analog[AI_FLAME_NW])
+				{
+					//TURN_IN_PLACE(10, -3);
+					pan_relative(-1);
+				}
+				else if (s.inputs.analog[AI_FLAME_NW] > s.inputs.analog[AI_FLAME_NE])
+				{
+					//TURN_IN_PLACE(10, 3);
+					pan_relative(+1);
+				}
+			}
 
-			if (s.inputs.analog[AI_FLAME_N] < omni_flame_threashold)
+			if (!is_flame_present())
 			{
 				flame_is_out++;
 			}
@@ -355,12 +399,33 @@ void find_flame_fsm(u08 cmd, u08 *param)
 				flame_is_out = 0;
 			}
 
-
-			if ( (count>20) || (flame_is_out>150) )
+			if (count > 60)
 			{
+				dbg_printf("count > 60!\n");
 				state = s_disabled;
 				s.behavior_state[FIND_FLAME_FSM] = 0; //to make sure we don't restart the whole FSM
 			}
+			else if ((flame_is_out>240) )
+			{
+				tilt_center();
+				dbg_printf("waiting for 10sec to make sure flame is out!\n");
+				PUMP_OFF();
+				task_wait(10000);
+				//if the flame is still out after 10 seconds....
+				if (!is_flame_present())
+				{
+					state = s_disabled;
+					s.behavior_state[FIND_FLAME_FSM] = 0; //to make sure we don't restart the whole FSM
+				}
+				else
+				{
+					PUMP_ON();
+					dbg_printf("flame did not go out!\n");
+					flame_is_out = 0;
+				}
+			}
+
+			if(flame_is_out % 10 == 1) dbg_printf("t=%lu  count=%d, f_i_o=%d\n", get_ms(), count, flame_is_out);
 
 
 			exit_(s_extinguish)  
