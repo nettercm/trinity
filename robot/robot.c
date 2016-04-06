@@ -23,14 +23,15 @@ Room 4 permutations:
   
 
 Todo:
-* add large electrolytic capacitors to the 5V power rail to prevent brown-out / reset when the pump turns on
+* revisit the room entry distance when candle was found - make sure we don't enter too far into room 4
 * consider attaching a low-friction material to the rim of the base to avoid getting stuck on wall during certain turn maneuvers
-* add a config paramter that turns debug printf via serial comms on or off
-
 * convert the various flame detection threasholds into config parameters
 
 
 Done:
+* add a config paramter that turns debug printf via serial comms on or off
+* add large electrolytic capacitors to the 5V power rail to prevent brown-out / reset when the pump turns on
+* fix the return home logic for room 1 - make sure door and candle location is accounted for
 * consider changing the type of motor command used during wall following - regulate speed to avoid getting stuck at low speeds
 * add extinguisher turn-on connection
 * replace front caster with much smaller version that can traverse carpet edge
@@ -46,7 +47,7 @@ Issues:
 
 * mirror placement can result in sharp_corner turn
 * entering room 4 south: might get too far down the hallway, i.e. too far to the left of the door
-* exiting room 1 top door while going home not reliable
+* exiting room 1 not reliable
 
 
 
