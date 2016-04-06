@@ -5,6 +5,7 @@ U08(1, 1, "serial tx interval"		,		0, 0, 20)
 U08(1, 2, "lcd update rate"			,		0, 0, 100)
 U08(1, 3, "V(Batt) low-pass filter window", 0, 0, 32)
 U08(1, 4, "A/D input update interval",		0, 0, 5)
+U08(1, 5, "Debug printf enabled",			0, 0, 0)
 //----------------------------------------------------------
 
 
@@ -63,7 +64,7 @@ S16(6, 3, "alignment speed",				0, 0, 20)//11)//50)
 //----------------------------------------------------------
 GRP(7, "EXTINGUISHING")
 
-FLT(7, 1, "room entry distance",			0, 0, 170.0)
+FLT(7, 1, "room entry distance",			0, 0, 240.0)
 U08(7, 2, "omni flame threashold",			0, 0, 180)
 U08(7, 3, "pan left",						0, 0, 140)
 U08(7, 4, "pan right",						0, 0, 114)
