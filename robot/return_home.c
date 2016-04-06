@@ -64,6 +64,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 
 			exit_(s_disabled)  
 			{ 
+				cfg_set_flt_by_grp_id(10, 2, 60); //reduce wall following speed while returning home - there is no rush!
 			}
 		}
 
@@ -96,13 +97,14 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			MOVE(20, 180);
 			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 
-			while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
+			while ((us_n > 110))// && (us_ne > 100) && (us_nw > 100))
 			{
 				OS_SCHEDULE;
 			}
-
 			STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 			HARD_STOP();
+			MOVE(20, 40);
+
 			state = s_disabled;
 
 			exit_(s_exit_from_room_3)
@@ -138,14 +140,17 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
 			MOVE(20, 220);
 			TURN_IN_PLACE(20, 90);
-			odometry_set_checkpoint();
-			GO(20);
-			while( (s.ir[IR_NW] > 160) && (odometry_get_distance_since_checkpoint()<180) ) { OS_SCHEDULE; }
+			MOVE2(20, 1400, 80, 80);
+			//odometry_set_checkpoint();
+			//GO(20);
+			//while( (s.ir[IR_NW] > 160) && (odometry_get_distance_since_checkpoint()<180) ) { OS_SCHEDULE; }
 			//MOVE(20, 180);
-			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
+			//START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 			cfg_set_flt_by_grp_id(10, 13, 600); //corner_distance = 600, i.e. make sure we don't turn into the intersection but keep going straight
 
-			while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
+			GO(20);
+
+			while ((us_n > 60))// && (us_ne > 100) && (us_nw > 100))
 			{
 				OS_SCHEDULE;
 			}
@@ -170,7 +175,14 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			}
 
 			//at this point we are looking straight at the candle
-			TURN_IN_PLACE(50, -90);
+			if (s.candle_location == 1)
+			{
+				TURN_IN_PLACE(50, -220);
+			}
+			else
+			{
+				TURN_IN_PLACE(50, -90);
+			}
 			START_BEHAVIOR(FIND_WALL_FSM, LEFT_WALL);
 			while (s.behavior_state[FIND_WALL_FSM]>0)
 			{
@@ -186,13 +198,13 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			MOVE(20, 270);
 			TURN_IN_PLACE(20, -90);
 			odometry_set_checkpoint();
-			GO(20);
-			while( (s.ir[IR_NW] > 160) && (odometry_get_distance_since_checkpoint()<180) ) { OS_SCHEDULE; }
+			MOVE2(20, 1400, 80, 80);
+			//while( (s.ir[IR_NW] > 160) && (odometry_get_distance_since_checkpoint()<180) ) { OS_SCHEDULE; }
 			//MOVE(20, 180);
-			START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
+			//START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 			cfg_set_flt_by_grp_id(10, 13, 600);
-
-			while ( (us_n > 100) && (us_ne > 100) && (us_nw > 100) )
+			GO(20);
+			while ( (us_n > 60) ) //&& (us_ne > 100) && (us_nw > 100) )
 			{
 				OS_SCHEDULE;
 			}
@@ -229,6 +241,8 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 			RESET_LINE_DETECTION();
 			line_alignment_fsm_v2(1, 0);  while (line_alignment_fsm_v2(0, 0) != 0) { OS_SCHEDULE; }
 
+			usb_printf("Dog is in location %d\n", s.dog_position);
+
 			if (s.dog_position == 1 && s.door_position == 2)
 			{
 				MOVE(20, 255);
@@ -247,7 +261,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 				OS_SCHEDULE;
 				START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
 
-				while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
+				while ((us_n > 110)) //&& (us_ne > 100) && (us_nw > 100))
 				{
 					OS_SCHEDULE;
 				}
@@ -261,7 +275,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 				TURN_IN_PLACE(20, 90);
 				START_BEHAVIOR(FOLLOW_WALL_FSM, RIGHT_WALL);
 
-				while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
+				while ((us_n > 110))// && (us_ne > 100) && (us_nw > 100))
 				{
 					OS_SCHEDULE;
 				}
@@ -277,7 +291,7 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 				TURN_IN_PLACE(20, -90);
 				MOVE(20, 200);
 				START_BEHAVIOR(FOLLOW_WALL_FSM, LEFT_WALL);
-				while ((us_n > 100) && (us_ne > 100) && (us_nw > 100))
+				while ((us_n > 110))// && (us_ne > 100) && (us_nw > 100))
 				{
 					OS_SCHEDULE;
 				}
@@ -285,6 +299,8 @@ void return_home_fsm(u08 fsm_cmd, u08 *param)
 				STOP_BEHAVIOR(FOLLOW_WALL_FSM);
 				HARD_STOP();
 			}
+
+			MOVE(20, 40);
 
 			state = s_disabled;
 
