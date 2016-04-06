@@ -16,6 +16,15 @@ void pan_tilt_center(void)
 }
 
 
+void tilt_center(void)
+{
+	t_config_value v;
+
+	v.u16 = cfg_get_u16_by_grp_id(15, 9);
+	tilt_absolute(v.u16);
+}
+
+
 void pan_relative(s16 delta_x)
 {
 	t_config_value v;
