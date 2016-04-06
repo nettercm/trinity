@@ -61,6 +61,7 @@ typedef struct
 	u08 door_position; //0 means we don't know; Rm#4 North door = 2
 	u08 right_turns;
 	u08 left_turns;
+	u08 candle_location; //1 is top left of the room, 2 is top right; 3 is bottom right; 4 is bottom left
 	
 } t_state;
 
